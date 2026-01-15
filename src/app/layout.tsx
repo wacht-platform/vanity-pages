@@ -26,13 +26,10 @@ const newsreader = Newsreader({
 export const dynamic = "force-dynamic";
 
 function generatePublicKey(host: string) {
-  const slug = host.split(".")[0];
-  const backendUrl = host.split(".").slice(1).join(".");
-
-  if (backendUrl.includes("trywacht.xyz")) {
-    return `pk_test_${btoa(`https://${slug}.frontend-api.services`)}`;
+  if (host.includes("frontend-api.services")) {
+    return `pk_test_${btoa(`https://${host}`)}`;
   } else {
-    return `pk_live_${btoa(`https://frontend.${backendUrl}`)}`;
+    return `pk_live_${btoa(`https://${host}`)}`;
   }
 }
 
@@ -47,15 +44,6 @@ export async function generateMetadata(): Promise<Metadata> {
     let host =
       headersList.get("x-forwarded-host") || headersList.get("host") || "";
 
-    const slug = host.split(".")[0];
-    const backendUrl = host.split(".").slice(1).join(".");
-
-    if (backendUrl.includes("trywacht.xyz")) {
-      host = `https://${slug}.frontend-api.services`;
-    } else {
-      host = `https://frontend.${backendUrl}`;
-    }
-
     const meta: { data: Meta } = await fetch(`${host}/.well-known/meta`).then(
       (res) => res.json(),
     );
@@ -65,7 +53,6 @@ export async function generateMetadata(): Promise<Metadata> {
       icons: [{ url: meta.data.favicon_image_url }],
     };
   } catch (error) {
-    // Error fetching meta
     return {
       title: "AI Agent",
     };
@@ -85,7 +72,6 @@ export default async function RootLayout({
       headersList.get("x-forwarded-host") || headersList.get("host") || "";
     publicKey = generatePublicKey(host);
   } catch (error) {
-    // Error generating public key
   }
 
   return (
