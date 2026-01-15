@@ -24,12 +24,12 @@ export default function AgentsLandingPage() {
     const { exchanged, loading: authLoading, error: authError } = useExchangeTicket(ticket);
 
     useEffect(() => {
-        if (exchanged && ticket) {
+        if (ticket) {
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.delete("ticket");
             router.replace(newUrl.pathname + newUrl.search);
         }
-    }, [exchanged, ticket, router]);
+    }, [ticket, router]);
 
     const { activeAgent, setActiveAgent, agents, loading: agentsLoading } = useActiveAgent();
     const { createContext } = useAgentContexts();
