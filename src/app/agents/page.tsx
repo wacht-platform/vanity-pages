@@ -1,7 +1,7 @@
 "use client"
 
 import { useExchangeTicket, useSessionAgents, useClient, useAgentContexts } from "@wacht/nextjs";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { LoadingScreen } from "@/components/ui/spinner";
 import { useActiveAgent } from "@/components/agent-provider";
 import { useState, useEffect } from "react";
@@ -19,17 +19,16 @@ export default function AgentsLandingPage() {
     const searchParams = useSearchParams();
     const ticket = searchParams?.get("ticket");
     const router = useRouter();
+    const pathname = usePathname()
     const { client } = useClient();
 
     const { exchanged, loading: authLoading, error: authError } = useExchangeTicket(ticket);
 
     useEffect(() => {
         if (ticket) {
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.delete("ticket");
-            router.replace(newUrl.pathname + newUrl.search);
+            router.push(pathname);
         }
-    }, [ticket, router]);
+    }, [ticket]);
 
     const { activeAgent, setActiveAgent, agents, loading: agentsLoading } = useActiveAgent();
     const { createContext } = useAgentContexts();
