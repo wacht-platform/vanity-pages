@@ -21,20 +21,18 @@ export function AppSidebar({ className }: { className?: string }) {
     const [isCollapsed, setIsCollapsed] = React.useState(false)
     const [isMobileOpen, setIsMobileOpen] = React.useState(false)
     const pathname = usePathname()
-
-    // Pagination state
+    const { hasSession } = useActiveAgent()
     const [limit, setLimit] = React.useState(20)
 
-    // Use the standard hook
     const { contexts: chats, loading, hasMore, deleteContext, updateContext } = useAgentContexts({
-        limit: limit
+        limit: limit,
+        enabled: hasSession
     })
 
     const loadMore = () => {
         setLimit(prev => prev + 20)
     }
 
-    // Close mobile menu on resize to desktop
     React.useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth >= 768) {

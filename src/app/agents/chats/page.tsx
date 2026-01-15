@@ -14,14 +14,17 @@ import { useAgentContexts } from "@wacht/nextjs";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useActiveAgent } from "@/components/agent-provider";
 
 export default function ChatsPage() {
     const [search, setSearch] = useState("");
     const router = useRouter();
+    const { hasSession, loading: sessionLoading } = useActiveAgent();
 
     const { contexts, loading, error, hasMore, deleteContext, updateContext } = useAgentContexts({
         limit: 50,
         search: search || undefined,
+        enabled: hasSession
     });
 
     console.log(error);
