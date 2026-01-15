@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import { DeploymentInitialized, DeploymentProvider } from "@wacht/nextjs";
-import { DeploymentStyling } from "@/components/deployment-styling";
 import "./globals.css";
 import { ClientProviders } from "@/components/providers";
 import type { Metadata } from "next";
@@ -81,7 +80,6 @@ export default async function RootLayout({
       >
         <DeploymentProvider publicKey={publicKey}>
           <DeploymentInitialized>
-            <DeploymentStyling />
             <ClientProviders>{children}</ClientProviders>
           </DeploymentInitialized>
         </DeploymentProvider>

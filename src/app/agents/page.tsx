@@ -2,7 +2,6 @@
 
 import { useClient, useAgentContexts } from "@wacht/nextjs";
 import { useRouter } from "next/navigation";
-import { LoadingScreen } from "@/components/ui/spinner";
 import { useActiveAgent } from "@/components/agent-provider";
 import { useState } from "react";
 import { ChevronDown, ArrowUp, Plus, Check } from "lucide-react";
@@ -56,21 +55,6 @@ export default function AgentsLandingPage() {
             setIsSubmitting(false);
         }
     };
-
-    if (!hasSession || sessionError) {
-        return (
-            <div className="h-full flex items-center justify-center p-8 bg-[#211f1d]">
-                <div className="max-w-md text-center space-y-4">
-                    <h1 className="text-2xl font-bold tracking-tight text-red-500">Access Denied</h1>
-                    <p className="text-[#9e9e9e]">You don't have access to this resource. Please request a new session link.</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (loading) {
-        return <LoadingScreen message="Loading workspace..." />;
-    }
 
     return (
         <div className="h-full flex flex-col items-center justify-center p-4 bg-[#211f1d] text-[#ececec] font-sans relative selection:bg-[#d09a74] selection:text-[#211f1d]">

@@ -2,14 +2,12 @@
 
 import * as React from "react";
 import { ThemeProvider } from "@/components/theme-provider";
-import { DeploymentProvider } from "@wacht/nextjs";
-import { ActiveAgentProvider } from "./agent-provider";
+import { DeploymentStyling } from "./deployment-styling";
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
-    // Get public key from environment variable
-
     return (
-        <ActiveAgentProvider>
+        <>
+            <DeploymentStyling />
             <ThemeProvider
                 attribute="class"
                 defaultTheme="system"
@@ -18,6 +16,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
             >
                 {children}
             </ThemeProvider>
-        </ActiveAgentProvider>
+        </>
     );
 }
