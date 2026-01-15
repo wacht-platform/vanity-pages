@@ -33,8 +33,8 @@ importers:
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.1.18)
       '@wacht/nextjs':
-        specifier: 0.0.1-alpha.8
-        version: 0.0.1-alpha.8(@wacht/jsx@0.0.1-alpha.56(@wacht/types@0.0.1-alpha.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1))(@wacht/types@0.0.1-alpha.14)(next@16.1.1(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)
+        specifier: 0.0.1-alpha.9
+        version: 0.0.1-alpha.9(@wacht/jsx@0.0.1-alpha.57(@wacht/types@0.0.1-alpha.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1))(@wacht/types@0.0.1-alpha.14)(next@16.1.1(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)
       '@wacht/types':
         specifier: 0.0.1-alpha.14
         version: 0.0.1-alpha.14
@@ -1295,15 +1295,15 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@wacht/jsx@0.0.1-alpha.56':
-    resolution: {integrity: sha512-RX/JOJ67UiTHCKeMbLmjFMasqbMwpTIZn0F2+MuKrdTMzdH4HIcfURdWNC74lP3LtFlNildVaLOWSRzBSSwV0A==}
+  '@wacht/jsx@0.0.1-alpha.57':
+    resolution: {integrity: sha512-SiJWLof0dWWB//4FTsgDQ+KnlRB/XEmBycJGrlDV8tGaQdb0wM/qEs0wDhY0l/r10zf6Og486DaPl9pjFP5bIQ==}
     peerDependencies:
       '@wacht/types': '*'
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@wacht/nextjs@0.0.1-alpha.8':
-    resolution: {integrity: sha512-/3+cPmnytVQ8t9En/Ne8bumqIyTiEHNFxUyZ3BiCy/bf4PHL7bNJDLo1adrJMq/t6yeY1iFQ6QO52FVte2g1fA==}
+  '@wacht/nextjs@0.0.1-alpha.9':
+    resolution: {integrity: sha512-CQ386kzJUoolZE7bZbshmKs/8/G335nhyYV3sZXfHcK2sHz7sIvapqwBPAhrGvbX+5tdI7sZ0lUeDm6ud68VmA==}
     peerDependencies:
       '@wacht/jsx': '*'
       '@wacht/types': '*'
@@ -4009,7 +4009,7 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@wacht/jsx@0.0.1-alpha.56(@wacht/types@0.0.1-alpha.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)':
+  '@wacht/jsx@0.0.1-alpha.57(@wacht/types@0.0.1-alpha.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)':
     dependencies:
       '@wacht/types': 0.0.1-alpha.14
       lucide-react: 0.474.0(react@19.2.3)
@@ -4023,9 +4023,9 @@ snapshots:
     transitivePeerDependencies:
       - rollup
 
-  '@wacht/nextjs@0.0.1-alpha.8(@wacht/jsx@0.0.1-alpha.56(@wacht/types@0.0.1-alpha.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1))(@wacht/types@0.0.1-alpha.14)(next@16.1.1(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)':
+  '@wacht/nextjs@0.0.1-alpha.9(@wacht/jsx@0.0.1-alpha.57(@wacht/types@0.0.1-alpha.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1))(@wacht/types@0.0.1-alpha.14)(next@16.1.1(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)':
     dependencies:
-      '@wacht/jsx': 0.0.1-alpha.56(@wacht/types@0.0.1-alpha.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)
+      '@wacht/jsx': 0.0.1-alpha.57(@wacht/types@0.0.1-alpha.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)
       '@wacht/types': 0.0.1-alpha.14
       next: 16.1.1(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3

@@ -56,6 +56,15 @@ export default function IntegrationsPage() {
         }
     };
 
+    React.useEffect(() => {
+        const onFocus = () => {
+            void refetch();
+        };
+
+        window.addEventListener("focus", onFocus);
+        return () => window.removeEventListener("focus", onFocus);
+    }, [refetch]);
+
     if (agentLoading || (activeAgent && integrationsLoading)) {
         return (
             <div className="flex h-full items-center justify-center bg-[#211f1d] text-[#ececec]">

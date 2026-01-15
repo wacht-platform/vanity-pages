@@ -1,11 +1,11 @@
 "use client"
 
-import { useExchangeTicket, useSessionAgents, useClient, useAgentContexts } from "@wacht/nextjs";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useClient, useAgentContexts } from "@wacht/nextjs";
+import { useRouter } from "next/navigation";
 import { LoadingScreen } from "@/components/ui/spinner";
 import { useActiveAgent } from "@/components/agent-provider";
-import { useState, useEffect } from "react";
-import { ChevronDown, ArrowUp, Plus, History, Check } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, ArrowUp, Plus, Check } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,21 +16,10 @@ import { cn } from "@/lib/utils";
 import { AgentWithIntegrations } from "@wacht/types";
 
 export default function AgentsLandingPage() {
-    const searchParams = useSearchParams();
-    const ticket = searchParams?.get("ticket");
     const router = useRouter();
-    const pathname = usePathname()
     const { client } = useClient();
 
-    const { exchanged, loading: authLoading, error: authError } = useExchangeTicket(ticket);
-
-    useEffect(() => {
-        if (ticket) {
-            router.push(pathname);
-        }
-    }, [ticket]);
-
-    const { activeAgent, setActiveAgent, agents, loading: agentsLoading } = useActiveAgent();
+    const { activeAgent, setActiveAgent, agents, loading, hasSession, sessionError } = useActiveAgent();
     const { createContext } = useAgentContexts();
 
     const [input, setInput] = useState("");
@@ -68,18 +57,18 @@ export default function AgentsLandingPage() {
         }
     };
 
-    if (authError) {
+    if (!hasSession || sessionError) {
         return (
             <div className="h-full flex items-center justify-center p-8 bg-[#211f1d]">
                 <div className="max-w-md text-center space-y-4">
-                    <h1 className="text-2xl font-bold tracking-tight text-red-500">Authentication Failed</h1>
-                    <p className="text-[#9e9e9e]">Unable to establish a secure session.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-red-500">Access Denied</h1>
+                    <p className="text-[#9e9e9e]">You don't have access to this resource. Please request a new session link.</p>
                 </div>
             </div>
         );
     }
 
-    if (authLoading || (ticket && !exchanged) || (exchanged && agentsLoading)) {
+    if (loading) {
         return <LoadingScreen message="Loading workspace..." />;
     }
 

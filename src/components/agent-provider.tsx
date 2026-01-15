@@ -1,31 +1,59 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useSessionAgents } from "@wacht/nextjs";
+import React, { createContext, useContext } from "react";
+import { useAgentSession } from "@wacht/nextjs";
 import { AgentWithIntegrations } from "@wacht/types";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 interface ActiveAgentContextType {
     activeAgent: AgentWithIntegrations | null;
     setActiveAgent: (agent: AgentWithIntegrations) => void;
     agents: AgentWithIntegrations[];
     loading: boolean;
+    hasSession: boolean;
+    sessionError: Error | null;
+    sessionId: string | null;
+    contextGroup: string | null;
 }
 
 const ActiveAgentContext = createContext<ActiveAgentContextType | undefined>(undefined);
 
 export function ActiveAgentProvider({ children }: { children: React.ReactNode }) {
-    const { agents, loading } = useSessionAgents();
-    const [activeAgent, setActiveAgent] = useState<AgentWithIntegrations | null>(null);
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    const ticket = searchParams?.get("ticket");
 
-    // Auto-select first agent
+    const {
+        hasSession,
+        sessionLoading,
+        sessionError,
+        sessionId,
+        contextGroup,
+        agents,
+        activeAgent,
+        setActiveAgent,
+        ticketExchanged
+    } = useAgentSession(ticket);
+
     useEffect(() => {
-        if (!activeAgent && agents.length > 0) {
-            setActiveAgent(agents[0]);
+        if (ticket && ticketExchanged) {
+            router.replace(pathname);
         }
-    }, [agents, activeAgent]);
+    }, [ticket, ticketExchanged, router, pathname]);
 
     return (
-        <ActiveAgentContext.Provider value={{ activeAgent, setActiveAgent, agents, loading }}>
+        <ActiveAgentContext.Provider value={{
+            activeAgent,
+            setActiveAgent,
+            agents,
+            loading: sessionLoading,
+            hasSession,
+            sessionError,
+            sessionId,
+            contextGroup
+        }}>
             {children}
         </ActiveAgentContext.Provider>
     );
