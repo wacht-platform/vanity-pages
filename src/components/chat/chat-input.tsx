@@ -14,10 +14,11 @@ export type FileData = {
 interface ChatInputProps {
     placeholder?: string;
     className?: string;
+    agentName?: string;
     onSend?: (message: string, files?: File[]) => void;
 }
 
-export function ChatInput({ placeholder = "How can I help you today?", className, onSend }: ChatInputProps) {
+export function ChatInput({ placeholder = "How can I help you today?", className, agentName, onSend }: ChatInputProps) {
     const [message, setMessage] = React.useState("");
     const [selectedFiles, setSelectedFiles] = React.useState<FileData[]>([]);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -101,7 +102,7 @@ export function ChatInput({ placeholder = "How can I help you today?", className
                         </button>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-xs text-neutral-400 font-medium">Sonnet 3.5</span>
+                        {agentName && <span className="text-xs text-neutral-400 font-medium">{agentName}</span>}
                         <button
                             onClick={handleSend}
                             disabled={!message.trim() && selectedFiles.length === 0}

@@ -298,6 +298,7 @@ export default function SingleChatPage() {
                     <ChatInput
                         placeholder="Reply..."
                         className="min-h-[52px]"
+                        agentName={activeAgent?.name}
                         onSend={handleSend}
                     />
                     <div className="text-center mt-2">
