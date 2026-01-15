@@ -79,7 +79,7 @@ export default function AgentsLandingPage() {
         );
     }
 
-    if (authLoading || (exchanged && agentsLoading)) {
+    if (authLoading || (ticket && !exchanged) || (exchanged && agentsLoading)) {
         return <LoadingScreen message="Loading workspace..." />;
     }
 
