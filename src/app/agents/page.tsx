@@ -21,21 +21,24 @@ export default function AgentsLandingPage() {
     const router = useRouter();
     const { client } = useClient();
 
-    // Auth
     const { exchanged, loading: authLoading, error: authError } = useExchangeTicket(ticket);
 
-    // Data - Global Active Agent
+    useEffect(() => {
+        if (exchanged && ticket) {
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete("ticket");
+            router.replace(newUrl.pathname + newUrl.search);
+        }
+    }, [exchanged, ticket, router]);
+
     const { activeAgent, setActiveAgent, agents, loading: agentsLoading } = useActiveAgent();
-    // Destructure createContext from the hook
     const { createContext } = useAgentContexts();
 
-    // Local input state
     const [input, setInput] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
-        // Fallback to first agent if none active (though provider usually handles this)
         const currentAgentId = activeAgent?.id || (agents.length > 0 ? agents[0].id : null);
 
         if (!input.trim() || isSubmitting || !currentAgentId) return;
