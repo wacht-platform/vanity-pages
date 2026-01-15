@@ -87,15 +87,12 @@ export default function AgentsLandingPage() {
     return (
         <div className="h-full flex flex-col items-center justify-center p-4 bg-[#211f1d] text-[#ececec] font-sans relative selection:bg-[#d09a74] selection:text-[#211f1d]">
 
-            {/* Centered Content - Positioned significantly higher to end before midpoint */}
             <div className="w-full max-w-[640px] flex flex-col items-center gap-6 -translate-y-[28%]">
 
-                {/* Greeting Section - Tighter spacing */}
                 <div className="flex flex-col items-center gap-4">
                     <h1 className="text-[36px] font-serif font-normal tracking-tight text-[#f4f3f1] opacity-95 antialiased leading-none">What's on your mind?</h1>
                 </div>
 
-                {/* Main Input Box - Compact 'Blended' Container */}
                 <div className="w-full bg-[#302e2b] rounded-[20px] border border-[#3e3c39]/40 shadow-xl overflow-hidden transition-all duration-300 focus-within:ring-1 focus-within:ring-[#3e3c39]/60">
                     <div className="p-3.5 pb-1">
                         <textarea
