@@ -8,7 +8,7 @@ function AgentsLayoutContent({ children }: { children: React.ReactNode }) {
     const { hasSession, loading, sessionError } = useActiveAgent();
 
     if (loading) {
-        return <LoadingScreen />;
+        return (<div className="h-screen flex items-center justify-center"><LoadingScreen /></div>);
     }
 
     if (!hasSession || sessionError) {
