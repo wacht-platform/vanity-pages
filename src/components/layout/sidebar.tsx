@@ -142,7 +142,7 @@ export function AppSidebar({ className }: { className?: string }) {
                             {Object.entries(groupChatsByDate(chats)).map(([group, groupChats]) => (
                                 groupChats.length > 0 && (
                                     <div key={group} className="space-y-0.5">
-                                        <h3 className="px-2 mb-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">{group}</h3>
+                                        <h3 className="px-2 mb-1 text-[11px] font-normal text-muted-foreground uppercase tracking-wide whitespace-nowrap">{group}</h3>
                                         {groupChats.map(chat => (
                                             <ChatItem
                                                 key={chat.id}

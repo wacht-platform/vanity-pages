@@ -77,7 +77,7 @@ export default function IntegrationsPage() {
         return (
             <div className="flex h-full items-center justify-center bg-[#211f1d] text-[#ececec]">
                 <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-2">No Agent Selected</h2>
+                    <h2 className="text-xl font-normal mb-2">No Agent Selected</h2>
                     <p className="text-[#9e9e9e]">Please select an agent to view integrations.</p>
                 </div>
             </div>

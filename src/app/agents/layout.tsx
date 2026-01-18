@@ -15,7 +15,7 @@ function AgentsLayoutContent({ children }: { children: React.ReactNode }) {
         return (
             <div className="h-screen flex items-center justify-center p-8 bg-[#211f1d]">
                 <div className="max-w-md text-center space-y-4">
-                    <h1 className="text-2xl font-bold tracking-tight text-red-500">Access Denied</h1>
+                    <h1 className="text-xl font-bold tracking-tight text-red-500">Access Denied</h1>
                     <p className="text-[#9e9e9e]">You don't have access to this resource. Please request a new session link.</p>
                 </div>
             </div>
