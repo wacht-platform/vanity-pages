@@ -25,9 +25,9 @@ export const dynamic = "force-dynamic";
 
 function generatePublicKey(host: string) {
     if (host.includes("frontend-api.services")) {
-        return `pk_test_${btoa(`http://${host}`)}`;
+        return `pk_test_${btoa(`https://${host}`)}`;
     } else {
-        return `pk_live_${btoa(`http://${host}`)}`;
+        return `pk_live_${btoa(`https://${host}`)}`;
     }
 }
 
