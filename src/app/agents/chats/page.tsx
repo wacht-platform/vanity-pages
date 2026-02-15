@@ -11,6 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAgentContexts } from "@wacht/nextjs";
+import type { AgentContext } from "@wacht/types";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -30,12 +31,12 @@ export default function ChatsPage() {
     console.log(error);
 
     return (
-        <div className="flex flex-col h-full bg-[#211f1d] text-[#ececec] relative overflow-hidden font-sans selection:bg-[#d09a74] selection:text-[#211f1d]">
+        <div className="flex flex-col h-full bg-background text-foreground relative overflow-hidden font-sans selection:bg-primary/20 selection:text-background">
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-6 max-w-4xl mx-auto w-full">
-                <h1 className="text-3xl font-serif text-[#f4f3f1] opacity-95">Chats</h1>
-                <Link href="/agents" className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ececec] text-[#211f1d] rounded-lg text-[13px] font-medium hover:bg-white transition-colors shadow-sm">
+                <h1 className="text-3xl font-serif text-foreground opacity-95">Chats</h1>
+                <Link href="/agents" className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background rounded-lg text-[13px] font-medium hover:bg-foreground/90 transition-colors shadow-sm">
                     <Plus className="w-4 h-4" />
                     New chat
                 </Link>
@@ -46,7 +47,7 @@ export default function ChatsPage() {
 
                 {/* Search Bar */}
                 <div className="relative mb-8">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9e9e9e]">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
                         <Search className="w-4 h-4" />
                     </div>
                     <input
@@ -54,7 +55,7 @@ export default function ChatsPage() {
                         placeholder="Search your chats..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-[#302e2b] border border-[#3e3c39] rounded-xl py-3 pl-10 pr-4 text-[15px] text-[#ececec] placeholder-[#8e8d8c] focus:outline-none focus:ring-1 focus:ring-[#d96c46]/50 focus:border-[#d96c46]/50 transition-all font-normal"
+                        className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-4 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all font-normal"
                     />
                 </div>
 
@@ -62,10 +63,10 @@ export default function ChatsPage() {
                 {loading && (
                     <div className="space-y-4 py-4">
                         {[...Array(5)].map((_, i) => (
-                            <div key={i} className="flex items-center justify-between p-4 border-b border-[#3e3c39]/30">
+                            <div key={i} className="flex items-center justify-between p-4 border-b">
                                 <div className="space-y-2 w-full">
-                                    <Skeleton className="h-4 w-[250px] bg-[#3e3c39]/50" />
-                                    <Skeleton className="h-3 w-[150px] bg-[#3e3c39]/50" />
+                                    <Skeleton className="h-4 w-[250px] bg-muted" />
+                                    <Skeleton className="h-3 w-[150px] bg-muted" />
                                 </div>
                             </div>
                         ))}
@@ -74,16 +75,16 @@ export default function ChatsPage() {
 
                 {/* Error State */}
                 {error && (
-                    <div className="flex items-center justify-center py-20 text-red-400">
+                    <div className="flex items-center justify-center py-20 text-destructive">
                         Failed to load chats
                     </div>
                 )}
 
                 {/* Empty State */}
                 {!loading && !error && contexts.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-20 text-[#9e9e9e]">
+                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                         <p>No chats yet</p>
-                        <Link href="/agents" className="text-[#d96c46] mt-2 hover:underline">
+                        <Link href="/agents" className="text-primary mt-2 hover:underline">
                             Start a new conversation
                         </Link>
                     </div>
@@ -91,16 +92,16 @@ export default function ChatsPage() {
 
                 {/* Subheader */}
                 {!loading && contexts.length > 0 && (
-                    <div className="flex items-center justify-between text-[13px] text-[#9e9e9e] mb-2 px-2">
+                    <div className="flex items-center justify-between text-[13px] text-muted-foreground mb-2 px-2">
                         <span>{contexts.length} chat{contexts.length !== 1 ? 's' : ''}</span>
-                        {/* <button className="hover:text-[#ececec] transition-colors">Select</button> */}
+                        {/* <button className="hover:text-foreground transition-colors">Select</button> */}
                     </div>
                 )}
 
                 {/* Chat List with Dividers */}
                 {!loading && (
                     <div className="flex flex-col">
-                        {contexts.map((context) => (
+                        {contexts.map((context: AgentContext) => (
                             <ChatRow
                                 key={context.id}
                                 chat={context}
@@ -111,7 +112,6 @@ export default function ChatsPage() {
                         ))}
                     </div>
                 )}
-
             </div>
         </div>
     );
@@ -182,7 +182,7 @@ function ChatRow({
 
     if (isRenaming) {
         return (
-            <div className="py-4 px-2 border-b border-[#3e3c39]/30">
+            <div className="py-4 px-2 border-b">
                 <Input
                     ref={inputRef}
                     value={title}
@@ -195,7 +195,7 @@ function ChatRow({
                         }
                     }}
                     onBlur={handleRename}
-                    className="h-9 text-[15px] bg-[#302e2b] border-[#3e3c39] text-[#ececec]"
+                    className="h-9 text-[15px] bg-card text-foreground"
                 />
             </div>
         )
@@ -204,36 +204,36 @@ function ChatRow({
     return (
         <Link
             href={`/agents/c/${chat.id}`}
-            className="group flex items-start justify-between py-4 px-3 border-b border-[#3e3c39]/30 hover:bg-[#302e2b]/50 transition-colors -mx-2"
+            className="group flex items-start justify-between py-4 px-3 border-b hover:bg-muted/50 transition-colors -mx-2"
         >
             <div className="flex flex-col gap-1.5 min-w-0 pr-4">
-                <span className="text-[15px] font-medium text-[#ececec] truncate">{chat.title || "Untitled"}</span>
-                <span className="text-[12px] text-[#9e9e9e] font-normal">{time}</span>
+                <span className="text-[15px] font-medium text-foreground truncate">{chat.title || "Untitled"}</span>
+                <span className="text-[12px] text-muted-foreground font-normal">{time}</span>
             </div>
 
             {/* Action Menu (Visible on Hover) */}
             <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} className="opacity-0 group-hover:opacity-100 transition-opacity">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="p-1.5 text-[#9e9e9e] hover:text-[#ececec] hover:bg-[#3e3c39] rounded-md transition-colors focus:outline-none">
+                        <button className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors focus:outline-none">
                             <MoreHorizontal className="w-4 h-4" />
                         </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="end"
                         sideOffset={0}
-                        className="w-32 bg-[#2a2826] border-[#3e3c39] p-1 shadow-xl text-xs rounded-lg"
+                        className="w-32 bg-popover border-border p-1 shadow-xl text-xs rounded-lg"
                     >
                         <DropdownMenuItem
                             onClick={() => setIsRenaming(true)}
-                            className="text-[#9e9e9e] focus:text-[#ececec] focus:bg-[#3e3c39] cursor-pointer rounded"
+                            className="text-muted-foreground focus:text-foreground focus:bg-accent cursor-pointer rounded"
                         >
                             <Pencil className="mr-2 w-3 h-3" />
                             Rename
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={handleDelete}
-                            className="text-red-400 focus:text-red-300 focus:bg-red-400/10 cursor-pointer rounded"
+                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer rounded"
                         >
                             <Trash className="mr-2 w-3 h-3" />
                             Delete

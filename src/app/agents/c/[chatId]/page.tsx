@@ -97,7 +97,7 @@ function SystemDecisionPills({ decisions }: { decisions: any[] }) {
         <div className="my-4">
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center justify-between gap-3 border border-white/10 rounded-lg px-3 py-2 hover:bg-white/5 transition-colors text-left"
+                className="w-full flex items-center justify-between gap-3 border rounded-lg px-3 py-2 hover:bg-accent/5 transition-colors text-left"
             >
                 <div className="flex items-center gap-2 min-w-0">
                     <span className="text-sm text-muted-foreground truncate">
@@ -120,10 +120,10 @@ function SystemDecisionPills({ decisions }: { decisions: any[] }) {
             </button>
 
             {expanded && (
-                <div className="mt-2 border-l border-white/10 pl-4 space-y-0.5 pb-2">
+                <div className="mt-2 border-l pl-4 space-y-0.5 pb-2">
                     {decisions.map((msg, idx) => (
                         <div key={msg.id} className="flex items-start gap-2 text-sm text-muted-foreground/80">
-                            <span className="text-muted-foreground/40 shrink-0 w-4 font-mono text-[11px] pt-0.5">{idx + 1}.</span>
+                            <span className="text-muted-foreground/40 shrink-0 w-4 text-[11px] pt-0.5">{idx + 1}.</span>
                             <span className="leading-relaxed">{getDisplayContent(msg.content)}</span>
                         </div>
                     ))}
@@ -228,7 +228,7 @@ export default function SingleChatPage() {
                         return (
                             <div key={msg.id} className={cn("flex gap-4", msg.role === 'user' ? "justify-end" : "justify-start items-start")}>
                                 {msg.role === 'assistant' && (
-                                    <div className="w-8 h-8 rounded-sm bg-[#d96c46] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                    <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
                                         A
                                     </div>
                                 )}
@@ -282,7 +282,7 @@ export default function SingleChatPage() {
                     )}
                     {isExecuting && !pendingMessage && (
                         <div className="flex gap-4 justify-start items-center">
-                            <div className="w-8 h-8 rounded-sm bg-[#d96c46] text-white flex items-center justify-center text-xs font-bold shrink-0">A</div>
+                            <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">A</div>
                             <div className="flex items-center gap-1.5 px-3 py-2">
                                 <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1s' }} />
                                 <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms', animationDuration: '1s' }} />

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { Plus, PanelsTopLeft, Search, Code, PanelLeftClose, PanelLeftOpen, Menu, MoreHorizontal, Pencil, Trash, Star, Check, X, ChevronDown } from "lucide-react"
 import { useActiveAgent } from "../agent-provider"
 import { cn } from "@/lib/utils"
+import { ModeToggle } from "@/components/mode-toggle"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -64,7 +65,7 @@ export function AppSidebar({ className }: { className?: string }) {
             )}
 
             <div className={cn(
-                "flex flex-col h-screen bg-sidebar text-sidebar-foreground border-r border-white/10 transition-all duration-300 ease-in-out z-50 group/sidebar",
+                "flex flex-col h-screen bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 ease-in-out z-50 group/sidebar",
                 // Desktop Widths
                 isCollapsed ? "w-[60px]" : "w-[260px]",
                 // Mobile Positioning
@@ -86,22 +87,25 @@ export function AppSidebar({ className }: { className?: string }) {
 
                     {/* Toggle Button */}
                     {!isMobileOpen && (
-                        <button
-                            onClick={() => setIsCollapsed(!isCollapsed)}
-                            className={cn(
-                                "flex text-muted-foreground hover:text-foreground transition-colors rounded-md p-1 focus:outline-none",
-                                isCollapsed
-                                    ? "static mx-auto mt-2"
-                                    : "absolute right-3 top-[30px] -translate-y-1/2 opacity-0 group-hover/sidebar:opacity-100 z-20"
-                            )}
-                            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-                        >
-                            {isCollapsed ? (
-                                <PanelLeftOpen className="w-5 h-5 opacity-70" />
-                            ) : (
-                                <PanelLeftClose className="w-5 h-5 opacity-70" />
-                            )}
-                        </button>
+                        <div className="flex items-center gap-1">
+                            <ModeToggle />
+                            <button
+                                onClick={() => setIsCollapsed(!isCollapsed)}
+                                className={cn(
+                                    "flex text-muted-foreground hover:text-foreground transition-colors rounded-md p-1 focus:outline-none",
+                                    isCollapsed
+                                        ? "static mx-auto mt-2"
+                                        : "absolute right-3 top-[30px] -translate-y-1/2 opacity-0 group-hover/sidebar:opacity-100 z-20"
+                                )}
+                                title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                            >
+                                {isCollapsed ? (
+                                    <PanelLeftOpen className="w-5 h-5 opacity-70" />
+                                ) : (
+                                    <PanelLeftClose className="w-5 h-5 opacity-70" />
+                                )}
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -110,13 +114,13 @@ export function AppSidebar({ className }: { className?: string }) {
                     <Link
                         href="/agents"
                         className={cn(
-                            "w-full flex items-center bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-foreground rounded-[6px] border border-white/10 hover:border-white/20 transition-all group shadow-sm",
+                            "w-full flex items-center bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-foreground rounded-[6px] border border-sidebar-border hover:border-border transition-all group shadow-sm",
                             isCollapsed ? "h-10 justify-center px-0" : "h-8 justify-between px-2"
                         )}
                         title="New Chat"
                     >
                         {isCollapsed ? (
-                            <Plus className="w-5 h-5 text-[#d96c46]" />
+                            <Plus className="w-5 h-5 text-sidebar-primary" />
                         ) : (
                             <>
                                 <div className="flex items-center gap-2">
@@ -142,7 +146,7 @@ export function AppSidebar({ className }: { className?: string }) {
                             {Object.entries(groupChatsByDate(chats)).map(([group, groupChats]) => (
                                 groupChats.length > 0 && (
                                     <div key={group} className="space-y-0.5">
-                                        <h3 className="px-2 mb-1 text-[11px] font-normal text-muted-foreground uppercase tracking-wide whitespace-nowrap">{group}</h3>
+                                        <h3 className="px-2 mb-1 text-xs font-normal text-muted-foreground uppercase tracking-wide whitespace-nowrap">{group}</h3>
                                         {groupChats.map(chat => (
                                             <ChatItem
                                                 key={chat.id}
@@ -362,7 +366,7 @@ function ChatItem({
                     <DropdownMenuTrigger asChild>
                         <button
                             type="button"
-                            className="p-1 hover:bg-background/20 rounded-md text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+                            className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                         >
                             <MoreHorizontal className="w-3.5 h-3.5" />
@@ -371,18 +375,18 @@ function ChatItem({
                     <DropdownMenuContent
                         align="end"
                         sideOffset={8}
-                        className="w-32 bg-[#1F1F1F] border-white/10 p-1 shadow-xl text-xs"
+                        className="w-32 bg-popover border-border p-1 shadow-xl text-xs"
                     >
                         <DropdownMenuItem
                             onClick={() => setIsRenaming(true)}
-                            className="text-muted-foreground focus:text-foreground focus:bg-white/5 cursor-pointer"
+                            className="text-muted-foreground focus:text-foreground focus:bg-accent cursor-pointer"
                         >
                             <Pencil className="mr-2 w-3 h-3" />
                             Rename
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={handleDelete}
-                            className="text-red-400 focus:text-red-300 focus:bg-red-400/10 cursor-pointer"
+                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
                         >
                             <Trash className="mr-2 w-3 h-3" />
                             Delete
@@ -421,7 +425,7 @@ function AgentSelector() {
             <DropdownMenuContent
                 align="start"
                 sideOffset={4}
-                className="w-[320px] bg-[#1F1F1F] border-white/10 p-1.5 shadow-xl rounded-xl"
+                className="w-[320px] bg-popover border-border p-1.5 shadow-xl rounded-xl"
             >
                 <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground mb-1">
                     Your Agents
@@ -430,13 +434,13 @@ function AgentSelector() {
                     <DropdownMenuItem
                         key={agent.id}
                         onClick={() => setActiveAgent(agent)}
-                        className="flex items-center justify-between p-2.5 cursor-pointer focus:bg-white/5 data-[state=checked]:bg-white/5 rounded-lg text-sm"
+                        className="flex items-center justify-between p-2.5 cursor-pointer focus:bg-accent data-[state=checked]:bg-accent rounded-lg text-sm"
                     >
                         <div className="flex flex-col gap-0.5 min-w-0">
                             <span className="font-medium text-foreground truncate">{agent.name}</span>
-                            {agent.description && <span className="text-[11px] text-muted-foreground truncate opacity-70">{agent.description}</span>}
+                            {agent.description && <span className="text-xs text-muted-foreground truncate opacity-70">{agent.description}</span>}
                         </div>
-                        {activeAgent?.id === agent.id && <Check className="w-4 h-4 text-white" />}
+                        {activeAgent?.id === agent.id && <Check className="w-4 h-4 text-foreground" />}
                     </DropdownMenuItem>
                 ))}
             </DropdownMenuContent>

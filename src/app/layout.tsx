@@ -21,14 +21,13 @@ const newsreader = Newsreader({
   style: ["normal", "italic"],
 });
 
-
 export const dynamic = "force-dynamic";
 
 function generatePublicKey(host: string) {
   if (host.includes("frontend-api.services")) {
-    return `pk_test_${btoa(`https://${host}`)}`;
+    return `pk_test_${btoa(`http://${host}`)}`;
   } else {
-    return `pk_live_${btoa(`https://${host}`)}`;
+    return `pk_live_${btoa(`http://${host}`)}`;
   }
 }
 
@@ -41,7 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
   try {
     const headersList = await headers();
     let host =
-      headersList.get("x-forwarded-host") || headersList.get("host") || "";
+      // headersList.get("x-forwarded-host") || headersList.get("host") || "";
+      "localhost:3000";
 
     const meta: { data: Meta } = await fetch(`${host}/.well-known/meta`).then(
       (res) => res.json(),
@@ -53,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   } catch (error) {
     return {
-      title: "AI Agent",
+      title: "API Identity",
     };
   }
 }
@@ -67,11 +67,9 @@ export default async function RootLayout({
 
   try {
     const headersList = await headers();
-    const host =
-      headersList.get("x-forwarded-host") || headersList.get("host") || "";
+    const host = "localhost:3000";
     publicKey = generatePublicKey(host);
-  } catch (error) {
-  }
+  } catch (error) {}
 
   return (
     <html lang="en" suppressHydrationWarning>

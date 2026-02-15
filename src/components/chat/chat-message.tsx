@@ -22,7 +22,7 @@ export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
                         ) : (
                             <Avatar className="h-7 w-7 rounded-sm">
                                 <div className="w-full h-full bg-orange-500 rounded-sm flex items-center justify-center">
-                                    <span className="text-[10px] font-bold text-white">AI</span>
+                                    <span className="text-xs font-bold text-white">AI</span>
                                 </div>
                             </Avatar>
                         )}

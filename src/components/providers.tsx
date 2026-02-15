@@ -6,16 +6,14 @@ import { DeploymentStyling } from "./deployment-styling";
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
     return (
-        <>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+        >
             <DeploymentStyling />
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-            >
-                {children}
-            </ThemeProvider>
-        </>
+            {children}
+        </ThemeProvider>
     );
 }

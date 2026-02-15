@@ -60,12 +60,12 @@ export function ChatInput({ placeholder = "How can I help you today?", className
     };
 
     return (
-        <div className={cn("relative bg-[#3a3a3a] rounded-[16px] overflow-hidden group shadow-sm ring-1 ring-white/10", className)}>
-            <div className="relative flex flex-col w-full bg-[#3a3a3a] border border-white/10 rounded-2xl shadow-none transition-all focus-within:ring-0 focus-within:border-white/20">
+        <div className={cn("relative bg-card rounded-[16px] overflow-hidden group shadow-sm ring-1 ring-border/10", className)}>
+            <div className="relative flex flex-col w-full bg-card border border-border rounded-2xl shadow-none transition-all focus-within:ring-0 focus-within:border-border/20">
                 {selectedFiles.length > 0 && (
                     <div className="flex gap-2 p-3 pb-0 overflow-x-auto">
                         {selectedFiles.map((file, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-white/5 px-2 py-1 rounded-md text-sm border border-white/10">
+                            <div key={i} className="flex items-center gap-2 bg-muted px-2 py-1 rounded-md text-sm border border-border">
                                 <span className="truncate max-w-[150px]">{file.filename}</span>
                                 <button onClick={() => removeFile(i)} className="text-muted-foreground hover:text-foreground">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -96,17 +96,17 @@ export function ChatInput({ placeholder = "How can I help you today?", className
                     <div className="flex gap-2">
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="p-2 text-neutral-400 hover:text-neutral-200 rounded-lg hover:bg-white/5 transition-colors"
+                            className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
                         >
                             <PlusIcon />
                         </button>
                     </div>
                     <div className="flex items-center gap-3">
-                        {agentName && <span className="text-xs text-neutral-400 font-medium">{agentName}</span>}
+                        {agentName && <span className="text-xs text-muted-foreground font-medium">{agentName}</span>}
                         <button
                             onClick={handleSend}
                             disabled={!message.trim() && selectedFiles.length === 0}
-                            className="p-1.5 bg-[#d96c46] hover:bg-[#c9623e] text-white rounded-lg transition-all disabled:opacity-50 shadow-sm"
+                            className="p-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-all disabled:opacity-50 shadow-sm"
                         >
                             <ArrowUp size={16} strokeWidth={2.5} />
                         </button>
