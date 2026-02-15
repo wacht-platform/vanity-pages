@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev -p 4080 --webpack",
+        "dev": "next dev -p 4080",
         "build": "next build",
         "start": "next start",
         "lint": "eslint"
@@ -19,7 +19,7 @@
         "@radix-ui/react-tooltip": "^1.2.8",
         "@tailwindcss/typography": "^0.5.19",
         "@wacht/nextjs": "0.0.1-alpha.11",
-        "@wacht/types": "0.0.1-alpha.16",
+        "@wacht/types": "0.0.1-alpha.17",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "date-fns": "^4.1.0",

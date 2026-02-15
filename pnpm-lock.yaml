@@ -35,15 +35,12 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.1.18)
-      '@wacht/jsx':
-        specifier: file:../react-sdk/jsx
-        version: file:../react-sdk/jsx(@wacht/types@file:../react-sdk/wacht-types)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)
       '@wacht/nextjs':
-        specifier: file:../react-sdk/nextjs
-        version: file:../react-sdk/nextjs(@wacht/jsx@file:../react-sdk/jsx(@wacht/types@file:../react-sdk/wacht-types)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1))(@wacht/types@file:../react-sdk/wacht-types)(next@16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)
+        specifier: 0.0.1-alpha.11
+        version: 0.0.1-alpha.11(@wacht/jsx@0.0.1-alpha.63(@wacht/types@0.0.1-alpha.17)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1))(@wacht/types@0.0.1-alpha.17)(next@16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)
       '@wacht/types':
-        specifier: file:../react-sdk/wacht-types
-        version: file:../react-sdk/wacht-types
+        specifier: 0.0.1-alpha.17
+        version: 0.0.1-alpha.17
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -85,7 +82,7 @@ importers:
         version: 2.0.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       tailwind-merge:
         specifier: ^3.4.0
-        version: 3.4.0
+        version: 3.4.1
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4
@@ -1726,24 +1723,24 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@wacht/jsx@file:../react-sdk/jsx':
-    resolution: {directory: ../react-sdk/jsx, type: directory}
+  '@wacht/jsx@0.0.1-alpha.63':
+    resolution: {integrity: sha512-fR1kmibFZD1IDKqVbSNZG4OeX4/vd6XCtXHW25RiPg0YNAo0N1gFgbrCfU3eg0ERYalCUnmG0HeuNFd5QiKJHw==}
     peerDependencies:
       '@wacht/types': '*'
-      react: 'catalog:'
-      react-dom: 'catalog:'
+      react: '>=19.0.0'
+      react-dom: '>=19.0.0'
 
-  '@wacht/nextjs@file:../react-sdk/nextjs':
-    resolution: {directory: ../react-sdk/nextjs, type: directory}
+  '@wacht/nextjs@0.0.1-alpha.11':
+    resolution: {integrity: sha512-3SXgQhX83G8phRYexFpNNs+oBxWASEOYQajmzP9toAwz8Gz+WmbHNn6f6wNemyTYS1wSqlA6HoQaUYDqXrdCZw==}
     peerDependencies:
       '@wacht/jsx': '*'
       '@wacht/types': '*'
-      next: 'catalog:'
-      react: 'catalog:'
-      react-dom: 'catalog:'
+      next: '>=15.0.0'
+      react: '>=19.0.0'
+      react-dom: '>=19.0.0'
 
-  '@wacht/types@file:../react-sdk/wacht-types':
-    resolution: {directory: ../react-sdk/wacht-types, type: directory}
+  '@wacht/types@0.0.1-alpha.17':
+    resolution: {integrity: sha512-i1YVdn49h2o9Kazmyfi8ANJe/EBtmj0hHLnUAfqYgZS4+6rG46eJsK1p4sVppO1yeu7eo2nv8QVgauMjoqkkBg==}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -1868,8 +1865,8 @@ packages:
   camelize@1.0.1:
     resolution: {integrity: sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==}
 
-  caniuse-lite@1.0.30001769:
-    resolution: {integrity: sha512-BCfFL1sHijQlBGWBMuJyhZUhzo7wer5sVj9hqekB/7xn0Ypy+pER/edCYQm4exbXj4WiySGp40P8UuTh6w1srg==}
+  caniuse-lite@1.0.30001770:
+    resolution: {integrity: sha512-x/2CLQ1jHENRbHg5PSId2sXq1CIO1CISvwWAj027ltMVG2UNgW+w9oH2+HzgEIRFembL8bUlXtfbBHR1fCg2xw==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -3295,8 +3292,8 @@ packages:
     peerDependencies:
       react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  tailwind-merge@3.4.0:
-    resolution: {integrity: sha512-uSaO4gnW+b3Y2aWoWfFpX62vn2sR3skfhbjsEnaBI81WD1wBLlHZe5sWf0AqjksNdYTbGBEd0UasQMT3SNV15g==}
+  tailwind-merge@3.4.1:
+    resolution: {integrity: sha512-2OA0rFqWOkITEAOFWSBSApYkDeH9t2B3XSJuI4YztKBzK3mX0737A2qtxDZ7xkw9Zfh0bWl+r34sF3HXV+Ig7Q==}
 
   tailwindcss@4.1.18:
     resolution: {integrity: sha512-4+Z+0yiYyEtUVCScyfHCxOYP06L5Ne+JiHhY2IjR2KWMIWhJOYZKLSGZaP5HkZ8+bY0cxfzwDE5uOmzFXyIwxw==}
@@ -5048,9 +5045,9 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@wacht/jsx@file:../react-sdk/jsx(@wacht/types@file:../react-sdk/wacht-types)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)':
+  '@wacht/jsx@0.0.1-alpha.63(@wacht/types@0.0.1-alpha.17)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)':
     dependencies:
-      '@wacht/types': file:../react-sdk/wacht-types
+      '@wacht/types': 0.0.1-alpha.17
       lucide-react: 0.474.0(react@19.2.3)
       qrcode.react: 4.2.0(react@19.2.3)
       react: 19.2.3
@@ -5062,10 +5059,10 @@ snapshots:
     transitivePeerDependencies:
       - rollup
 
-  '@wacht/nextjs@file:../react-sdk/nextjs(@wacht/jsx@file:../react-sdk/jsx(@wacht/types@file:../react-sdk/wacht-types)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1))(@wacht/types@file:../react-sdk/wacht-types)(next@16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)':
+  '@wacht/nextjs@0.0.1-alpha.11(@wacht/jsx@0.0.1-alpha.63(@wacht/types@0.0.1-alpha.17)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1))(@wacht/types@0.0.1-alpha.17)(next@16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)':
     dependencies:
-      '@wacht/jsx': file:../react-sdk/jsx(@wacht/types@file:../react-sdk/wacht-types)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)
-      '@wacht/types': file:../react-sdk/wacht-types
+      '@wacht/jsx': 0.0.1-alpha.63(@wacht/types@0.0.1-alpha.17)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.57.1)
+      '@wacht/types': 0.0.1-alpha.17
       next: 16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
@@ -5073,7 +5070,7 @@ snapshots:
     transitivePeerDependencies:
       - rollup
 
-  '@wacht/types@file:../react-sdk/wacht-types': {}
+  '@wacht/types@0.0.1-alpha.17': {}
 
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
@@ -5201,7 +5198,7 @@ snapshots:
   browserslist@4.28.1:
     dependencies:
       baseline-browser-mapping: 2.9.19
-      caniuse-lite: 1.0.30001769
+      caniuse-lite: 1.0.30001770
       electron-to-chromium: 1.5.286
       node-releases: 2.0.27
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
@@ -5227,7 +5224,7 @@ snapshots:
 
   camelize@1.0.1: {}
 
-  caniuse-lite@1.0.30001769: {}
+  caniuse-lite@1.0.30001770: {}
 
   ccount@2.0.1: {}
 
@@ -6431,7 +6428,7 @@ snapshots:
       '@next/env': 16.1.1
       '@swc/helpers': 0.5.15
       baseline-browser-mapping: 2.9.19
-      caniuse-lite: 1.0.30001769
+      caniuse-lite: 1.0.30001770
       postcss: 8.4.31
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
@@ -7077,7 +7074,7 @@ snapshots:
       react: 19.2.3
       use-sync-external-store: 1.6.0(react@19.2.3)
 
-  tailwind-merge@3.4.0: {}
+  tailwind-merge@3.4.1: {}
 
   tailwindcss@4.1.18: {}
 
