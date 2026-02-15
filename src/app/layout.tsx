@@ -6,82 +6,87 @@ import { ClientProviders } from "@/components/providers";
 import type { Metadata } from "next";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
 });
 
 const newsreader = Newsreader({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
+    variable: "--font-serif",
+    subsets: ["latin"],
+    style: ["normal", "italic"],
 });
 
 export const dynamic = "force-dynamic";
 
 function generatePublicKey(host: string) {
-  if (host.includes("frontend-api.services")) {
-    return `pk_test_${btoa(`http://${host}`)}`;
-  } else {
-    return `pk_live_${btoa(`http://${host}`)}`;
-  }
+    if (host.includes("frontend-api.services")) {
+        return `pk_test_${btoa(`http://${host}`)}`;
+    } else {
+        return `pk_live_${btoa(`http://${host}`)}`;
+    }
 }
 
 type Meta = {
-  app_name: string;
-  favicon_image_url: string;
+    app_name: string;
+    favicon_image_url: string;
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  try {
-    const headersList = await headers();
-    let host =
-      // headersList.get("x-forwarded-host") || headersList.get("host") || "";
-      "localhost:3000";
+    try {
+        const headersList = await headers();
+        const host =
+            headersList.get("x-forwarded-host") ||
+            headersList.get("host") ||
+            "";
 
-    const meta: { data: Meta } = await fetch(`${host}/.well-known/meta`).then(
-      (res) => res.json(),
-    );
+        const meta: { data: Meta } = await fetch(
+            `${host}/.well-known/meta`,
+        ).then((res) => res.json());
 
-    return {
-      title: meta.data.app_name,
-      icons: [{ url: meta.data.favicon_image_url }],
-    };
-  } catch (error) {
-    return {
-      title: "API Identity",
-    };
-  }
+        return {
+            title: meta.data.app_name,
+            icons: [{ url: meta.data.favicon_image_url }],
+        };
+    } catch (error) {
+        return {
+            title: "Vanity Pages",
+        };
+    }
 }
 
 export default async function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  let publicKey = "";
+    let publicKey = "";
 
-  try {
-    const headersList = await headers();
-    const host = "localhost:3000";
-    publicKey = generatePublicKey(host);
-  } catch (error) {}
+    try {
+        const headersList = await headers();
+        const host =
+            headersList.get("x-forwarded-host") ||
+            headersList.get("host") ||
+            "";
 
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased`}
-      >
-        <DeploymentProvider publicKey={publicKey}>
-          <DeploymentInitialized>
-            <ClientProviders>{children}</ClientProviders>
-          </DeploymentInitialized>
-        </DeploymentProvider>
-      </body>
-    </html>
-  );
+        publicKey = generatePublicKey(host);
+    } catch (error) {}
+
+    return (
+        <html lang="en" suppressHydrationWarning>
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased`}
+            >
+                <DeploymentProvider publicKey={publicKey}>
+                    <DeploymentInitialized>
+                        <ClientProviders>{children}</ClientProviders>
+                    </DeploymentInitialized>
+                </DeploymentProvider>
+            </body>
+        </html>
+    );
 }
