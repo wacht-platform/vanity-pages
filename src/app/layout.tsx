@@ -78,7 +78,7 @@ export default async function RootLayout({
             headersList.get("host") ||
             "";
 
-        publicKey = generatePublicKey(host)!;
+        publicKey = `pk_test_${Buffer.from(generatePublicKey(host)!).toString("base64")}`;
     } catch (error) {}
 
     console.log(publicKey);
