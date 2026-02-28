@@ -23,12 +23,18 @@ const newsreader = Newsreader({
 
 export const dynamic = "force-dynamic";
 
-function generatePublicKey(host: string) {
-    if (host.includes("fapi.trywacht.xyz")) {
-        return `pk_test_${btoa(`http://localhost:3000`)}`;
-    } else {
-        return `pk_live_${btoa(`http://localhost:3000`)}`;
-    }
+function generatePublicKey(rawHost: string) {
+  const host = rawHost.trim();
+  if (!host) return null;
+
+  const slug = host.split(".")[0];
+  const backendUrl = host.split(".").slice(1).join(".");
+  if (!backendUrl) return null;
+
+  if (backendUrl.includes("trywacht.xyz")) {
+      return `https://${slug}.fapi.trywacht.xyz`;
+  }
+  return `https://frontend.${backendUrl}`;
 }
 
 type Meta = {
@@ -40,9 +46,8 @@ export async function generateMetadata(): Promise<Metadata> {
     try {
         const headersList = await headers();
         const host =
-            // headersList.get("x-forwarded-host") ||
-            // headersList.get("host") ||
-            "http://localhost:3000";
+            headersList.get("x-forwarded-host") ||
+            headersList.get("host");
 
         const meta: { data: Meta } = await fetch(
             `${host}/.well-known/meta`,
