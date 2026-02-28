@@ -3,7 +3,7 @@
 import { useClient, useAgentContexts } from "@wacht/nextjs";
 import { useRouter } from "next/navigation";
 import { useActiveAgent } from "@/components/agent-provider";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, ArrowUp, Plus, Check } from "lucide-react";
 import {
     DropdownMenu,
@@ -29,14 +29,35 @@ export default function AgentsLandingPage() {
     const { createContext } = useAgentContexts();
 
     const [input, setInput] = useState("");
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const removeFile = (index: number) => {
+        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files) return;
+        const files = Array.from(e.target.files);
+        setSelectedFiles((prev) => [...prev, ...files]);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
 
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
         const currentAgentId =
             activeAgent?.id || (agents.length > 0 ? agents[0].id : null);
 
-        if (!input.trim() || isSubmitting || !currentAgentId) return;
+        if (
+            (!input.trim() && selectedFiles.length === 0) ||
+            isSubmitting ||
+            !currentAgentId
+        ) {
+            return;
+        }
 
         setIsSubmitting(true);
         try {
@@ -50,6 +71,9 @@ export default function AgentsLandingPage() {
                     formData.append("agent_name", activeAgent.name);
                 }
                 formData.append("message", input.trim());
+                selectedFiles.forEach((file) => {
+                    formData.append("files", file);
+                });
 
                 await client(`/api/agent/contexts/${context.id}/execute`, {
                     method: "POST",
@@ -66,17 +90,41 @@ export default function AgentsLandingPage() {
 
     return (
         <div className="h-full flex flex-col items-center justify-center p-4 bg-background text-foreground font-sans relative selection:bg-primary/20 selection:text-background">
-            <div className="w-full max-w-[640px] flex flex-col items-center gap-6 -translate-y-[28%]">
-                <div className="flex flex-col items-center gap-4">
-                    <h1 className="text-[36px] font-normal tracking-tight text-foreground opacity-95 antialiased leading-none">
+            <div className="w-full max-w-[620px] flex flex-col items-center gap-5 -translate-y-[22%]">
+                <div className="flex flex-col items-center gap-3">
+                    <h1 className="text-[32px] font-normal tracking-tight text-foreground opacity-95 antialiased leading-none">
                         What's on your mind?
                     </h1>
                 </div>
 
-                <div className="w-full bg-card rounded-[20px] border border-border shadow-xl overflow-hidden transition-all duration-300 focus-within:ring-1 focus-within:ring-border/60">
-                    <div className="p-3.5 pb-1">
+                <div className="w-full bg-card rounded-2xl border border-border/70 shadow-lg overflow-hidden transition-all duration-200 focus-within:ring-1 focus-within:ring-border/60">
+                    {selectedFiles.length > 0 && (
+                        <div className="px-3.5 pt-3">
+                            <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-border/30 bg-background/70 p-2">
+                                {selectedFiles.map((file, index) => (
+                                    <div
+                                        key={`${file.name}-${file.size}-${index}`}
+                                        className="inline-flex items-center gap-1 rounded-md border border-border/40 bg-muted/30 px-2 py-1 text-xs"
+                                    >
+                                        <span className="max-w-[180px] truncate">
+                                            {file.name}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="text-muted-foreground hover:text-foreground"
+                                            onClick={() => removeFile(index)}
+                                            aria-label={`Remove ${file.name}`}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    <div className="px-3.5 pt-3 pb-1">
                         <textarea
-                            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground border-none outline-none text-[17px] leading-relaxed p-1 resize-none h-[48px] scrollbar-hide font-normal"
+                            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground border-none outline-none text-[15px] leading-relaxed p-1 resize-none h-[42px] scrollbar-hide font-normal"
                             placeholder={`Message ${activeAgent?.name || "Agent"}...`}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
@@ -89,10 +137,21 @@ export default function AgentsLandingPage() {
                         />
                     </div>
 
-                    <div className="px-3 pb-2.5 flex items-center justify-between">
+                    <div className="px-3 pb-3 flex items-center justify-between">
                         {/* Left Actions (Attachments/History) */}
                         <div className="flex items-center gap-1">
-                            <button className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors group">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                multiple
+                                onChange={handleFileSelect}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors group"
+                            >
                                 <Plus className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                             </button>
                         </div>
@@ -102,7 +161,7 @@ export default function AgentsLandingPage() {
                             {/* Agent Selector (Synced) */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all text-[12px] font-normal tracking-wide">
+                                    <button className="flex items-center gap-1.5 px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all text-[12px] font-normal tracking-wide">
                                         <span>
                                             {activeAgent?.name ||
                                                 "Select Agent"}
@@ -152,11 +211,15 @@ export default function AgentsLandingPage() {
                             {/* Submit Button */}
                             <button
                                 onClick={() => handleSubmit()}
-                                disabled={!input.trim() || isSubmitting}
+                                disabled={
+                                    (!input.trim() &&
+                                        selectedFiles.length === 0) ||
+                                    isSubmitting
+                                }
                                 className={cn(
-                                    "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
+                                    "flex items-center justify-center w-8 h-8 rounded-md transition-all duration-200",
                                     input.trim()
-                                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transform hover:scale-105"
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                                         : "bg-border text-muted-foreground cursor-not-allowed",
                                 )}
                             >
@@ -168,7 +231,7 @@ export default function AgentsLandingPage() {
             </div>
 
             {/* Bottom help text - Fixed at bottom */}
-            <div className="absolute bottom-6 text-[11px] text-border hover:text-muted-foreground transition-colors cursor-default select-none">
+            <div className="absolute bottom-6 text-[11px] text-muted-foreground/70 hover:text-muted-foreground transition-colors cursor-default select-none">
                 AI can make mistakes. Please verify important information.
             </div>
         </div>
