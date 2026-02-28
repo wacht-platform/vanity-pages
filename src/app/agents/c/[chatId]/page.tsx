@@ -16,7 +16,6 @@ import type {
     AssistantAcknowledgmentContent,
 } from "@wacht/types";
 
-// Helper to extract display text from strongly typed content
 function getDisplayContent(content: ConversationContent): string {
     switch (content.type) {
         case "user_message":
