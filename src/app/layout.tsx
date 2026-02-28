@@ -78,7 +78,7 @@ export default async function RootLayout({
             headersList.get("host") ||
             "";
 
-        publicKey = generatePublicKey(host);
+        publicKey = generatePublicKey(host)!;
     } catch (error) {}
 
     console.log(publicKey);
