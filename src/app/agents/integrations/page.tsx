@@ -2,32 +2,150 @@
 
 import * as React from "react"
 import { useActiveAgent } from "@/components/agent-provider"
-import { useAgentIntegrations } from "@wacht/nextjs"
+import { useAgentIntegrations, useClient } from "@wacht/nextjs"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
-import { CheckCircle2, AlertCircle, RefreshCw, Trash2, ExternalLink } from "lucide-react"
+import { AlertCircle, Trash2, ExternalLink, Server } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import type { AgentIntegration } from "@wacht/types"
+
+type DisconnectTarget = {
+    kind: "integration" | "mcp"
+    id: string
+    name: string
+} | null
+
+type AgentMcpServer = {
+    id: string
+    name: string
+    requires_connection?: boolean
+}
+
+type McpConnectResponse = {
+    requires_oauth: boolean
+    oauth_url?: string
+}
+
+function useAgentMcpServers(agentName: string | null) {
+    const { client } = useClient()
+    const [mcpServers, setMcpServers] = React.useState<AgentMcpServer[]>([])
+    const [loading, setLoading] = React.useState(false)
+    const clientRef = React.useRef(client)
+    const lastFetchedAgentRef = React.useRef<string | null>(null)
+
+    React.useEffect(() => {
+        clientRef.current = client
+    }, [client])
+
+    const fetchServers = React.useCallback(async (name: string) => {
+        setLoading(true)
+        try {
+            const query = new URLSearchParams({ agent_name: name })
+            const response = await clientRef.current(`/api/agent/mcp-servers?${query.toString()}`, { method: "GET" })
+            const payload = await response.json()
+            setMcpServers(payload?.data || [])
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    const refetch = React.useCallback(async () => {
+        if (!agentName) {
+            setMcpServers([])
+            return
+        }
+        lastFetchedAgentRef.current = agentName
+        await fetchServers(agentName)
+    }, [agentName, fetchServers])
+
+    const connect = React.useCallback(async (mcpServerId: string): Promise<McpConnectResponse> => {
+        if (!agentName) return { requires_oauth: false }
+        const query = new URLSearchParams({ agent_name: agentName })
+        const response = await clientRef.current(`/api/agent/mcp-servers/${mcpServerId}/connect?${query.toString()}`, { method: "POST" })
+        const payload = await response.json()
+        await refetch()
+        return payload?.data || { requires_oauth: false }
+    }, [agentName, refetch])
+
+    const disconnect = React.useCallback(async (mcpServerId: string) => {
+        if (!agentName) return
+        const query = new URLSearchParams({ agent_name: agentName })
+        await clientRef.current(`/api/agent/mcp-servers/${mcpServerId}/disconnect?${query.toString()}`, { method: "POST" })
+        await refetch()
+    }, [agentName, refetch])
+
+    React.useEffect(() => {
+        if (!agentName) {
+            setMcpServers([])
+            lastFetchedAgentRef.current = null
+            return
+        }
+        if (lastFetchedAgentRef.current === agentName) return
+        lastFetchedAgentRef.current = agentName
+        void fetchServers(agentName)
+    }, [agentName, fetchServers])
+
+    return {
+        mcpServers,
+        loading,
+        connect,
+        disconnect,
+        refetch,
+    }
+}
 
 export default function IntegrationsPage() {
     const { activeAgent, loading: agentLoading } = useActiveAgent()
-    const { integrations: activeIntegrations, loading: integrationsLoading, generateConsentURL, removeIntegration, refetch } = useAgentIntegrations(activeAgent?.name || null)
+    const {
+        integrations: activeIntegrations,
+        loading: integrationsLoading,
+        generateConsentURL,
+        removeIntegration,
+        refetch,
+    } = useAgentIntegrations(activeAgent?.name || null)
+    const {
+        mcpServers,
+        loading: mcpServersLoading,
+        connect: connectMcpServer,
+        disconnect: disconnectMcpServer,
+        refetch: refetchMcpServers,
+    } = useAgentMcpServers(activeAgent?.name || null)
 
     const [connectingId, setConnectingId] = React.useState<string | null>(null)
     const [disconnectingId, setDisconnectingId] = React.useState<string | null>(null)
+    const [connectingMcpId, setConnectingMcpId] = React.useState<string | null>(null)
+    const [disconnectingMcpId, setDisconnectingMcpId] = React.useState<string | null>(null)
+    const [disconnectTarget, setDisconnectTarget] = React.useState<DisconnectTarget>(null)
     const [error, setError] = React.useState<string | null>(null)
 
     const displayedIntegrations = React.useMemo(() => {
         if (!activeAgent?.integrations) return []
 
-        return activeAgent.integrations.map(integration => {
+        return activeAgent.integrations.map((integration) => {
             const isActive = activeIntegrations.some((ai: AgentIntegration) => ai.id === integration.id)
             return {
                 ...integration,
-                is_active: isActive
+                is_active: isActive,
             }
         })
     }, [activeAgent, activeIntegrations])
+
+    const displayedMcpServers = React.useMemo(() => {
+        const availableMcpServers = (
+            activeAgent as unknown as { mcp_servers?: Array<{ id: string; name: string; requires_connection?: boolean }> } | null
+        )?.mcp_servers || []
+
+        return availableMcpServers.map((server) => {
+            const requiresConnection = server.requires_connection !== false
+            const isActive = !requiresConnection || mcpServers.some((activeServer) => String(activeServer.id) === String(server.id))
+            return {
+                ...server,
+                requires_connection: requiresConnection,
+                is_active: isActive,
+            }
+        })
+    }, [activeAgent, mcpServers])
 
     const handleConnect = async (integrationId: string) => {
         setConnectingId(integrationId)
@@ -35,38 +153,80 @@ export default function IntegrationsPage() {
         try {
             const response = await generateConsentURL(integrationId)
             window.open(response.consent_url, "_blank")
-            setConnectingId(null)
-        } catch (err) {
+        } catch {
             setError("Failed to initiate connection")
+        } finally {
             setConnectingId(null)
         }
     }
 
-    const handleDisconnect = async (integrationId: string) => {
-        if (!confirm("Are you sure you want to disconnect this integration?")) return
-
-        setDisconnectingId(integrationId)
+    const handleMcpConnect = async (mcpServerId: string) => {
+        setConnectingMcpId(mcpServerId)
         setError(null)
         try {
-            await removeIntegration(integrationId)
-            await refetch()
-        } catch (err) {
-            setError("Failed to disconnect integration")
+            const response = await connectMcpServer(mcpServerId)
+            if (response.requires_oauth && response.oauth_url) {
+                window.open(response.oauth_url, "_blank", "noopener,noreferrer")
+                return
+            }
+            await refetchMcpServers()
+        } catch {
+            setError("Failed to connect MCP server")
         } finally {
-            setDisconnectingId(null)
+            setConnectingMcpId(null)
+        }
+    }
+
+    const onRequestDisconnectIntegration = (integration: { id: string; name: string }) => {
+        setDisconnectTarget({ kind: "integration", id: String(integration.id), name: integration.name })
+    }
+
+    const onRequestDisconnectMcp = (mcpServer: { id: string; name: string }) => {
+        setDisconnectTarget({ kind: "mcp", id: String(mcpServer.id), name: mcpServer.name })
+    }
+
+    const confirmDisconnect = async () => {
+        if (!disconnectTarget) return
+
+        setError(null)
+
+        if (disconnectTarget.kind === "integration") {
+            setDisconnectingId(disconnectTarget.id)
+            try {
+                await removeIntegration(disconnectTarget.id)
+                await refetch()
+                setDisconnectTarget(null)
+            } catch {
+                setError("Failed to disconnect integration")
+            } finally {
+                setDisconnectingId(null)
+            }
+            return
+        }
+
+        setDisconnectingMcpId(disconnectTarget.id)
+        try {
+            await disconnectMcpServer(disconnectTarget.id)
+            await refetchMcpServers()
+            setDisconnectTarget(null)
+        } catch {
+            setError("Failed to disconnect MCP server")
+        } finally {
+            setDisconnectingMcpId(null)
         }
     }
 
     React.useEffect(() => {
         const onFocus = () => {
             void refetch()
+            void refetchMcpServers()
         }
 
         window.addEventListener("focus", onFocus)
         return () => window.removeEventListener("focus", onFocus)
-    }, [refetch])
+    }, [refetch, refetchMcpServers])
 
-    if (agentLoading || (activeAgent && integrationsLoading)) {
+    if (agentLoading || (activeAgent && (integrationsLoading || mcpServersLoading))) {
         return (
             <div className="flex h-full items-center justify-center bg-background text-foreground">
                 <Spinner size="lg" />
@@ -86,108 +246,195 @@ export default function IntegrationsPage() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-background text-foreground relative overflow-hidden font-sans selection:bg-primary/20 selection:text-background">
-            <div className="flex items-center justify-between px-6 py-6 max-w-4xl mx-auto w-full">
-                <div>
-                    <h1 className="text-3xl font-serif text-foreground opacity-95">Integrations</h1>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                        Manage connections for <span className="text-foreground font-medium">{activeAgent.name}</span>
+        <>
+            <div className="flex flex-col h-full bg-background text-foreground">
+                <div className="px-6 py-6 max-w-4xl mx-auto w-full">
+                    <h1 className="text-2xl font-semibold tracking-tight">Connections</h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Manage external apps and MCP servers for <span className="text-foreground font-medium">{activeAgent.name}</span>.
                     </p>
-                </div>
-                {error && (
-                    <div className="bg-destructive/10 text-destructive text-sm px-3 py-1.5 rounded-md flex items-center gap-2 border border-destructive/20">
-                        <AlertCircle className="w-4 h-4" />
-                        {error}
-                    </div>
-                )}
-            </div>
-
-            <div className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto px-6 pb-10 scrollbar-hide">
-                {displayedIntegrations.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center pt-32 pb-20 text-muted-foreground">
-                        <div className="w-16 h-16 rounded-full bg-card flex items-center justify-center mb-4">
-                            <RefreshCw className="w-8 h-8" />
+                    {error && (
+                        <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-sm text-destructive">
+                            <AlertCircle className="w-4 h-4" />
+                            {error}
                         </div>
-                        <p className="text-[15px]">No integrations available for this agent</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        {displayedIntegrations.map((integration) => (
-                            <div
-                                key={integration.id}
-                                className={cn(
-                                    "p-5 rounded-xl border transition-all duration-200 flex flex-col justify-between min-h-[160px]",
-                                    integration.is_active
-                                        ? "bg-card border-emerald-500/30"
-                                        : "bg-card border-border hover:border-muted-foreground/10"
-                                )}
-                            >
+                    )}
+                </div>
+
+                <div className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto px-6 pb-10 space-y-6">
+                    {displayedIntegrations.length === 0 && displayedMcpServers.length === 0 ? (
+                        <div className="rounded-lg border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
+                            No external apps or MCP servers are configured for this agent.
+                        </div>
+                    ) : null}
+
+                    {displayedIntegrations.length > 0 ? (
+                        <section className="rounded-lg border bg-card">
+                            <div className="flex items-center justify-between border-b px-4 py-3">
                                 <div>
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                            {/* Icon Placeholder based on type or generic */}
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold shrink-0",
-                                                integration.is_active ? "bg-emerald-500/20 text-emerald-500" : "bg-muted text-muted-foreground"
-                                            )}>
+                                    <h2 className="font-medium">External Apps</h2>
+                                    <p className="text-xs text-muted-foreground">Connect native app integrations for this agent.</p>
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                    {displayedIntegrations.filter((i) => i.is_active).length}/{displayedIntegrations.length} active
+                                </span>
+                            </div>
+
+                            <div>
+                                {displayedIntegrations.map((integration, index) => (
+                                    <div
+                                        key={integration.id}
+                                        className={cn(
+                                            "flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between",
+                                            index !== 0 && "border-t",
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
                                                 {integration.name.charAt(0).toUpperCase()}
                                             </div>
-                                            <div>
-                                                <h3 className="font-medium text-foreground">{integration.name}</h3>
-                                                <span className="text-xs text-muted-foreground capitalize">{integration.integration_type.replace('_', ' ')}</span>
+                                            <div className="min-w-0">
+                                                <div className="truncate text-sm font-medium">{integration.name}</div>
+                                                <div className="text-xs text-muted-foreground capitalize">{integration.integration_type.replace("_", " ")}</div>
                                             </div>
                                         </div>
-                                        {integration.is_active && (
-                                            <span className="flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 border border-emerald-500/20">
-                                                <CheckCircle2 className="w-3 h-3" />
-                                                Active
+                                        <div className="flex items-center gap-2 self-end md:self-auto">
+                                            <span className={cn(
+                                                "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium",
+                                                integration.is_active
+                                                    ? "bg-emerald-500/15 text-emerald-600"
+                                                    : "bg-muted text-muted-foreground"
+                                            )}>
+                                                {integration.is_active ? "Active" : "Not connected"}
                                             </span>
-                                        )}
+                                            {integration.is_active ? (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => onRequestDisconnectIntegration({ id: String(integration.id), name: integration.name })}
+                                                    disabled={disconnectingId === String(integration.id)}
+                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                >
+                                                    {disconnectingId === String(integration.id) ? <Spinner size="sm" className="w-3 h-3" /> : <Trash2 className="w-3.5 h-3.5" />}
+                                                    Disconnect
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={() => handleConnect(String(integration.id))}
+                                                    disabled={connectingId === String(integration.id)}
+                                                >
+                                                    {connectingId === String(integration.id) ? <Spinner size="sm" className="w-3 h-3" /> : <ExternalLink className="w-3.5 h-3.5" />}
+                                                    Connect
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
-
-                                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                                        Connect your {integration.name} account to enable {activeAgent.name} to access and manage your data.
-                                    </p>
-                                </div>
-
-                                <div className="flex justify-end pt-2 mt-auto border-t border-border">
-                                    {integration.is_active ? (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDisconnect(String(integration.id))}
-                                            disabled={disconnectingId === String(integration.id)}
-                                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 text-xs gap-1.5"
-                                        >
-                                            {disconnectingId === String(integration.id) ? (
-                                                <Spinner size="sm" className="w-3 h-3" />
-                                            ) : (
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            )}
-                                            Disconnect
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            onClick={() => handleConnect(String(integration.id))}
-                                            disabled={connectingId === String(integration.id)}
-                                            className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 text-xs font-medium gap-1.5 px-4"
-                                        >
-                                            {connectingId === String(integration.id) ? (
-                                                <Spinner size="sm" className="w-3 h-3" />
-                                            ) : (
-                                                <ExternalLink className="w-3.5 h-3.5" />
-                                            )}
-                                            Connect
-                                        </Button>
-                                    )}
-                                </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                )}
+                        </section>
+                    ) : null}
+
+                    {displayedMcpServers.length > 0 ? (
+                        <section className="rounded-lg border bg-card">
+                            <div className="flex items-center justify-between border-b px-4 py-3">
+                                <div>
+                                    <h2 className="font-medium">MCP Servers</h2>
+                                    <p className="text-xs text-muted-foreground">Connect MCP servers for tool access in this context group.</p>
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                    {displayedMcpServers.filter((s) => s.is_active).length}/{displayedMcpServers.length} active
+                                </span>
+                            </div>
+
+                            <div>
+                                {displayedMcpServers.map((mcpServer, index) => (
+                                    <div
+                                        key={mcpServer.id}
+                                        className={cn(
+                                            "flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between",
+                                            index !== 0 && "border-t",
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                                                <Server className="w-4 h-4" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="truncate text-sm font-medium">{mcpServer.name}</div>
+                                                <div className="text-xs text-muted-foreground">MCP server</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 self-end md:self-auto">
+                                            <span className={cn(
+                                                "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium",
+                                                mcpServer.is_active
+                                                    ? "bg-emerald-500/15 text-emerald-600"
+                                                    : "bg-muted text-muted-foreground"
+                                            )}>
+                                                {!mcpServer.requires_connection ? "Automatic" : mcpServer.is_active ? "Active" : "Not connected"}
+                                            </span>
+                                            {!mcpServer.requires_connection ? (
+                                                <span className="text-xs text-muted-foreground">No connection needed</span>
+                                            ) : mcpServer.is_active ? (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => onRequestDisconnectMcp({ id: String(mcpServer.id), name: mcpServer.name })}
+                                                    disabled={disconnectingMcpId === String(mcpServer.id)}
+                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                >
+                                                    {disconnectingMcpId === String(mcpServer.id) ? <Spinner size="sm" className="w-3 h-3" /> : <Trash2 className="w-3.5 h-3.5" />}
+                                                    Disconnect
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={() => handleMcpConnect(String(mcpServer.id))}
+                                                    disabled={connectingMcpId === String(mcpServer.id)}
+                                                >
+                                                    {connectingMcpId === String(mcpServer.id) ? <Spinner size="sm" className="w-3 h-3" /> : <ExternalLink className="w-3.5 h-3.5" />}
+                                                    Connect
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
+                </div>
             </div>
-        </div>
+
+            <Dialog open={!!disconnectTarget} onOpenChange={(open) => !open && setDisconnectTarget(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {disconnectTarget?.kind === "mcp" ? "Disconnect MCP Server" : "Disconnect Integration"}
+                        </DialogTitle>
+                        <DialogDescription>
+                            This will disconnect {disconnectTarget?.name || "this connection"} for the current context group.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDisconnectTarget(null)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDisconnect}
+                            disabled={disconnectingId === disconnectTarget?.id || disconnectingMcpId === disconnectTarget?.id}
+                        >
+                            {disconnectingId === disconnectTarget?.id || disconnectingMcpId === disconnectTarget?.id ? (
+                                <Spinner size="sm" className="w-3 h-3" />
+                            ) : null}
+                            Disconnect
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }

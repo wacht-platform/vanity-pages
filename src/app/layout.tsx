@@ -24,10 +24,10 @@ const newsreader = Newsreader({
 export const dynamic = "force-dynamic";
 
 function generatePublicKey(host: string) {
-    if (host.includes("frontend-api.services")) {
-        return `pk_test_${btoa(`https://${host}`)}`;
+    if (host.includes("fapi.trywacht.xyz")) {
+        return `pk_test_${btoa(`http://localhost:3000`)}`;
     } else {
-        return `pk_live_${btoa(`https://${host}`)}`;
+        return `pk_live_${btoa(`http://localhost:3000`)}`;
     }
 }
 
@@ -40,9 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
     try {
         const headersList = await headers();
         const host =
-            headersList.get("x-forwarded-host") ||
-            headersList.get("host") ||
-            "";
+            // headersList.get("x-forwarded-host") ||
+            // headersList.get("host") ||
+            "http://localhost:3000";
 
         const meta: { data: Meta } = await fetch(
             `${host}/.well-known/meta`,
@@ -75,6 +75,8 @@ export default async function RootLayout({
 
         publicKey = generatePublicKey(host);
     } catch (error) {}
+
+    console.log(publicKey);
 
     return (
         <html lang="en" suppressHydrationWarning>

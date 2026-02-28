@@ -18,7 +18,9 @@ import type {
 	ReplayTaskListResponse,
 	ReplayTaskStatusOptions,
 	ReplayTaskStatusResponse,
-	WebhookDeliveryDetail
+	WebhookDeliveryDetail,
+	UpdateWebhookSettingsOptions,
+	WebhookSettingsResponse
 } from "@wacht/types";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -35,6 +37,7 @@ interface WebhookAppContextType {
 	deleteEndpoint: (endpointId: string) => Promise<DeleteEndpointResponse>;
 	testEndpoint: (endpointId: string, options: TestEndpointOptions) => Promise<TestEndpointResponse>;
 	rotateSecret: () => Promise<WebhookAppInfo>;
+	updateSettings: (options: UpdateWebhookSettingsOptions) => Promise<WebhookSettingsResponse>;
 	replayDelivery: (options: ReplayWebhookDeliveryOptions) => Promise<ReplayWebhookDeliveryResponse>;
 	cancelReplayTask: (options: CancelReplayTaskOptions) => Promise<CancelReplayTaskResponse>;
 	fetchReplayTaskStatus: (options: ReplayTaskStatusOptions) => Promise<ReplayTaskStatusResponse>;
@@ -63,6 +66,7 @@ export function WebhookAppProvider({ children }: { children: React.ReactNode }) 
 		deleteEndpoint,
 		testEndpoint,
 		rotateSecret,
+		updateSettings,
 		replayDelivery,
 		cancelReplayTask,
 		fetchReplayTaskStatus,
@@ -89,6 +93,7 @@ export function WebhookAppProvider({ children }: { children: React.ReactNode }) 
 			deleteEndpoint,
 			testEndpoint,
 			rotateSecret,
+			updateSettings,
 			replayDelivery,
 			cancelReplayTask,
 			fetchReplayTaskStatus,

@@ -17,6 +17,7 @@ function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 		{ value: "endpoints", label: "Endpoints", href: "/webhook/endpoints" },
 		{ value: "events", label: "Events", href: "/webhook/events" },
 		{ value: "logs", label: "Deliveries", href: "/webhook/deliveries" },
+		{ value: "notifications", label: "Notifications", href: "/webhook/notifications" },
 	];
 
 	if (!hasSession || sessionError || loading) {
@@ -61,6 +62,7 @@ function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 	if (pathname?.startsWith("/webhook/endpoints")) activeTab = "endpoints";
 	else if (pathname?.startsWith("/webhook/events")) activeTab = "events";
 	else if (pathname?.startsWith("/webhook/deliveries")) activeTab = "logs";
+	else if (pathname?.startsWith("/webhook/notifications")) activeTab = "notifications";
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">

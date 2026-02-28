@@ -5,20 +5,19 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
     Plus,
-    PanelsTopLeft,
-    Search,
+    MessageSquare,
+    Link2,
     PanelLeftClose,
-    PanelLeftOpen,
     Menu,
     MoreHorizontal,
     Pencil,
     Trash,
     Check,
     ChevronDown,
+    Settings,
 } from "lucide-react";
 import { useActiveAgent } from "../agent-provider";
 import { cn } from "@/lib/utils";
-import { ModeToggle } from "@/components/mode-toggle";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,6 +27,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAgentContexts } from "@wacht/nextjs";
+
+const SIDEBAR_WIDTH = "260px";
+const SIDEBAR_COLLAPSED = "52px";
 
 export function AppSidebar({ className }: { className?: string }) {
     const [isCollapsed, setIsCollapsed] = React.useState(false);
@@ -63,256 +65,151 @@ export function AppSidebar({ className }: { className?: string }) {
 
     return (
         <>
-            {/* Mobile Trigger (Fixed top left) */}
-            <div className="md:hidden fixed top-3 left-3 z-50">
-                <button
-                    onClick={() => setIsMobileOpen(!isMobileOpen)}
-                    className="p-2 bg-sidebar text-sidebar-foreground rounded-md shadow-sm border border-transparent hover:text-sidebar-foreground/80 transition-colors"
-                >
-                    <Menu className="w-5 h-5" />
-                </button>
-            </div>
+            {/* Mobile Trigger */}
+            <button
+                onClick={() => setIsMobileOpen(!isMobileOpen)}
+                className="md:hidden fixed top-3 left-3 z-50 p-2 bg-sidebar text-sidebar-foreground rounded-md"
+            >
+                <Menu className="w-4 h-4" />
+            </button>
 
             {/* Mobile Overlay */}
             {isMobileOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in duration-200"
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
                     onClick={() => setIsMobileOpen(false)}
                 />
             )}
 
-            <div
+            <aside
                 className={cn(
-                    "flex flex-col h-screen bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 ease-in-out z-50 group/sidebar",
-                    // Desktop Widths
-                    isCollapsed ? "w-[60px]" : "w-[260px]",
-                    // Mobile Positioning
+                    "flex flex-col h-screen bg-sidebar text-sidebar-foreground transition-all duration-200 z-50",
+                    isCollapsed ? "w-[52px]" : "w-[260px]",
                     "fixed md:relative inset-y-0 left-0",
-                    // Mobile visibility toggle
                     isMobileOpen
                         ? "translate-x-0"
                         : "-translate-x-full md:translate-x-0",
                     className,
                 )}
             >
-                {/* Header / Org */}
-                <div
-                    className={cn(
-                        "flex items-center p-3 pb-2 relative min-h-[52px]",
-                        isCollapsed ? "justify-center px-0" : "",
-                    )}
-                >
-                    {!isCollapsed ? (
-                        <div className="flex-1 min-w-0">
-                            <AgentSelector />
-                        </div>
-                    ) : null}
-
-                    {/* Toggle Button */}
-                    {!isMobileOpen && (
-                        <div className="flex items-center gap-1">
-                            <ModeToggle />
-                            <button
-                                onClick={() => setIsCollapsed(!isCollapsed)}
-                                className={cn(
-                                    "flex text-muted-foreground hover:text-foreground transition-colors rounded-md p-1 focus:outline-none",
-                                    isCollapsed
-                                        ? "static mx-auto mt-2"
-                                        : "absolute right-3 top-[30px] -translate-y-1/2 opacity-0 group-hover/sidebar:opacity-100 z-20",
-                                )}
-                                title={
-                                    isCollapsed
-                                        ? "Expand Sidebar"
-                                        : "Collapse Sidebar"
-                                }
-                            >
-                                {isCollapsed ? (
-                                    <PanelLeftOpen className="w-5 h-5 opacity-70" />
-                                ) : (
-                                    <PanelLeftClose className="w-5 h-5 opacity-70" />
-                                )}
-                            </button>
-                        </div>
-                    )}
+                {/* Header */}
+                <div className="flex items-center justify-between h-11 px-3 border-b border-sidebar-border/40">
+                    {!isCollapsed && <AgentSelector />}
+                    <button
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className={cn(
+                            "p-1.5 hover:bg-sidebar-accent rounded-md transition-colors text-muted-foreground hover:text-sidebar-foreground",
+                            isCollapsed && "mx-auto",
+                        )}
+                    >
+                        <PanelLeftClose
+                            className={cn(
+                                "w-4 h-4",
+                                isCollapsed && "rotate-180",
+                            )}
+                        />
+                    </button>
                 </div>
 
-                {/* New Chat Action */}
-                <div
-                    className={cn("px-3 pb-4", isCollapsed && "px-2 pb-2 mt-2")}
-                >
+                {/* New Chat */}
+                <div className="px-2 py-2">
                     <Link
                         href="/agents"
                         className={cn(
-                            "w-full flex items-center bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-foreground rounded-[6px] border border-sidebar-border hover:border-border transition-all group shadow-sm",
-                            isCollapsed
-                                ? "h-10 justify-center px-0"
-                                : "h-8 justify-between px-2",
+                            "flex items-center gap-2 px-2 py-1.5 text-sm text-sidebar-foreground hover:bg-sidebar-accent rounded-md transition-colors",
+                            isCollapsed && "justify-center",
                         )}
-                        title="New Chat"
                     >
-                        {isCollapsed ? (
-                            <Plus className="w-5 h-5 text-sidebar-primary" />
-                        ) : (
-                            <>
-                                <div className="flex items-center gap-2">
-                                    <Plus className="w-4 h-4" />
-                                    <span className="text-[14px] font-medium whitespace-nowrap">
-                                        New chat
-                                    </span>
-                                </div>
-                            </>
-                        )}
+                        <Plus className="w-4 h-4 shrink-0" />
+                        {!isCollapsed && <span>New</span>}
                     </Link>
                 </div>
 
-                {/* Navigation */}
-                <div
-                    className={cn(
-                        "flex-1 overflow-y-auto px-3 space-y-4 min-h-0 scrollbar-hide",
-                        isCollapsed && "px-2",
-                    )}
-                >
-                    <div className="space-y-0.5">
-                        <NavItem
-                            icon={<Search className="w-4 h-4" />}
-                            label="Chats"
-                            isCollapsed={isCollapsed}
-                            href="/agents/chats"
-                        />
-                        <NavItem
-                            icon={<PanelsTopLeft className="w-4 h-4" />}
-                            label="Integrations"
-                            isCollapsed={isCollapsed}
-                            href="/agents/integrations"
-                        />
-                    </div>
+                {/* Nav */}
+                <nav className="px-2 space-y-0.5">
+                    <NavItem
+                        icon={<MessageSquare className="w-4 h-4" />}
+                        label="Chats"
+                        isCollapsed={isCollapsed}
+                        href="/agents/chats"
+                    />
+                    <NavItem
+                        icon={<Link2 className="w-4 h-4" />}
+                        label="Integrations"
+                        isCollapsed={isCollapsed}
+                        href="/agents/integrations"
+                    />
+                </nav>
 
+                {/* Recents */}
+                <div className="flex-1 overflow-y-auto mt-2 min-h-0">
                     {!isCollapsed && (
-                        <div className="space-y-4 animate-in fade-in duration-300 delay-100">
-                            {/* Grouped Chats */}
-                            {Object.entries(groupChatsByDate(chats)).map(
-                                ([group, groupChats]) =>
-                                    groupChats.length > 0 && (
-                                        <div
-                                            key={group}
-                                            className="space-y-0.5"
-                                        >
-                                            <h3 className="px-2 mb-1 text-xs font-normal text-muted-foreground uppercase tracking-wide whitespace-nowrap">
-                                                {group}
-                                            </h3>
-                                            {groupChats.map((chat) => (
-                                                <ChatItem
-                                                    key={chat.id}
-                                                    chat={chat}
-                                                    isActive={
-                                                        pathname ===
-                                                        `/agents/c/${chat.id}`
-                                                    }
-                                                    onDelete={async (id) => {
-                                                        try {
-                                                            await deleteContext(
-                                                                id,
-                                                            );
-                                                        } catch (e) {
-                                                            console.error(
-                                                                "Failed to delete",
-                                                                e,
-                                                            );
-                                                        }
-                                                    }}
-                                                    onRename={async (
-                                                        id,
-                                                        title,
-                                                    ) => {
-                                                        try {
-                                                            await updateContext(
-                                                                id,
-                                                                { title },
-                                                            );
-                                                        } catch (e) {
-                                                            console.error(
-                                                                "Failed to rename",
-                                                                e,
-                                                            );
-                                                        }
-                                                    }}
-                                                />
-                                            ))}
-                                        </div>
-                                    ),
-                            )}
-
-                            {loading && (
-                                <div className="space-y-4 px-2 mt-1">
-                                    {/* Loading Skeletons with headers */}
-                                    <div className="space-y-1">
-                                        <Skeleton className="h-3 w-12 bg-sidebar-accent/50 mb-2" />
-                                        {[...Array(3)].map((_, i) => (
+                        <div className="px-2">
+                            <p className="px-2 py-1.5 text-xs text-muted-foreground">
+                                Recents
+                            </p>
+                            <div className="space-y-0.5">
+                                {loading ? (
+                                    <div className="space-y-1 px-2">
+                                        {[...Array(5)].map((_, i) => (
                                             <Skeleton
                                                 key={i}
-                                                className="h-6 w-full bg-sidebar-accent/50 rounded-md"
+                                                className="h-6 w-full bg-sidebar-accent/50 rounded"
                                             />
                                         ))}
                                     </div>
-                                </div>
-                            )}
-
-                            {!loading && hasMore && (
-                                <button
-                                    onClick={loadMore}
-                                    className="w-full text-center text-xs text-muted-foreground hover:text-foreground py-2 transition-colors"
-                                >
-                                    Show more
-                                </button>
-                            )}
+                                ) : (
+                                    chats.slice(0, 15).map((chat: any) => (
+                                        <ChatItem
+                                            key={chat.id}
+                                            chat={chat}
+                                            isActive={
+                                                pathname ===
+                                                `/agents/c/${chat.id}`
+                                            }
+                                            onDelete={async (id) => {
+                                                try {
+                                                    await deleteContext(id);
+                                                } catch (e) {}
+                                            }}
+                                            onRename={async (id, title) => {
+                                                try {
+                                                    await updateContext(id, {
+                                                        title,
+                                                    });
+                                                } catch (e) {}
+                                            }}
+                                        />
+                                    ))
+                                )}
+                                {!loading && hasMore && chats.length > 15 && (
+                                    <button
+                                        onClick={loadMore}
+                                        className="w-full text-center text-xs text-muted-foreground hover:text-foreground py-1.5"
+                                    >
+                                        More
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
-            </div>
+
+                {/* Footer */}
+                {!isCollapsed && (
+                    <div className="px-2 py-2 border-t border-sidebar-border/40">
+                        <Link
+                            href="/agents/integrations"
+                            className="flex items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-md transition-colors"
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span>Settings</span>
+                        </Link>
+                    </div>
+                )}
+            </aside>
         </>
     );
-}
-
-// Helper to group chats by date
-function groupChatsByDate(chats: any[]) {
-    const groups: Record<string, any[]> = {
-        Today: [],
-        Yesterday: [],
-        Recent: [], // Everything else goes here
-    };
-
-    if (!Array.isArray(chats)) {
-        return groups;
-    }
-
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    chats.forEach((chat) => {
-        const dateStr =
-            chat.last_activity_at ||
-            chat.created_at ||
-            new Date().toISOString();
-        const date = new Date(dateStr);
-        // Normalize comparison date to midnight for day comparison
-        const compareDate = new Date(
-            date.getFullYear(),
-            date.getMonth(),
-            date.getDate(),
-        );
-
-        if (compareDate.getTime() === today.getTime()) {
-            groups["Today"].push(chat);
-        } else if (compareDate.getTime() === yesterday.getTime()) {
-            groups["Yesterday"].push(chat);
-        } else {
-            groups["Recent"].push(chat);
-        }
-    });
-
-    return groups;
 }
 
 function NavItem({
@@ -324,36 +221,27 @@ function NavItem({
     icon: React.ReactNode;
     label: string;
     isCollapsed: boolean;
-    href?: string;
+    href: string;
 }) {
-    const content = (
-        <>
-            {icon}
-            {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
+    const pathname = usePathname();
+    const isActive = pathname === href;
 
-            {/* Tooltip for Collapsed State */}
-            {isCollapsed && (
-                <div className="absolute left-[calc(100%+8px)] bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
-                    {label}
-                </div>
+    return (
+        <Link
+            href={href}
+            className={cn(
+                "flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors",
+                isCollapsed && "justify-center",
+                isActive
+                    ? "bg-sidebar-accent text-sidebar-foreground"
+                    : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
             )}
-        </>
+            title={isCollapsed ? label : undefined}
+        >
+            {icon}
+            {!isCollapsed && <span>{label}</span>}
+        </Link>
     );
-
-    const classes = cn(
-        "w-full flex items-center px-2 py-1.5 text-[13px] font-medium text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-[6px] transition-colors relative group",
-        isCollapsed ? "justify-center h-9" : "gap-2.5",
-    );
-
-    if (href) {
-        return (
-            <Link href={href} className={classes}>
-                {content}
-            </Link>
-        );
-    }
-
-    return <button className={classes}>{content}</button>;
 }
 
 function ChatItem({
@@ -368,7 +256,7 @@ function ChatItem({
     onRename: (id: string, newTitle: string) => Promise<void>;
 }) {
     const [isRenaming, setIsRenaming] = React.useState(false);
-    const [title, setTitle] = React.useState(chat.title || "Untitled Chat");
+    const [title, setTitle] = React.useState(chat.title || "Untitled");
     const router = useRouter();
     const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -382,37 +270,30 @@ function ChatItem({
     const handleRename = async () => {
         if (!title.trim() || title === chat.title) {
             setIsRenaming(false);
-            setTitle(chat.title || "Untitled Chat");
+            setTitle(chat.title || "Untitled");
             return;
         }
-
         try {
             await onRename(chat.id, title);
-            setIsRenaming(false);
         } catch (e) {
-            setTitle(chat.title || "Untitled Chat");
-            setIsRenaming(false);
+            setTitle(chat.title || "Untitled");
         }
+        setIsRenaming(false);
     };
 
     const handleDelete = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!confirm("Are you sure you want to delete this chat?")) return;
-
+        if (!confirm("Delete this chat?")) return;
         try {
             await onDelete(chat.id);
-            if (isActive) {
-                router.push("/agents");
-            }
-        } catch (error) {
-            console.error("Failed to delete chat", error);
-        }
+            if (isActive) router.push("/agents");
+        } catch (e) {}
     };
 
     if (isRenaming) {
         return (
-            <div className="flex items-center px-2 py-1 gap-1">
+            <div className="px-1 py-0.5">
                 <Input
                     ref={inputRef}
                     value={title}
@@ -421,11 +302,11 @@ function ChatItem({
                         if (e.key === "Enter") handleRename();
                         if (e.key === "Escape") {
                             setIsRenaming(false);
-                            setTitle(chat.title || "Untitled Chat");
+                            setTitle(chat.title || "Untitled");
                         }
                     }}
                     onBlur={handleRename}
-                    className="h-7 text-xs px-2"
+                    className="h-6 text-xs px-1.5 bg-sidebar-accent border-0"
                 />
             </div>
         );
@@ -436,20 +317,17 @@ function ChatItem({
             <Link
                 href={`/agents/c/${chat.id}`}
                 className={cn(
-                    "block w-full text-left px-2 py-1.5 text-[13px] rounded-[6px] truncate transition-colors pr-8",
+                    "block w-full text-left px-2 py-1.5 text-sm rounded-md truncate transition-colors",
                     isActive
-                        ? "bg-sidebar-accent text-foreground font-medium"
-                        : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent",
+                        ? "bg-sidebar-accent text-sidebar-foreground"
+                        : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
                 )}
             >
-                {chat.title || "Untitled Chat"}
+                {chat.title || "Untitled"}
             </Link>
 
             <div
-                className={cn(
-                    "absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity",
-                    isActive && "opacity-100",
-                )}
+                className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -457,35 +335,26 @@ function ChatItem({
             >
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button
-                            type="button"
-                            className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                        >
+                        <button className="p-0.5 hover:bg-sidebar-accent rounded text-muted-foreground hover:text-sidebar-foreground">
                             <MoreHorizontal className="w-3.5 h-3.5" />
                         </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="end"
-                        sideOffset={8}
-                        className="w-32 bg-popover border-border p-1 shadow-xl text-xs"
+                        sideOffset={4}
+                        className="w-28 p-1"
                     >
                         <DropdownMenuItem
                             onClick={() => setIsRenaming(true)}
-                            className="text-muted-foreground focus:text-foreground focus:bg-accent cursor-pointer"
+                            className="text-xs py-1.5 cursor-pointer"
                         >
-                            <Pencil className="mr-2 w-3 h-3" />
-                            Rename
+                            <Pencil className="mr-1.5 w-3 h-3" /> Rename
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={handleDelete}
-                            className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                            className="text-xs py-1.5 cursor-pointer text-destructive focus:text-destructive"
                         >
-                            <Trash className="mr-2 w-3 h-3" />
-                            Delete
+                            <Trash className="mr-1.5 w-3 h-3" /> Delete
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -500,50 +369,34 @@ function AgentSelector() {
 
     if (!activeAgent && agents.length === 0) {
         return (
-            <div className="h-9 w-full rounded-md bg-sidebar-accent/50 animate-pulse" />
+            <div className="h-5 w-20 rounded bg-sidebar-accent/50 animate-pulse" />
         );
     }
 
     return (
         <DropdownMenu open={open} onOpenChange={setOpen}>
-            <DropdownMenuTrigger className="w-fit max-w-[200px]">
-                <section className="flex items-center justify-between w-full px-2 py-1.5 hover:bg-sidebar-accent rounded-lg transition-colors group/selector outline-none">
-                    <div className="flex flex-col items-start text-left min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 w-full">
-                            <span className="text-[14px] font-medium text-foreground truncate block max-w-[160px]">
-                                {activeAgent?.name || "Select Agent"}
-                            </span>
-                            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground opacity-70 group-hover/selector:opacity-100" />
-                        </div>
-                    </div>
-                </section>
+            <DropdownMenuTrigger className="outline-none">
+                <div className="flex items-center gap-1 hover:bg-sidebar-accent rounded-md px-1.5 py-1 -ml-1.5 transition-colors">
+                    <span className="text-sm font-normal">
+                        {activeAgent?.name || "Agent"}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="start"
                 sideOffset={4}
-                className="w-[320px] bg-popover border-border p-1.5 shadow-xl rounded-xl"
+                className="w-52 p-1"
             >
-                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground mb-1">
-                    Your Agents
-                </div>
                 {agents.map((agent) => (
                     <DropdownMenuItem
                         key={agent.id}
                         onClick={() => setActiveAgent(agent)}
-                        className="flex items-center justify-between p-2.5 cursor-pointer focus:bg-accent data-[state=checked]:bg-accent rounded-lg text-sm"
+                        className="flex items-center justify-between py-1.5 px-2 cursor-pointer text-sm"
                     >
-                        <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="font-medium text-foreground truncate">
-                                {agent.name}
-                            </span>
-                            {agent.description && (
-                                <span className="text-xs text-muted-foreground truncate opacity-70">
-                                    {agent.description}
-                                </span>
-                            )}
-                        </div>
+                        <span className="truncate">{agent.name}</span>
                         {activeAgent?.id === agent.id && (
-                            <Check className="w-4 h-4 text-foreground" />
+                            <Check className="w-3.5 h-3.5 shrink-0" />
                         )}
                     </DropdownMenuItem>
                 ))}

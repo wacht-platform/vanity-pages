@@ -1,26 +1,31 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import { useAgentContext } from "@wacht/nextjs";
 import { useActiveAgent } from "@/components/agent-provider";
-import { ChatInput } from "@/components/chat/chat-input"
-import { Spinner } from "@/components/ui/spinner"
-import { cn } from "@/lib/utils"
-import { useParams, useSearchParams } from "next/navigation"
-import { useEffect, useRef, useMemo, useCallback, useState } from "react"
-import ReactMarkdown from "react-markdown"
-import type { ConversationContent, UserMessageContent, AgentResponseContent, AssistantAcknowledgmentContent } from "@wacht/types"
+import { ChatInput } from "@/components/chat/chat-input";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
+import { useParams, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useMemo, useCallback, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import type {
+    ConversationContent,
+    UserMessageContent,
+    AgentResponseContent,
+    AssistantAcknowledgmentContent,
+} from "@wacht/types";
 
 // Helper to extract display text from strongly typed content
 function getDisplayContent(content: ConversationContent): string {
-    console.log(content)
     switch (content.type) {
         case "user_message":
             return (content as UserMessageContent).message;
         case "agent_response":
             return (content as AgentResponseContent).response;
         case "assistant_acknowledgment":
-            return (content as AssistantAcknowledgmentContent).acknowledgment_message;
+            return (content as AssistantAcknowledgmentContent)
+                .acknowledgment_message;
         case "user_input_request":
             return content.question;
         case "system_decision":
@@ -43,26 +48,40 @@ function formatTime(timestamp: string): string {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffDays > 0) {
-        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
-            ' at ' + date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        return (
+            date.toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+            }) +
+            " at " +
+            date.toLocaleTimeString(undefined, {
+                hour: "2-digit",
+                minute: "2-digit",
+            })
+        );
     }
-    return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
 }
 
 // Group consecutive system_decision messages
-type GroupedMessage = {
-    type: 'single';
-    message: any;
-} | {
-    type: 'system_decisions';
-    messages: any[];
-};
+type GroupedMessage =
+    | {
+          type: "single";
+          message: any;
+      }
+    | {
+          type: "system_decisions";
+          messages: any[];
+      };
 
 function groupMessages(messages: any[]): GroupedMessage[] {
     const grouped: GroupedMessage[] = [];
     let i = 0;
 
-    const displayableMessages = messages.filter(msg => {
+    const displayableMessages = messages.filter((msg) => {
         const displayContent = getDisplayContent(msg.content);
         return displayContent && displayContent.trim().length > 0;
     });
@@ -70,16 +89,19 @@ function groupMessages(messages: any[]): GroupedMessage[] {
     while (i < displayableMessages.length) {
         const msg = displayableMessages[i];
 
-        if (msg.content?.type === 'system_decision') {
+        if (msg.content?.type === "system_decision") {
             // Collect consecutive system_decisions
             const decisions = [msg];
-            while (i + 1 < displayableMessages.length && displayableMessages[i + 1].content?.type === 'system_decision') {
+            while (
+                i + 1 < displayableMessages.length &&
+                displayableMessages[i + 1].content?.type === "system_decision"
+            ) {
                 i++;
                 decisions.push(displayableMessages[i]);
             }
-            grouped.push({ type: 'system_decisions', messages: decisions });
+            grouped.push({ type: "system_decisions", messages: decisions });
         } else {
-            grouped.push({ type: 'single', message: msg });
+            grouped.push({ type: "single", message: msg });
         }
         i++;
     }
@@ -106,15 +128,25 @@ function SystemDecisionPills({ decisions }: { decisions: any[] }) {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     {count > 1 && (
-                        <span className="text-xs text-muted-foreground/70">{count} decisions</span>
+                        <span className="text-xs text-muted-foreground/70">
+                            {count} decisions
+                        </span>
                     )}
                     <svg
-                        className={cn("w-4 h-4 text-muted-foreground/70 transition-transform", expanded && "rotate-180")}
+                        className={cn(
+                            "w-4 h-4 text-muted-foreground/70 transition-transform",
+                            expanded && "rotate-180",
+                        )}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                     >
-                        <path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        <path
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 9l-7 7-7-7"
+                        />
                     </svg>
                 </div>
             </button>
@@ -122,9 +154,16 @@ function SystemDecisionPills({ decisions }: { decisions: any[] }) {
             {expanded && (
                 <div className="mt-2 border-l pl-4 space-y-0.5 pb-2">
                     {decisions.map((msg, idx) => (
-                        <div key={msg.id} className="flex items-start gap-2 text-sm text-muted-foreground/80">
-                            <span className="text-muted-foreground/40 shrink-0 w-4 text-[11px] pt-0.5">{idx + 1}.</span>
-                            <span className="leading-relaxed">{getDisplayContent(msg.content)}</span>
+                        <div
+                            key={msg.id}
+                            className="flex items-start gap-2 text-sm text-muted-foreground/80"
+                        >
+                            <span className="text-muted-foreground/40 shrink-0 w-4 text-[11px] pt-0.5">
+                                {idx + 1}.
+                            </span>
+                            <span className="leading-relaxed">
+                                {getDisplayContent(msg.content)}
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -168,8 +207,13 @@ export default function SingleChatPage() {
 
     const prevMessageCount = useRef(messages.length);
     useEffect(() => {
-        if (messages.length > prevMessageCount.current && !isLoadingHistoryRef.current && scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        if (
+            messages.length > prevMessageCount.current &&
+            !isLoadingHistoryRef.current &&
+            scrollContainerRef.current
+        ) {
+            scrollContainerRef.current.scrollTop =
+                scrollContainerRef.current.scrollHeight;
         }
         prevMessageCount.current = messages.length;
         isLoadingHistoryRef.current = false;
@@ -186,8 +230,10 @@ export default function SingleChatPage() {
             loadMoreMessages().then(() => {
                 requestAnimationFrame(() => {
                     if (scrollContainerRef.current) {
-                        const newScrollHeight = scrollContainerRef.current.scrollHeight;
-                        scrollContainerRef.current.scrollTop = newScrollHeight - prevScrollHeight;
+                        const newScrollHeight =
+                            scrollContainerRef.current.scrollHeight;
+                        scrollContainerRef.current.scrollTop =
+                            newScrollHeight - prevScrollHeight;
                     }
                 });
             });
@@ -200,8 +246,6 @@ export default function SingleChatPage() {
 
     // Group consecutive system_decisions
     const groupedMessages = useMemo(() => groupMessages(messages), [messages]);
-
-    console.log(structuredClone(groupedMessages));
 
     return (
         <div className="flex flex-col h-full relative bg-background">
@@ -220,24 +264,41 @@ export default function SingleChatPage() {
 
                 <div className="max-w-3xl mx-auto pt-8 space-y-4">
                     {groupedMessages.map((group, idx) => {
-                        if (group.type === 'system_decisions') {
-                            return <SystemDecisionPills key={`group-${idx}`} decisions={group.messages} />;
+                        if (group.type === "system_decisions") {
+                            return (
+                                <SystemDecisionPills
+                                    key={`group-${idx}`}
+                                    decisions={group.messages}
+                                />
+                            );
                         }
 
                         const msg = group.message;
                         return (
-                            <div key={msg.id} className={cn("flex gap-4", msg.role === 'user' ? "justify-end" : "justify-start items-start")}>
-                                {msg.role === 'assistant' && (
-                                    <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
+                            <div
+                                key={msg.id}
+                                className={cn(
+                                    "flex gap-4",
+                                    msg.role === "user"
+                                        ? "justify-end"
+                                        : "justify-start items-start",
+                                )}
+                            >
+                                {msg.role === "assistant" && (
+                                    <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-normal shrink-0">
                                         A
                                     </div>
                                 )}
 
-                                <div className={cn(
-                                    "max-w-[85%]",
-                                    msg.role === 'user' ? "flex-1 flex flex-col items-end" : ""
-                                )}>
-                                    {msg.role === 'user' ? (
+                                <div
+                                    className={cn(
+                                        "max-w-[85%]",
+                                        msg.role === "user"
+                                            ? "flex-1 flex flex-col items-end"
+                                            : "",
+                                    )}
+                                >
+                                    {msg.role === "user" ? (
                                         <>
                                             <div className="bg-sidebar-accent text-foreground px-4 py-2.5 rounded-[12px] text-[15px] leading-relaxed">
                                                 {getDisplayContent(msg.content)}
@@ -246,10 +307,15 @@ export default function SingleChatPage() {
                                                 {formatTime(msg.timestamp)}
                                             </span>
                                         </>
-                                    ) : msg.content?.type === "user_input_request" ? (
+                                    ) : msg.content?.type ===
+                                      "user_input_request" ? (
                                         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-                                            <span className="text-xs font-medium text-amber-500 block mb-1">Input Required</span>
-                                            <span className="text-foreground">{getDisplayContent(msg.content)}</span>
+                                            <span className="text-xs font-normal text-amber-500 block mb-1">
+                                                Input Required
+                                            </span>
+                                            <span className="text-foreground">
+                                                {getDisplayContent(msg.content)}
+                                            </span>
                                         </div>
                                     ) : (
                                         <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
@@ -260,8 +326,8 @@ export default function SingleChatPage() {
                                     )}
                                 </div>
 
-                                {msg.role === 'user' && (
-                                    <div className="w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground flex items-center justify-center text-xs font-bold shrink-0 mt-1">
+                                {msg.role === "user" && (
+                                    <div className="w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground flex items-center justify-center text-xs font-normal shrink-0 mt-1">
                                         U
                                     </div>
                                 )}
@@ -275,18 +341,38 @@ export default function SingleChatPage() {
                                     {pendingMessage}
                                 </div>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground flex items-center justify-center text-xs font-bold shrink-0 mt-1 opacity-70">
+                            <div className="w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground flex items-center justify-center text-xs font-normal shrink-0 mt-1 opacity-70">
                                 U
                             </div>
                         </div>
                     )}
                     {isExecuting && !pendingMessage && (
                         <div className="flex gap-4 justify-start items-center">
-                            <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">A</div>
+                            <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-normal shrink-0">
+                                A
+                            </div>
                             <div className="flex items-center gap-1.5 px-3 py-2">
-                                <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1s' }} />
-                                <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms', animationDuration: '1s' }} />
-                                <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '300ms', animationDuration: '1s' }} />
+                                <span
+                                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                                    style={{
+                                        animationDelay: "0ms",
+                                        animationDuration: "1s",
+                                    }}
+                                />
+                                <span
+                                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                                    style={{
+                                        animationDelay: "150ms",
+                                        animationDuration: "1s",
+                                    }}
+                                />
+                                <span
+                                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                                    style={{
+                                        animationDelay: "300ms",
+                                        animationDuration: "1s",
+                                    }}
+                                />
                             </div>
                         </div>
                     )}
@@ -302,10 +388,12 @@ export default function SingleChatPage() {
                         onSend={handleSend}
                     />
                     <div className="text-center mt-2">
-                        <span className="text-[11px] text-muted-foreground">AI can make mistakes. Please use with discretion.</span>
+                        <span className="text-[11px] text-muted-foreground">
+                            AI can make mistakes. Please use with discretion.
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
