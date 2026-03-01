@@ -14,7 +14,6 @@ import {
     Trash,
     Check,
     ChevronDown,
-    Settings,
 } from "lucide-react";
 import { useActiveAgent } from "../agent-provider";
 import { cn } from "@/lib/utils";
@@ -195,18 +194,6 @@ export function AppSidebar({ className }: { className?: string }) {
                     )}
                 </div>
 
-                {/* Footer */}
-                {!isCollapsed && (
-                    <div className="px-2 py-2 border-t border-sidebar-border/40">
-                        <Link
-                            href="/agents/integrations"
-                            className="flex items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-md transition-colors"
-                        >
-                            <Settings className="w-4 h-4" />
-                            <span>Settings</span>
-                        </Link>
-                    </div>
-                )}
             </aside>
         </>
     );
