@@ -258,7 +258,7 @@ export default function ApiAuthKeysPage() {
 											</span>
 										</div>
 
-										<div className="flex items-center gap-1.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+										<div className="flex items-center gap-1.5">
 											<Button
 												variant="ghost"
 												size="sm"
@@ -275,7 +275,7 @@ export default function ApiAuthKeysPage() {
 												onClick={() => openKeyAction(key.id, key.name, "revoke")}
 												disabled={!key.is_active || isRevoking}
 											>
-												Revoke
+												Delete
 											</Button>
 										</div>
 									</div>
