@@ -5,6 +5,7 @@ import { useAgentContext } from "@wacht/nextjs";
 import { useActiveAgent } from "@/components/agent-provider";
 import { ChatInput } from "@/components/chat/chat-input";
 import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
@@ -212,10 +213,12 @@ export default function SingleChatPage() {
         messages,
         sendMessage,
         isExecuting,
+        isConnected,
         loadMoreMessages,
         hasMoreMessages,
         isLoadingMore,
         pendingMessage,
+        pendingFiles,
         resolveMessageFileUrl,
         downloadMessageFile,
     } = useAgentContext({
@@ -266,12 +269,18 @@ export default function SingleChatPage() {
         }
     }, [isLoadingMore, hasMoreMessages, loadMoreMessages]);
 
-    const handleSend = (text: string, files?: File[]) => {
-        sendMessage(text, files);
+    const handleSend = async (text: string, files?: File[]) => {
+        await sendMessage(text, files);
     };
 
     // Group consecutive system_decisions
     const groupedMessages = useMemo(() => groupMessages(messages), [messages]);
+    const showInitialLoading =
+        messages.length === 0 &&
+        !isConnected &&
+        !isExecuting &&
+        !pendingMessage &&
+        !(pendingFiles && pendingFiles.length > 0);
 
     return (
         <div className="flex flex-col h-full relative bg-background">
@@ -289,6 +298,40 @@ export default function SingleChatPage() {
                 )}
 
                 <div className="max-w-3xl mx-auto pt-8 space-y-4">
+                    {showInitialLoading && (
+                        <div className="space-y-4 py-4">
+                            {[...Array(4)].map((_, i) => (
+                                <div
+                                    key={`chat-skeleton-${i}`}
+                                    className={cn(
+                                        "flex gap-4",
+                                        i % 2 === 0
+                                            ? "justify-start"
+                                            : "justify-end",
+                                    )}
+                                >
+                                    {i % 2 === 0 && (
+                                        <Skeleton className="w-8 h-8 rounded-sm shrink-0" />
+                                    )}
+                                    <div
+                                        className={cn(
+                                            "max-w-[78%] space-y-2",
+                                            i % 2 === 0
+                                                ? ""
+                                                : "flex flex-col items-end",
+                                        )}
+                                    >
+                                        <Skeleton className="h-4 w-56 rounded-md" />
+                                        <Skeleton className="h-4 w-40 rounded-md" />
+                                        <Skeleton className="h-3 w-20 rounded-md" />
+                                    </div>
+                                    {i % 2 !== 0 && (
+                                        <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     {groupedMessages.map((group, idx) => {
                         if (group.type === "system_decisions") {
                             return (
@@ -395,19 +438,38 @@ export default function SingleChatPage() {
                             </div>
                         );
                     })}
-                    {pendingMessage && (
+                    {(pendingMessage || (pendingFiles && pendingFiles.length > 0)) && (
                         <div className="flex gap-4 justify-end">
                             <div className="flex flex-col items-end max-w-[85%]">
-                                <div className="bg-sidebar-accent text-foreground px-4 py-2.5 rounded-[12px] text-[15px] leading-relaxed opacity-70">
-                                    {pendingMessage}
-                                </div>
+                                {pendingMessage && (
+                                    <div className="bg-sidebar-accent text-foreground px-4 py-2.5 rounded-[12px] text-[15px] leading-relaxed opacity-70">
+                                        {pendingMessage}
+                                    </div>
+                                )}
+                                {pendingFiles && pendingFiles.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap justify-end gap-2 w-full">
+                                        {pendingFiles.map((file, idx) => (
+                                            <div
+                                                key={`${file.name}-${file.size}-${idx}`}
+                                                className="inline-flex items-center gap-2 rounded-md border bg-background/60 px-3 py-1.5 text-[11px] text-foreground/80"
+                                            >
+                                                <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
+                                                <span className="truncate max-w-65">
+                                                    {file.name}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <div className="w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground flex items-center justify-center text-xs font-normal shrink-0 mt-1 opacity-70">
                                 U
                             </div>
                         </div>
                     )}
-                    {isExecuting && !pendingMessage && (
+                    {isExecuting &&
+                        !pendingMessage &&
+                        !(pendingFiles && pendingFiles.length > 0) && (
                         <div className="flex gap-4 justify-start items-center">
                             <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-normal shrink-0">
                                 A
@@ -447,6 +509,8 @@ export default function SingleChatPage() {
                         className="min-h-13"
                         agentName={activeAgent?.name}
                         onSend={handleSend}
+                        isSending={Boolean(pendingMessage) || Boolean(pendingFiles?.length)}
+                        disabled={isExecuting}
                     />
                     <div className="text-center mt-2">
                         <span className="text-[11px] text-muted-foreground">

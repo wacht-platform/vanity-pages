@@ -3,8 +3,8 @@
 import { ArrowUp, Plus } from "lucide-react";
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 
-// Local type for UI display
 export type FileData = {
     filename: string;
     mime_type: string;
@@ -15,7 +15,9 @@ interface ChatInputProps {
     placeholder?: string;
     className?: string;
     agentName?: string;
-    onSend?: (message: string, files?: File[]) => void;
+    onSend?: (message: string, files?: File[]) => Promise<void> | void;
+    isSending?: boolean;
+    disabled?: boolean;
 }
 
 export function ChatInput({
@@ -23,10 +25,13 @@ export function ChatInput({
     className,
     agentName,
     onSend,
+    isSending = false,
+    disabled = false,
 }: ChatInputProps) {
     const [message, setMessage] = React.useState("");
     const [selectedFiles, setSelectedFiles] = React.useState<FileData[]>([]);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const isBusy = isSending || disabled;
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -35,16 +40,20 @@ export function ChatInput({
         }
     };
 
-    const handleSend = () => {
+    const handleSend = async () => {
         const trimmedMessage = message.trim();
-        if ((trimmedMessage || selectedFiles.length > 0) && onSend) {
+        if (!(trimmedMessage || selectedFiles.length > 0) || !onSend || isBusy) {
+            return;
+        }
+
+        await Promise.resolve(
             onSend(
                 trimmedMessage,
                 selectedFiles.map((f) => f.file),
-            );
-            setMessage("");
-            setSelectedFiles([]);
-        }
+            ),
+        );
+        setMessage("");
+        setSelectedFiles([]);
     };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +65,9 @@ export function ChatInput({
                 file: file,
             }));
 
-            setSelectedFiles((prev) => [...prev, ...newFiles]);
+            if (!isBusy) {
+                setSelectedFiles((prev) => [...prev, ...newFiles]);
+            }
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
@@ -87,6 +98,7 @@ export function ChatInput({
                                 </span>
                                 <button
                                     onClick={() => removeFile(i)}
+                                    disabled={isBusy}
                                     className="text-muted-foreground hover:text-foreground"
                                 >
                                     <svg
@@ -122,6 +134,7 @@ export function ChatInput({
                 <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    disabled={isBusy}
                     className="w-full resize-none border-0 bg-transparent p-3.5 pr-12 text-[15px] leading-relaxed text-foreground placeholder-muted-foreground/70 outline-none min-h-[52px] max-h-[200px]"
                     placeholder={placeholder}
                     style={{ height: "56px" }}
@@ -140,6 +153,7 @@ export function ChatInput({
                     <div className="flex gap-2">
                         <button
                             onClick={() => fileInputRef.current?.click()}
+                            disabled={isBusy}
                             className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
                         >
                             <PlusIcon />
@@ -154,11 +168,15 @@ export function ChatInput({
                         <button
                             onClick={handleSend}
                             disabled={
-                                !message.trim() && selectedFiles.length === 0
+                                (!message.trim() && selectedFiles.length === 0) || isBusy
                             }
                             className="p-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-all disabled:opacity-50 shadow-sm"
                         >
-                            <ArrowUp size={16} strokeWidth={2.5} />
+                            {isBusy ? (
+                                <Spinner size="sm" className="border-primary-foreground/30 border-t-primary-foreground h-4 w-4" />
+                            ) : (
+                                <ArrowUp size={16} strokeWidth={2.5} />
+                            )}
                         </button>
                     </div>
                 </div>
