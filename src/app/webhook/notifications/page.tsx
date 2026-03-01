@@ -58,11 +58,11 @@ export default function WebhookNotificationsPage() {
 
 	return (
 		<div className="w-full px-4 pb-6 pt-0 md:px-6 md:pb-8 md:pt-0">
-			<section className="w-full border border-border/30 rounded-xl overflow-hidden bg-card/40">
-				<div className="px-4 py-3 border-b border-border/20 text-sm font-normal text-foreground">
+			<section className="w-full">
+				<div className="px-1 py-2 text-sm font-normal text-foreground">
 					Failure Notification Emails
 				</div>
-				<div className="p-4 space-y-3">
+				<div className="space-y-3">
 					<div className="flex w-full items-center gap-2">
 						<input
 							value={draft}

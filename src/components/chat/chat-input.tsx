@@ -122,9 +122,9 @@ export function ChatInput({
                 <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="w-full resize-none border-0 bg-transparent p-4 pr-12 text-lg text-foreground placeholder-muted-foreground/70 outline-none min-h-[56px] max-h-[200px]"
+                    className="w-full resize-none border-0 bg-transparent p-3.5 pr-12 text-[15px] leading-relaxed text-foreground placeholder-muted-foreground/70 outline-none min-h-[52px] max-h-[200px]"
                     placeholder={placeholder}
-                    style={{ height: "60px" }}
+                    style={{ height: "56px" }}
                     onKeyDown={handleKeyDown}
                 />
 

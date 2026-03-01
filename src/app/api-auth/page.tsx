@@ -157,14 +157,73 @@ export default function ApiAuthLandingPage() {
 
 	if (loading) {
 		return (
-			<div className="w-full px-4 py-2 md:px-6 md:py-3 space-y-6">
-				<div className="flex items-center justify-between">
-					<Skeleton className="h-6 w-32" />
-					<Skeleton className="h-9 w-[240px]" />
+			<div className="w-full px-4 py-2 md:px-6 md:py-3">
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+					<div className="flex items-center gap-2">
+						<Skeleton className="h-6 w-24" />
+					</div>
+					<Skeleton className="h-9 w-[240px] rounded-md" />
 				</div>
-				<Skeleton className="h-[180px] w-full rounded-xl" />
-				<Skeleton className="h-[320px] w-full rounded-xl" />
-				<Skeleton className="h-[160px] w-full rounded-xl" />
+
+				<div className="space-y-6">
+					<section className="border border-border/30 rounded-xl overflow-hidden">
+						<div className="px-4 py-3 border-b border-border/20">
+							<Skeleton className="h-3 w-36" />
+						</div>
+						<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/20">
+							{Array.from({ length: 4 }).map((_, idx) => (
+								<div key={idx} className="p-4 space-y-2">
+									<Skeleton className="h-3 w-20" />
+									<Skeleton className="h-6 w-16" />
+								</div>
+							))}
+						</div>
+					</section>
+
+					<section className="border border-border/30 rounded-xl overflow-hidden">
+						<div className="px-4 py-3 border-b border-border/20 flex items-center justify-between">
+							<Skeleton className="h-4 w-24" />
+							<Skeleton className="h-3 w-10" />
+						</div>
+						<div className="px-4 pt-3 flex items-center gap-4">
+							<Skeleton className="h-3 w-20" />
+							<Skeleton className="h-3 w-20" />
+						</div>
+						<div className="p-4 h-[320px]">
+							<div className="h-full space-y-3">
+								<Skeleton className="h-4 w-24" />
+								<div className="grid grid-cols-7 gap-2 h-[260px] items-end">
+									{Array.from({ length: 7 }).map((_, idx) => (
+										<Skeleton key={idx} className="h-full w-full rounded-md" />
+									))}
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section className="space-y-2">
+						<div className="flex items-center gap-4">
+							<Skeleton className="h-4 w-4 rounded-full" />
+							<Skeleton className="h-4 w-20" />
+							<Skeleton className="h-px flex-1" />
+							<Skeleton className="h-5 w-16 rounded-md" />
+						</div>
+						<div className="space-y-2">
+							{Array.from({ length: 3 }).map((_, idx) => (
+								<div
+									key={idx}
+									className="flex items-center justify-between gap-3 rounded-xl border border-border/30 px-3 py-2"
+								>
+									<div className="space-y-1">
+										<Skeleton className="h-4 w-44" />
+										<Skeleton className="h-3 w-28" />
+									</div>
+									<Skeleton className="h-5 w-16 rounded-md" />
+								</div>
+							))}
+						</div>
+					</section>
+				</div>
 			</div>
 		)
 	}

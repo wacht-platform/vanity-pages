@@ -129,18 +129,42 @@ export default function ApiAuthKeysPage() {
 
 	if (loading || keysLoading) {
 		return (
-			<div className="w-full px-4 py-2 md:px-6 md:py-3 space-y-4">
-				<div className="flex items-center justify-between">
-					<Skeleton className="h-6 w-24" />
+			<div className="w-full px-4 py-2 md:px-6 md:py-3">
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+					<Skeleton className="h-6 w-20" />
 					<div className="flex items-center gap-3">
-						<Skeleton className="h-9 w-[160px]" />
-						<Skeleton className="h-9 w-[120px]" />
+						<Skeleton className="h-9 w-[160px] rounded-md" />
+						<Skeleton className="h-9 w-[96px] rounded-md" />
 					</div>
 				</div>
-				<div className="space-y-2">
-					{Array.from({ length: 6 }).map((_, idx) => (
-						<Skeleton key={idx} className="h-12 w-full rounded-xl" />
-					))}
+
+				<div className="relative">
+					<div className="absolute left-[7px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10" />
+					<div className="space-y-2">
+						{Array.from({ length: 7 }).map((_, idx) => (
+							<div
+								key={idx}
+								className="flex items-center justify-between gap-4 px-4 py-2 border border-border/30 rounded-xl bg-background"
+							>
+								<div className="flex-1 min-w-0 flex items-center gap-4">
+									<div className="flex items-center gap-3 min-w-0">
+										<Skeleton className="h-4 w-32" />
+										<Skeleton className="h-4 w-28 rounded-sm" />
+									</div>
+									<div className="hidden md:flex items-center gap-4 shrink-0">
+										<Skeleton className="h-3 w-32" />
+									</div>
+								</div>
+								<div className="flex items-center gap-6 shrink-0">
+									<Skeleton className="h-3 w-14" />
+									<div className="hidden sm:flex items-center gap-1.5">
+										<Skeleton className="h-6 w-12 rounded-md" />
+										<Skeleton className="h-6 w-12 rounded-md" />
+									</div>
+								</div>
+							</div>
+						))}
+					</div>
 				</div>
 			</div>
 		)
