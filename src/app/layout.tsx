@@ -81,8 +81,6 @@ export default async function RootLayout({
         publicKey = `pk_test_${Buffer.from(generatePublicKey(host)!).toString("base64")}`;
     } catch (error) {}
 
-    console.log(publicKey);
-
     return (
         <html lang="en" suppressHydrationWarning>
             <body

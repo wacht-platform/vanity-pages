@@ -2,98 +2,19 @@
 
 import * as React from "react"
 import { useActiveAgent } from "@/components/agent-provider"
-import { useAgentIntegrations, useClient } from "@wacht/nextjs"
+import { useAgentIntegrations, useAgentMcpServers } from "@wacht/nextjs"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import { AlertCircle, Trash2, ExternalLink, Server } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import type { AgentIntegration } from "@wacht/types"
+import type { AgentIntegration, McpConnectResponse } from "@wacht/types"
 
 type DisconnectTarget = {
     kind: "integration" | "mcp"
     id: string
     name: string
 } | null
-
-type AgentMcpServer = {
-    id: string
-    name: string
-    requires_connection?: boolean
-}
-
-type McpConnectResponse = {
-    requires_oauth: boolean
-    oauth_url?: string
-}
-
-function useAgentMcpServers(agentName: string | null) {
-    const { client } = useClient()
-    const [mcpServers, setMcpServers] = React.useState<AgentMcpServer[]>([])
-    const [loading, setLoading] = React.useState(false)
-    const clientRef = React.useRef(client)
-    const lastFetchedAgentRef = React.useRef<string | null>(null)
-
-    React.useEffect(() => {
-        clientRef.current = client
-    }, [client])
-
-    const fetchServers = React.useCallback(async (name: string) => {
-        setLoading(true)
-        try {
-            const query = new URLSearchParams({ agent_name: name })
-            const response = await clientRef.current(`/api/agent/mcp-servers?${query.toString()}`, { method: "GET" })
-            const payload = await response.json()
-            setMcpServers(payload?.data || [])
-        } finally {
-            setLoading(false)
-        }
-    }, [])
-
-    const refetch = React.useCallback(async () => {
-        if (!agentName) {
-            setMcpServers([])
-            return
-        }
-        lastFetchedAgentRef.current = agentName
-        await fetchServers(agentName)
-    }, [agentName, fetchServers])
-
-    const connect = React.useCallback(async (mcpServerId: string): Promise<McpConnectResponse> => {
-        if (!agentName) return { requires_oauth: false }
-        const query = new URLSearchParams({ agent_name: agentName })
-        const response = await clientRef.current(`/api/agent/mcp-servers/${mcpServerId}/connect?${query.toString()}`, { method: "POST" })
-        const payload = await response.json()
-        await refetch()
-        return payload?.data || { requires_oauth: false }
-    }, [agentName, refetch])
-
-    const disconnect = React.useCallback(async (mcpServerId: string) => {
-        if (!agentName) return
-        const query = new URLSearchParams({ agent_name: agentName })
-        await clientRef.current(`/api/agent/mcp-servers/${mcpServerId}/disconnect?${query.toString()}`, { method: "POST" })
-        await refetch()
-    }, [agentName, refetch])
-
-    React.useEffect(() => {
-        if (!agentName) {
-            setMcpServers([])
-            lastFetchedAgentRef.current = null
-            return
-        }
-        if (lastFetchedAgentRef.current === agentName) return
-        lastFetchedAgentRef.current = agentName
-        void fetchServers(agentName)
-    }, [agentName, fetchServers])
-
-    return {
-        mcpServers,
-        loading,
-        connect,
-        disconnect,
-        refetch,
-    }
-}
 
 export default function IntegrationsPage() {
     const { activeAgent, loading: agentLoading } = useActiveAgent()

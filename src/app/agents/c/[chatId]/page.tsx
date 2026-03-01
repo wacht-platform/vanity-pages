@@ -14,6 +14,7 @@ import type {
     UserMessageContent,
     AgentResponseContent,
     AssistantAcknowledgmentContent,
+    FileData as MessageFileData,
 } from "@wacht/types";
 
 function getDisplayContent(content: ConversationContent): string {
@@ -36,6 +37,24 @@ function getDisplayContent(content: ConversationContent): string {
         default:
             return "";
     }
+}
+
+function getMessageFiles(content: ConversationContent): MessageFileData[] {
+    if (content.type !== "user_message") return [];
+    const files = (content as UserMessageContent).files;
+    return Array.isArray(files) ? files : [];
+}
+
+function formatFileSize(sizeBytes?: number): string {
+    if (!sizeBytes || sizeBytes <= 0) return "";
+    const units = ["B", "KB", "MB", "GB"];
+    let size = sizeBytes;
+    let unit = 0;
+    while (size >= 1024 && unit < units.length - 1) {
+        size /= 1024;
+        unit += 1;
+    }
+    return `${size.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
 }
 
 // Format timestamp for display
@@ -179,6 +198,10 @@ export default function SingleChatPage() {
     const sentInitialRef = useRef(false);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isLoadingHistoryRef = useRef(false);
+    const [previewImage, setPreviewImage] = useState<{
+        url: string;
+        name: string;
+    } | null>(null);
 
     const { activeAgent } = useActiveAgent();
     const agentName = activeAgent?.name || "default";
@@ -191,6 +214,8 @@ export default function SingleChatPage() {
         hasMoreMessages,
         isLoadingMore,
         pendingMessage,
+        resolveMessageFileUrl,
+        downloadMessageFile,
     } = useAgentContext({
         agentName,
         contextId: chatId,
@@ -239,8 +264,8 @@ export default function SingleChatPage() {
         }
     }, [isLoadingMore, hasMoreMessages, loadMoreMessages]);
 
-    const handleSend = (text: string, files?: any[]) => {
-        sendMessage(text, undefined, files);
+    const handleSend = (text: string, files?: File[]) => {
+        sendMessage(text, files);
     };
 
     // Group consecutive system_decisions
@@ -273,6 +298,7 @@ export default function SingleChatPage() {
                         }
 
                         const msg = group.message;
+                        const messageFiles = getMessageFiles(msg.content);
                         return (
                             <div
                                 key={msg.id}
@@ -302,6 +328,77 @@ export default function SingleChatPage() {
                                             <div className="bg-sidebar-accent text-foreground px-4 py-2.5 rounded-[12px] text-[15px] leading-relaxed">
                                                 {getDisplayContent(msg.content)}
                                             </div>
+                                            {messageFiles.length > 0 && (
+                                                <div className="mt-2 space-y-2 w-full">
+                                                    {messageFiles.map((file, idx) => {
+                                                        const fileUrl = resolveMessageFileUrl(file);
+                                                        const isImage =
+                                                            !!file.mime_type &&
+                                                            file.mime_type.startsWith(
+                                                                "image/",
+                                                            );
+                                                        return (
+                                                            <div
+                                                                key={`${file.filename}-${idx}`}
+                                                                className="rounded-lg border border-border/50 bg-muted/20 p-2"
+                                                            >
+                                                                {isImage && fileUrl ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            setPreviewImage({
+                                                                                url: fileUrl,
+                                                                                name: file.filename,
+                                                                            })
+                                                                        }
+                                                                        className="mb-2 inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-[11px] text-foreground hover:bg-background"
+                                                                    >
+                                                                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                                                        <span className="truncate max-w-[240px]">
+                                                                            {file.filename}
+                                                                        </span>
+                                                                        <span className="text-muted-foreground">
+                                                                            Preview
+                                                                        </span>
+                                                                    </button>
+                                                                ) : null}
+                                                                <div className="flex items-center justify-between gap-2">
+                                                                    <div className="min-w-0">
+                                                                        <p className="text-xs text-foreground truncate">
+                                                                            {file.filename}
+                                                                        </p>
+                                                                        <p className="text-[11px] text-muted-foreground truncate">
+                                                                            {file.mime_type}
+                                                                            {file.size_bytes
+                                                                                ? ` • ${formatFileSize(file.size_bytes)}`
+                                                                                : ""}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        {fileUrl && (
+                                                                            <a
+                                                                                href={fileUrl}
+                                                                                target="_blank"
+                                                                                rel="noreferrer"
+                                                                                className="text-[11px] text-muted-foreground hover:text-foreground"
+                                                                            >
+                                                                                Preview
+                                                                            </a>
+                                                                        )}
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => downloadMessageFile(file)}
+                                                                            className="text-[11px] text-muted-foreground hover:text-foreground"
+                                                                        >
+                                                                            Download
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                             <span className="text-[11px] text-muted-foreground mt-1">
                                                 {formatTime(msg.timestamp)}
                                             </span>
@@ -393,6 +490,38 @@ export default function SingleChatPage() {
                     </div>
                 </div>
             </div>
+
+            {previewImage && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+                    onClick={() => setPreviewImage(null)}
+                >
+                    <div
+                        className="relative max-w-5xl w-full max-h-[90vh] bg-background/95 border border-border rounded-xl overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-border/50">
+                            <span className="text-xs text-muted-foreground truncate pr-4">
+                                {previewImage.name}
+                            </span>
+                            <button
+                                type="button"
+                                className="text-xs text-muted-foreground hover:text-foreground"
+                                onClick={() => setPreviewImage(null)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                        <div className="p-3 flex items-center justify-center max-h-[82vh] overflow-auto">
+                            <img
+                                src={previewImage.url}
+                                alt={previewImage.name}
+                                className="max-w-full max-h-[78vh] object-contain rounded-md"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { useClient, useAgentContexts } from "@wacht/nextjs";
+import { useAgentContext, useAgentContexts } from "@wacht/nextjs";
 import { useRouter } from "next/navigation";
 import { useActiveAgent } from "@/components/agent-provider";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ArrowUp, Plus, Check } from "lucide-react";
 import {
     DropdownMenu,
@@ -16,7 +16,6 @@ import { AgentWithIntegrations } from "@wacht/types";
 
 export default function AgentsLandingPage() {
     const router = useRouter();
-    const { client } = useClient();
 
     const {
         activeAgent,
@@ -27,6 +26,16 @@ export default function AgentsLandingPage() {
         sessionError,
     } = useActiveAgent();
     const { createContext } = useAgentContexts();
+    const [queuedExecution, setQueuedExecution] = useState<{
+        contextId: string;
+        message: string;
+        files: File[];
+    } | null>(null);
+    const isExecutingQueuedRef = useRef(false);
+    const { sendMessage } = useAgentContext({
+        agentName: activeAgent?.name || "default",
+        contextId: queuedExecution?.contextId || "",
+    });
 
     const [input, setInput] = useState("");
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -66,27 +75,37 @@ export default function AgentsLandingPage() {
             });
 
             if (context?.id) {
-                const formData = new FormData();
-                if (activeAgent?.name) {
-                    formData.append("agent_name", activeAgent.name);
-                }
-                formData.append("message", input.trim());
-                selectedFiles.forEach((file) => {
-                    formData.append("files", file);
+                setQueuedExecution({
+                    contextId: context.id,
+                    message: input.trim(),
+                    files: [...selectedFiles],
                 });
-
-                await client(`/api/agent/contexts/${context.id}/execute`, {
-                    method: "POST",
-                    body: formData,
-                });
-
-                router.push(`/agents/c/${context.id}`);
             }
         } catch (e) {
             console.error("Failed to create chat", e);
             setIsSubmitting(false);
         }
     };
+
+    useEffect(() => {
+        if (!queuedExecution || isExecutingQueuedRef.current) return;
+
+        isExecutingQueuedRef.current = true;
+        const run = async () => {
+            try {
+                await sendMessage(queuedExecution.message, queuedExecution.files);
+                router.push(`/agents/c/${queuedExecution.contextId}`);
+            } catch (err) {
+                console.error("Failed to send initial message", err);
+                setIsSubmitting(false);
+            } finally {
+                isExecutingQueuedRef.current = false;
+                setQueuedExecution(null);
+            }
+        };
+
+        void run();
+    }, [queuedExecution, sendMessage, router]);
 
     return (
         <div className="h-full flex flex-col items-center justify-center p-4 bg-background text-foreground font-sans relative selection:bg-primary/20 selection:text-background">
