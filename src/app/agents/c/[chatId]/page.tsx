@@ -331,7 +331,7 @@ export default function SingleChatPage() {
                                                 {getDisplayContent(msg.content)}
                                             </div>
                                             {messageFiles.length > 0 && (
-                                                <div className="mt-2 flex flex-wrap gap-2 w-full">
+                                                <div className="mt-2 flex flex-wrap justify-end gap-2 w-full">
                                                     {messageFiles.map((file, idx) => {
                                                         const fileUrl = resolveMessageFileUrl(file);
                                                         return (
@@ -347,11 +347,11 @@ export default function SingleChatPage() {
                                                                             file.mime_type,
                                                                     })
                                                                 }
-                                                                className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-background/70 px-3 py-1.5 text-[11px] text-foreground hover:bg-background disabled:opacity-50"
+                                                                className="inline-flex items-center gap-2 rounded-md border bg-background/70 px-3 py-1.5 text-[11px] text-foreground hover:bg-background disabled:opacity-50"
                                                                 disabled={!fileUrl}
                                                             >
                                                                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                                                <span className="truncate max-w-[260px]">
+                                                                <span className="truncate max-w-65">
                                                                     {file.filename}
                                                                 </span>
                                                                 <span className="text-muted-foreground">
@@ -440,11 +440,11 @@ export default function SingleChatPage() {
                 </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-transparent pt-10 pb-6 px-4">
+            <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-background via-background to-transparent pt-10 pb-6 px-4">
                 <div className="max-w-3xl mx-auto">
                     <ChatInput
                         placeholder="Reply..."
-                        className="min-h-[52px]"
+                        className="min-h-13"
                         agentName={activeAgent?.name}
                         onSend={handleSend}
                     />
