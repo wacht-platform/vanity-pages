@@ -16,8 +16,8 @@ type Props = {
 
 export function EndpointTrafficChart({ loading, data }: Props) {
 	return (
-		<div className="rounded-xl border border-border/30 bg-background overflow-hidden flex flex-col">
-			<div className="border-b border-border/30 bg-muted/5 px-4 py-3 flex items-center justify-between">
+		<div className="flex flex-col overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
+			<div className="flex items-center justify-between border-b border-border/40 bg-secondary/40 px-4 py-3">
 				<h3 className="text-sm font-normal text-foreground">Traffic Volume</h3>
 				<span className="text-xs text-muted-foreground">Daily</span>
 			</div>
@@ -42,21 +42,21 @@ export function EndpointTrafficChart({ loading, data }: Props) {
 					<ResponsiveContainer width="100%" height="100%">
 						<BarChart data={data} barCategoryGap="18%" margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
 							<CartesianGrid strokeDasharray="3 3" className="stroke-border/20" vertical={false} />
-							<XAxis dataKey="time" axisLine={false} tickLine={false} dy={10} minTickGap={20} interval="preserveStartEnd" tick={{ fontSize: 11, fill: "#A1A1AA" }} />
-							<YAxis axisLine={false} tickLine={false} dx={-8} allowDecimals={false} tick={{ fontSize: 11, fill: "#A1A1AA" }} />
+							<XAxis dataKey="time" axisLine={false} tickLine={false} dy={10} minTickGap={20} interval="preserveStartEnd" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+							<YAxis axisLine={false} tickLine={false} dx={-8} allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
 							<Tooltip
 								cursor={false}
-								labelStyle={{ color: "hsl(var(--foreground))", marginBottom: "4px" }}
+								labelStyle={{ color: "var(--popover-foreground)", marginBottom: "4px" }}
 								contentStyle={{
-									backgroundColor: "#0f172a",
-									border: "1px solid #334155",
+									backgroundColor: "var(--popover)",
+									border: "1px solid var(--border)",
 									borderRadius: "8px",
 									fontSize: "12px",
-									color: "#e2e8f0",
+									color: "var(--popover-foreground)",
 									opacity: 1,
-									boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
+									boxShadow: "0 12px 32px rgba(0,0,0,0.10)",
 								}}
-								itemStyle={{ color: "#e2e8f0" }}
+								itemStyle={{ color: "var(--popover-foreground)" }}
 								formatter={(value: number | string | undefined, name: string | undefined) => {
 									const key = String(name).toLowerCase()
 									const label =

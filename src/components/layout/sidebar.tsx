@@ -293,7 +293,7 @@ function ChatItem({
                         }
                     }}
                     onBlur={handleRename}
-                    className="h-6 text-xs px-1.5 bg-sidebar-accent border-0"
+                    className="h-6 border-0 bg-sidebar-accent text-xs"
                 />
             </div>
         );

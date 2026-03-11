@@ -197,7 +197,7 @@ export function EndpointConfigDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[1080px] p-0 bg-background border border-border/60 shadow-lg rounded-xl overflow-hidden flex flex-col h-[85vh]">
+			<DialogContent className="sm:max-w-[1080px] p-0 bg-popover border border-border/60 shadow-lg rounded-lg overflow-hidden flex flex-col h-[85vh]">
 				<DialogHeader className="p-6 pb-0 space-y-1.5">
 					<DialogTitle className="text-xl font-normal text-foreground">{title}</DialogTitle>
 					<DialogDescription className="text-sm font-normal text-muted-foreground/80">{description}</DialogDescription>
@@ -208,11 +208,11 @@ export function EndpointConfigDialog({
 						<div className="md:col-span-4 space-y-6 overflow-y-auto custom-scrollbar pr-2">
 							<div className="space-y-2">
 								<Label htmlFor="url" className="text-[11px] uppercase font-normal text-muted-foreground">Endpoint URL</Label>
-								<Input id="url" placeholder="https://example.com/webhook" value={url} onChange={(e) => setUrl(e.target.value)} className="bg-muted/10 border-border/50 h-9 font-normal text-sm focus-visible:ring-primary/20" />
+								<Input id="url" placeholder="https://example.com/webhook" value={url} onChange={(e) => setUrl(e.target.value)} className="bg-background border-border/50 h-9 font-normal text-sm focus-visible:ring-primary/20" />
 							</div>
 							<div className="space-y-2">
 								<Label htmlFor="description" className="text-[11px] uppercase font-normal text-muted-foreground">Description (optional)</Label>
-								<textarea id="description" value={descriptionText} onChange={(e) => setDescriptionText(e.target.value)} className="flex min-h-[80px] w-full rounded-md border border-border/50 bg-muted/10 px-3 py-2 text-sm font-normal ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all" />
+								<textarea id="description" value={descriptionText} onChange={(e) => setDescriptionText(e.target.value)} className="flex min-h-[80px] w-full rounded-md border border-border/50 bg-background px-3 py-2 text-sm font-normal ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all" />
 							</div>
 							<div className="pt-4 border-t border-border/40">
 								<button onClick={() => setAdvancedOpen(!advancedOpen)} className="flex items-center gap-1.5 text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors group">

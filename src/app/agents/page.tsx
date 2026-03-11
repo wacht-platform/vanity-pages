@@ -119,11 +119,11 @@ export default function AgentsLandingPage() {
                 <div className="w-full bg-card rounded-2xl border border-border/70 shadow-lg overflow-hidden transition-all duration-200 focus-within:ring-1 focus-within:ring-border/60">
                     {selectedFiles.length > 0 && (
                         <div className="px-3.5 pt-3">
-                            <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-border/30 bg-background/70 p-2">
+                            <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-border/30 bg-secondary/30 p-2">
                                 {selectedFiles.map((file, index) => (
                                     <div
                                         key={`${file.name}-${file.size}-${index}`}
-                                        className="inline-flex items-center gap-1 rounded-md border border-border/40 bg-muted/30 px-2 py-1 text-xs"
+                                        className="inline-flex items-center gap-1 rounded-md border border-border/40 bg-secondary/60 px-2 py-1 text-xs"
                                     >
                                         <span className="max-w-[180px] truncate">
                                             {file.name}

@@ -130,14 +130,14 @@ export default function WebhookEndpointsPage() {
 							<div className="space-y-2">
 								{[1, 2, 3].map(i => (
 									<div key={i} className="flex items-center gap-4">
-										<div className="w-4 h-4 rounded-full border-2 border-muted/20 bg-background z-10" />
-										<div className="h-10 flex-1 bg-muted/5 animate-pulse rounded-xl border border-border/20" />
+										<div className="w-4 h-4 rounded-full border-2 border-border/40 bg-card z-10" />
+										<div className="h-10 flex-1 animate-pulse rounded-lg border border-border/40 bg-card" />
 									</div>
 								))}
 							</div>
 						) : !Array.isArray(endpoints) || endpoints.length === 0 ? (
-							<div className="text-center py-12 border border-dashed border-border/60 rounded-xl bg-muted/5">
-								<div className="w-12 h-12 rounded-full bg-muted/20 flex items-center justify-center mx-auto mb-4">
+							<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-12 text-center">
+								<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
 									<Globe className="w-6 h-6 text-muted-foreground/30" />
 								</div>
 								<p className="text-sm font-normal text-muted-foreground">No endpoints configured</p>
@@ -151,8 +151,8 @@ export default function WebhookEndpointsPage() {
 								>
 									<div
 										className={cn(
-											"flex-1 flex items-center justify-between gap-4 px-4 py-2 border transition-all duration-300 rounded-xl overflow-hidden cursor-pointer",
-											"border-border/30 bg-background hover:border-sidebar-accent hover:bg-muted/5"
+											"flex-1 cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-lg border px-4 py-2 transition-all duration-300",
+											"border-border/40 bg-card hover:border-border/60 hover:bg-accent/60"
 										)}
 										onClick={() => router.push(`/webhook/endpoints/${endpoint.id}`)}
 									>

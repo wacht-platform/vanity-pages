@@ -74,7 +74,7 @@ export default function WebhookNotificationsPage() {
 								}
 							}}
 							placeholder="alerts@example.com, oncall@example.com"
-							className="h-9 w-full rounded-md border border-border/40 bg-background px-3 text-sm outline-none transition-colors focus:border-border"
+							className="h-9 w-full rounded-md border border-border/50 bg-card px-3 text-sm outline-none transition-colors focus:border-ring"
 						/>
 						<Button
 							type="button"
@@ -87,7 +87,7 @@ export default function WebhookNotificationsPage() {
 						</Button>
 					</div>
 
-					<div className="flex min-h-10 flex-wrap items-center gap-2 rounded-md border border-border/30 bg-background/70 p-2">
+					<div className="flex min-h-10 flex-wrap items-center gap-2 rounded-md border border-border/40 bg-card p-2">
 						{emails.length === 0 ? (
 							<span className="px-1 text-xs text-muted-foreground">
 								No recipients added yet.
@@ -96,7 +96,7 @@ export default function WebhookNotificationsPage() {
 							emails.map((email) => (
 								<div
 									key={email}
-									className="inline-flex items-center gap-1 rounded-md border border-border/40 bg-muted/30 px-2 py-1 text-xs text-foreground"
+									className="inline-flex items-center gap-1 rounded-md border border-border/40 bg-secondary/50 px-2 py-1 text-xs text-foreground"
 								>
 									<span>{email}</span>
 									<button

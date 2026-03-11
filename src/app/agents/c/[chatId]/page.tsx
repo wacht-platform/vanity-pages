@@ -370,7 +370,7 @@ export default function SingleChatPage() {
                                 >
                                     {msg.role === "user" ? (
                                         <>
-                                            <div className="bg-sidebar-accent text-foreground px-4 py-2.5 rounded-[12px] text-[15px] leading-relaxed">
+                                            <div className="rounded-[12px] bg-secondary px-4 py-2.5 text-[15px] leading-relaxed text-secondary-foreground">
                                                 {getDisplayContent(msg.content)}
                                             </div>
                                             {messageFiles.length > 0 && (
@@ -390,7 +390,7 @@ export default function SingleChatPage() {
                                                                             file.mime_type,
                                                                     })
                                                                 }
-                                                                className="inline-flex items-center gap-2 rounded-md border bg-background/70 px-3 py-1.5 text-[11px] text-foreground hover:bg-background disabled:opacity-50"
+                                                                className="inline-flex items-center gap-2 rounded-md border border-border/40 bg-card px-3 py-1.5 text-[11px] text-foreground transition-colors hover:bg-accent disabled:opacity-50"
                                                                 disabled={!fileUrl}
                                                             >
                                                                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -431,7 +431,7 @@ export default function SingleChatPage() {
                                 </div>
 
                                 {msg.role === "user" && (
-                                    <div className="w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground flex items-center justify-center text-xs font-normal shrink-0 mt-1">
+                                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-xs font-normal">
                                         U
                                     </div>
                                 )}
@@ -442,7 +442,7 @@ export default function SingleChatPage() {
                         <div className="flex gap-4 justify-end">
                             <div className="flex flex-col items-end max-w-[85%]">
                                 {pendingMessage && (
-                                    <div className="bg-sidebar-accent text-foreground px-4 py-2.5 rounded-[12px] text-[15px] leading-relaxed opacity-70">
+                                    <div className="rounded-[12px] bg-secondary/70 px-4 py-2.5 text-[15px] leading-relaxed text-secondary-foreground opacity-70">
                                         {pendingMessage}
                                     </div>
                                 )}
@@ -451,7 +451,7 @@ export default function SingleChatPage() {
                                         {pendingFiles.map((file, idx) => (
                                             <div
                                                 key={`${file.name}-${file.size}-${idx}`}
-                                                className="inline-flex items-center gap-2 rounded-md border bg-background/60 px-3 py-1.5 text-[11px] text-foreground/80"
+                                                className="inline-flex items-center gap-2 rounded-md border border-border/40 bg-card/80 px-3 py-1.5 text-[11px] text-foreground/80"
                                             >
                                                 <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
                                                 <span className="truncate max-w-65">
@@ -462,7 +462,7 @@ export default function SingleChatPage() {
                                     </div>
                                 )}
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground flex items-center justify-center text-xs font-normal shrink-0 mt-1 opacity-70">
+                            <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-xs font-normal opacity-70">
                                 U
                             </div>
                         </div>
@@ -526,7 +526,7 @@ export default function SingleChatPage() {
                     onClick={() => setPreviewFile(null)}
                 >
                     <div
-                        className="relative max-w-5xl w-full max-h-[90vh] bg-background/95 border border-border rounded-xl overflow-hidden"
+                        className="relative max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-lg border border-border bg-popover"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between px-3 py-2 border-b border-border/50">

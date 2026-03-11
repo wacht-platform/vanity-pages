@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Globe } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
 
 function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 	const { hasSession, loading, sessionError } = useWebhookApp();
@@ -40,19 +41,11 @@ function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 						</div>
 					</div>
 				) : (
-					<div className="h-screen flex items-center justify-center">
-						<div className="max-w-md text-center space-y-6 p-8">
-							<>
-								<div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-									<Globe className="w-8 h-8 text-foreground" />
-								</div>
-							<div>
-								<h1 className="text-xl text-foreground mb-2">Access Required</h1>
-								<p className="text-muted-foreground">You dont have access to this resource.</p>
-							</div>
-							</>
-						</div>
-					</div>
+					<PageState
+						title="Access required"
+						description="You do not have access to this resource."
+						icon={<Globe className="h-5 w-5" />}
+					/>
 				)}
 				</div>
 		);
@@ -66,7 +59,7 @@ function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			<div className="flex h-16 items-center px-4 md:px-6 justify-between">
+			<div className="flex h-16 items-center border-b border-border/40 px-4 md:px-6 justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
 				<div className="flex items-center gap-8">
 					<Tabs value={activeTab}>
 						<TabsList>

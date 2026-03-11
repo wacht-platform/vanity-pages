@@ -26,6 +26,8 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PageState } from "@/components/ui/page-state"
+import { Key } from "lucide-react"
 
 type KeyStatus = "active" | "revoked" | "all"
 
@@ -172,12 +174,7 @@ export default function ApiAuthKeysPage() {
 
 	if (!hasSession || !apiAuthApp) {
 		return (
-			<div className="h-screen flex items-center justify-center bg-background">
-				<div className="text-center">
-					<h2 className="text-xl font-medium mb-2 text-foreground">Access Required</h2>
-					<p className="text-muted-foreground">You dont have access to this resource.</p>
-				</div>
-			</div>
+			<PageState title="Access required" description="You do not have access to this resource." icon={<Key className="h-5 w-5" />} />
 		)
 	}
 
@@ -209,7 +206,7 @@ export default function ApiAuthKeysPage() {
 
 				<div className="space-y-2">
 					{keys.length === 0 ? (
-						<div className="text-center py-12 border border-dashed border-border/60 rounded-xl bg-muted/5">
+					<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-12 text-center">
 							<p className="text-sm font-normal text-muted-foreground">No keys found</p>
 						</div>
 					) : (
@@ -217,8 +214,8 @@ export default function ApiAuthKeysPage() {
 							<div key={key.id} className="group/item">
 								<div
 									className={cn(
-										"flex-1 flex items-center justify-between gap-4 px-4 py-2 border transition-all duration-300 rounded-xl overflow-hidden",
-										"border-border/30 bg-background hover:border-sidebar-accent hover:bg-muted/5",
+										"flex-1 flex items-center justify-between gap-4 overflow-hidden rounded-lg border px-4 py-2 transition-all duration-300",
+										"border-border/40 bg-card hover:border-border/60 hover:bg-accent/60",
 									)}
 								>
 									<div className="flex-1 min-w-0 flex items-center gap-4">
@@ -226,7 +223,7 @@ export default function ApiAuthKeysPage() {
 											<span className="text-sm font-normal text-foreground truncate max-w-[200px] md:max-w-[400px]">
 												{key.name}
 											</span>
-											<code className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-[10px] text-muted-foreground font-mono">
+											<code className="rounded border border-border/50 bg-secondary/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
 												{key.key_prefix}...{key.key_suffix}
 											</code>
 										</div>
@@ -345,7 +342,7 @@ export default function ApiAuthKeysPage() {
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex items-center gap-2 mt-2">
-						<code className="flex-1 text-xs text-foreground bg-muted px-3 py-2 rounded border border-border/50 font-mono break-all">
+						<code className="flex-1 break-all rounded border border-border/50 bg-card px-3 py-2 font-mono text-xs text-foreground">
 							{secretValue}
 						</code>
 						<Button

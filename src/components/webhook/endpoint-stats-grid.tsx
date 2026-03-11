@@ -22,25 +22,25 @@ export function EndpointStatsGrid({
 }: Props) {
 	return (
 		<div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-			<div className="rounded-xl border border-border/30 p-3 bg-background">
+			<div className="rounded-lg border border-border/50 bg-card p-3 shadow-sm">
 				<div className="text-xs font-normal text-muted-foreground uppercase mb-1 tracking-wider">Total Deliveries</div>
 				<div className="text-xl md:text-2xl text-foreground font-normal">
 					{analyticsLoading ? "—" : formatNumber(totalDeliveries)}
 				</div>
 			</div>
-			<div className="rounded-xl border border-border/30 p-3 bg-background">
+			<div className="rounded-lg border border-border/50 bg-card p-3 shadow-sm">
 				<div className="text-xs font-normal text-muted-foreground uppercase mb-1 tracking-wider">Success Rate</div>
 				<div className="text-xl md:text-2xl font-normal">
 					{analyticsLoading ? "—" : `${(successRate || 0).toFixed(1)}%`}
 				</div>
 			</div>
-			<div className="rounded-xl border border-border/30 p-3 bg-background">
+			<div className="rounded-lg border border-border/50 bg-card p-3 shadow-sm">
 				<div className="text-xs font-normal text-muted-foreground uppercase  mb-1 tracking-wider">Avg Response</div>
 				<div className="text-xl md:text-2xl text-foreground font-normal">
 					{analyticsLoading ? "—" : `${Math.round(avgResponseTimeMs || 0)}ms`}
 				</div>
 			</div>
-			<div className="rounded-xl border border-border/30 p-3 bg-background">
+			<div className="rounded-lg border border-border/50 bg-card p-3 shadow-sm">
 				<div className="text-xs font-normal text-muted-foreground uppercase mb-1 tracking-wider">Failed</div>
 				<div className="text-xl md:text-2xl text-foreground font-normal">
 					{analyticsLoading ? "—" : formatNumber(failed)}

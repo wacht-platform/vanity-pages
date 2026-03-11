@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
 
 export default function ApiAuthLayoutClient({
 	children,
@@ -51,19 +52,11 @@ function ApiAuthLayoutContent({ children }: { children: React.ReactNode }) {
 						</div>
 					</div>
 				) : (
-					<div className="h-screen flex items-center justify-center">
-						<div className="max-w-md text-center space-y-6 p-8">
-							<>
-								<div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-									<Key className="w-8 h-8 text-foreground" />
-								</div>
-							<div>
-								<h1 className="text-xl text-foreground mb-2">Access Required</h1>
-								<p className="text-muted-foreground">You dont have access to this resource.</p>
-							</div>
-							</>
-						</div>
-					</div>
+					<PageState
+						title="Access required"
+						description="You do not have access to this resource."
+						icon={<Key className="h-5 w-5" />}
+					/>
 				)}
 				</div>
 		);
@@ -71,7 +64,7 @@ function ApiAuthLayoutContent({ children }: { children: React.ReactNode }) {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			<header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+			<header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
 				<div className="flex h-16 items-center px-4 md:px-6">
 					<div className="flex items-center gap-8">
 						<Tabs value={pathname?.startsWith("/api-auth/keys") ? "keys" : pathname?.startsWith("/api-auth/logs") ? "logs" : "overview"}>
@@ -87,7 +80,7 @@ function ApiAuthLayoutContent({ children }: { children: React.ReactNode }) {
 				</div>
 
 				{mobileMenuOpen && (
-					<div className="md:hidden border-t border-border/50 bg-background">
+					<div className="md:hidden border-t border-border/40 bg-background">
 						<nav className="px-4 py-3 space-y-1">
 							{navItems.map((item) => {
 								const Icon = item.icon;

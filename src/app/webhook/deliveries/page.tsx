@@ -401,22 +401,22 @@ export default function WebhookLogsPage() {
 				<div className="space-y-4">
 					{[1, 2].map(group => (
 						<div key={group} className="relative">
-							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-muted/10 -z-10" />
+							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
 							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-muted/20 bg-background z-10" />
+								<div className="w-4 h-4 rounded-full border-2 border-border/40 bg-card z-10" />
 								<div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
-								<div className="h-px flex-1 bg-muted/10" />
+								<div className="h-px flex-1 bg-border/30" />
 							</div>
 							<div className="space-y-2">
 								{[1, 2, 3].map(i => (
-									<div key={i} className="h-10 w-full bg-muted/5 animate-pulse rounded-xl border border-border/20" />
+									<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/40 bg-card" />
 								))}
 							</div>
 						</div>
 					))}
 				</div>
 			) : !groupedDeliveries || groupedDeliveries.length === 0 ? (
-				<div className="text-center py-16 border border-dashed border-border/40 rounded-xl bg-muted/5">
+				<div className="rounded-lg border border-dashed border-border/50 bg-secondary/30 py-16 text-center">
 					<p className="text-sm font-normal text-muted-foreground">No delivery logs found matching your criteria.</p>
 				</div>
 			) : (
@@ -426,7 +426,7 @@ export default function WebhookLogsPage() {
 							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10 group-last/group:h-0" />
 
 							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-primary/50 bg-background z-10" />
+								<div className="w-4 h-4 rounded-full border-2 border-primary/40 bg-card z-10" />
 								<h2 className="text-xs font-normal uppercase text-foreground/70">
 									{date}
 								</h2>
@@ -452,10 +452,10 @@ export default function WebhookLogsPage() {
 										>
 											<div
 												className={cn(
-													"relative border transition-all duration-300 rounded-xl overflow-hidden",
+													"relative overflow-hidden rounded-lg border transition-all duration-300",
 													isExpanded
 														? "border-primary/20 bg-primary/[0.01]"
-														: "border-border/30 bg-background hover:border-sidebar-accent hover:bg-muted/5"
+														: "border-border/40 bg-card hover:border-border/60 hover:bg-accent/60"
 												)}
 											>
 												{/* Main Row */}
@@ -547,7 +547,7 @@ export default function WebhookLogsPage() {
 														) : detailsList && detailsList.length > 0 ? (
 															<div className="space-y-4">
 																{delivery.filtered_reason && (
-																	<div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-3 text-xs text-yellow-500">
+																	<div className="rounded-lg border border-yellow-500/20 bg-yellow-500/8 p-3 text-xs text-yellow-600 dark:text-yellow-400">
 																		Filtered reason: {delivery.filtered_reason}
 																	</div>
 																)}
@@ -590,7 +590,7 @@ export default function WebhookLogsPage() {
 						size="sm"
 						onClick={() => setPage(Math.max(1, page - 1))}
 						disabled={page === 1 || loading}
-						className="h-8 px-3 border-border/40 text-xs font-normal hover:bg-muted/50 transition-all rounded-lg"
+						className="h-8 rounded-lg border-border/40 px-3 text-xs font-normal transition-all hover:bg-accent"
 					>
 						<ChevronLeft className="w-3.5 h-3.5 mr-1 opacity-50" />
 						Previous
@@ -600,7 +600,7 @@ export default function WebhookLogsPage() {
 						size="sm"
 						onClick={() => setPage(page + 1)}
 						disabled={!has_more || loading}
-						className="h-8 px-3 border-border/40 text-xs font-normal hover:bg-muted/50 transition-all rounded-lg"
+						className="h-8 rounded-lg border-border/40 px-3 text-xs font-normal transition-all hover:bg-accent"
 					>
 						Next
 						<ChevronRight className="w-3.5 h-3.5 ml-1 opacity-50" />

@@ -98,7 +98,7 @@ export default function ApiAuthLogsPage() {
 						}}
 					/>
 					<Select value={outcome} onValueChange={(value) => { setOutcome(value) }}>
-						<SelectTrigger className="w-full sm:w-[160px] h-9 bg-muted/30 border-none shadow-none text-sm">
+					<SelectTrigger className="w-full sm:w-[160px] h-9 border-border/50 bg-card text-sm shadow-sm">
 							<div className="flex items-center gap-2">
 								<Filter className="w-3.5 h-3.5" />
 								<SelectValue placeholder="Outcome" />
@@ -118,22 +118,22 @@ export default function ApiAuthLogsPage() {
 				<div className="space-y-10">
 					{[1, 2].map(group => (
 						<div key={group} className="relative">
-							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-muted/10 -z-10" />
+							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
 							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-muted/20 bg-background z-10" />
+								<div className="w-4 h-4 rounded-full border-2 border-border/40 bg-card z-10" />
 								<div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
-								<div className="h-px flex-1 bg-muted/10" />
+								<div className="h-px flex-1 bg-border/30" />
 							</div>
 							<div className="space-y-2">
 								{[1, 2, 3].map(i => (
-									<div key={i} className="h-10 w-full bg-muted/5 animate-pulse rounded-xl border border-border/20" />
+									<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/40 bg-card" />
 								))}
 							</div>
 						</div>
 					))}
 				</div>
 			) : groupedLogs.length === 0 ? (
-				<div className="text-center py-16 border border-dashed border-border/40 rounded-xl bg-muted/5">
+				<div className="rounded-lg border border-dashed border-border/50 bg-secondary/30 py-16 text-center">
 					<p className="text-sm font-normal text-muted-foreground">No logs found matching your criteria.</p>
 				</div>
 			) : (
@@ -143,7 +143,7 @@ export default function ApiAuthLogsPage() {
 							{/* Rail Removed */}
 
 							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-primary/50 bg-background z-10" />
+								<div className="w-4 h-4 rounded-full border-2 border-primary/40 bg-card z-10" />
 								<h2 className="text-xs font-normal uppercase text-foreground/70">
 									{date}
 								</h2>
@@ -156,8 +156,8 @@ export default function ApiAuthLogsPage() {
 
 										<div
 											className={cn(
-												"flex-1 flex items-center justify-between gap-4 px-4 py-2 border transition-all duration-300 rounded-xl overflow-hidden",
-												"border-border/30 bg-background hover:border-sidebar-accent hover:bg-muted/5"
+												"flex-1 flex items-center justify-between gap-4 overflow-hidden rounded-lg border px-4 py-2 transition-all duration-300",
+												"border-border/40 bg-card hover:border-border/60 hover:bg-accent/60"
 											)}
 										>
 											<div className="flex-1 min-w-0 flex items-center gap-4">

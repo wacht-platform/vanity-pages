@@ -9,8 +9,9 @@ import { useState } from "react"
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip as InfoTooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Info, ChevronDown, ChevronRight, Activity } from "lucide-react"
+import { Info, ChevronDown, ChevronRight, Activity, Key } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PageState } from "@/components/ui/page-state"
 
 export default function ApiAuthLandingPage() {
 	const { apiAuthApp, loading, hasSession } = useApiAuth()
@@ -230,12 +231,7 @@ export default function ApiAuthLandingPage() {
 
 	if (!hasSession || !apiAuthApp) {
 		return (
-			<div className="h-screen flex items-center justify-center bg-background">
-				<div className="text-center">
-					<h2 className="text-xl font-medium mb-2 text-foreground">Access Required</h2>
-					<p className="text-muted-foreground">You dont have access to this resource.</p>
-				</div>
-			</div>
+			<PageState title="Access required" description="You do not have access to this resource." icon={<Key className="h-5 w-5" />} />
 		)
 	}
 
@@ -259,8 +255,8 @@ export default function ApiAuthLandingPage() {
 			</div>
 
 			<div className="space-y-6">
-				<section className="border border-border/30 rounded-xl overflow-hidden">
-					<div className="px-4 py-3 border-b border-border/20 text-xs uppercase tracking-wide text-muted-foreground">
+				<section className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
+					<div className="border-b border-border/40 bg-secondary/40 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
 						Operations Snapshot
 					</div>
 					<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/20">
@@ -271,8 +267,8 @@ export default function ApiAuthLandingPage() {
 					</div>
 				</section>
 
-				<section className="border border-border/30 rounded-xl overflow-hidden">
-					<div className="px-4 py-3 border-b border-border/20 flex items-center justify-between">
+				<section className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
+					<div className="border-b border-border/40 bg-secondary/40 px-4 py-3 flex items-center justify-between">
 						<h2 className="text-sm font-normal text-foreground">Traffic Volume</h2>
 						<span className="text-xs text-muted-foreground">Daily</span>
 					</div>
@@ -309,28 +305,28 @@ export default function ApiAuthLandingPage() {
 										dy={8}
 										minTickGap={20}
 										interval="preserveStartEnd"
-										tick={{ fontSize: 11, fill: "#A1A1AA" }}
+										tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
 									/>
 									<YAxis
 										axisLine={false}
 										tickLine={false}
 										dx={-8}
 										allowDecimals={false}
-										tick={{ fontSize: 11, fill: "#A1A1AA" }}
+										tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
 									/>
 									<Tooltip
 										cursor={false}
-										labelStyle={{ color: "hsl(var(--foreground))", marginBottom: "4px" }}
+										labelStyle={{ color: "var(--popover-foreground)", marginBottom: "4px" }}
 										contentStyle={{
-											backgroundColor: "#0f172a",
-											border: "1px solid #334155",
+											backgroundColor: "var(--popover)",
+											border: "1px solid var(--border)",
 											borderRadius: "8px",
 											fontSize: "12px",
-											color: "#e2e8f0",
+											color: "var(--popover-foreground)",
 											opacity: 1,
-											boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
+											boxShadow: "0 12px 32px rgba(0,0,0,0.10)",
 										}}
-										itemStyle={{ color: "#e2e8f0" }}
+										itemStyle={{ color: "var(--popover-foreground)" }}
 										formatter={(value: any, name: any) => {
 											const key = String(name).toLowerCase()
 											const label =

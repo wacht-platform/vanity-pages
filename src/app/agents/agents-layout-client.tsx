@@ -3,6 +3,8 @@
 import { AppSidebar } from "@/components/layout/sidebar";
 import { ActiveAgentProvider, useActiveAgent } from "@/components/agent-provider";
 import { LoadingScreen } from "@/components/ui/spinner";
+import { PageState } from "@/components/ui/page-state";
+import { AlertCircle } from "lucide-react";
 
 function AgentsLayoutContent({ children }: { children: React.ReactNode }) {
 	const { hasSession, loading, sessionError } = useActiveAgent();
@@ -13,12 +15,12 @@ function AgentsLayoutContent({ children }: { children: React.ReactNode }) {
 
 	if (!hasSession || sessionError) {
 		return (
-			<div className="h-screen flex items-center justify-center p-8 bg-background">
-				<div className="max-w-md text-center space-y-4">
-					<h1 className="text-xl font-bold tracking-tight text-destructive">Access Denied</h1>
-					<p className="text-muted-foreground">You don&apos;t have access to this resource. Please request a new session link.</p>
-				</div>
-			</div>
+			<PageState
+				title="Access denied"
+				description="You do not have access to this resource. Request a new session link."
+				icon={<AlertCircle className="h-5 w-5" />}
+				className="min-h-screen bg-background"
+			/>
 		);
 	}
 

@@ -62,7 +62,7 @@ export function AttemptDetail({
 	return (
 		<div className="transition-all">
 			<div
-				className="flex items-center justify-between py-2 cursor-pointer hover:bg-muted/5 transition-colors"
+				className="flex cursor-pointer items-center justify-between rounded-md py-2 transition-colors hover:bg-accent/50"
 				onClick={onToggle}
 			>
 				<div className="flex items-center gap-3">
@@ -80,12 +80,12 @@ export function AttemptDetail({
 			</div>
 
 			{isExpanded && (
-				<div className="py-6 border-t border-border/5">
+				<div className="border-t border-border/20 py-6">
 					<div className="space-y-6">
 						{details.error_message && (
-							<div className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl">
-								<div className="text-xs uppercase font-normal text-red-500/60 mb-2">Error Detail</div>
-								<div className="text-xs text-red-600/80 dark:text-red-400/80 font-normal leading-relaxed">
+							<div className="rounded-lg border border-destructive/20 bg-destructive/8 p-4">
+								<div className="mb-2 text-xs font-normal uppercase text-destructive/80">Error Detail</div>
+								<div className="text-xs font-normal leading-relaxed text-destructive">
 									{details.error_message}
 								</div>
 							</div>
@@ -122,13 +122,13 @@ export function AttemptDetail({
 								{requestExpanded && (
 									<div className="space-y-4 animate-in slide-in-from-top-1 duration-200">
 										{details.request_headers && (
-											<div className="rounded-xl border border-border/10 bg-muted/5 p-3">
+											<div className="rounded-lg border border-border/30 bg-secondary/30 p-3">
 												<div className="text-xs text-muted-foreground/80 uppercase mb-2 tracking-widest font-normal">Headers</div>
 												<JsonViewer data={parsePayload(details.request_headers)} />
 											</div>
 										)}
 
-										<div className="rounded-xl border border-border/10 bg-muted/5 p-3">
+										<div className="rounded-lg border border-border/30 bg-secondary/30 p-3">
 											<div className="text-xs text-muted-foreground/80 uppercase mb-2 font-normal">Payload</div>
 											<JsonViewer data={parsePayload(details.payload)} />
 										</div>
@@ -148,7 +148,7 @@ export function AttemptDetail({
 								</div>
 
 								{responseExpanded && (
-									<div className="rounded-xl border border-border/10 bg-muted/5 p-3 min-h-[100px] animate-in slide-in-from-top-1 duration-200">
+									<div className="min-h-[100px] rounded-lg border border-border/30 bg-secondary/30 p-3 animate-in slide-in-from-top-1 duration-200">
 										{details.response_headers || details.response_body ? (
 											<div className="space-y-4">
 												{details.response_headers && (
@@ -158,7 +158,7 @@ export function AttemptDetail({
 													</div>
 												)}
 												{details.response_body && (
-													<div className={details.response_headers ? "pt-4 border-t border-border/5" : ""}>
+													<div className={details.response_headers ? "border-t border-border/20 pt-4" : ""}>
 														<div className="text-xs text-muted-foreground/80 uppercase mb-2 font-normal">Body</div>
 														<JsonViewer data={parsePayload(details.response_body)} />
 													</div>

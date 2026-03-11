@@ -502,16 +502,16 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 			</div>
 
 			<div className="px-4 py-2 md:px-6 md:py-3 space-y-4 md:space-y-6">
-				<div className="rounded-xl border border-border/30 p-4 bg-background">
+				<div className="rounded-lg border border-border/50 bg-card p-4 shadow-sm">
 					<div className="flex flex-col gap-4">
 						<div className="flex flex-wrap items-center gap-x-4 gap-y-2">
 							<h2 className="text-base md:text-lg font-medium text-foreground break-all">{endpoint?.url}</h2>
 							<div className="flex items-center gap-3">
 								<div className={cn(
-									"px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-medium border flex items-center shrink-0",
+									"flex items-center shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider font-normal",
 									endpoint?.is_active
 										? "bg-green-500/5 text-green-600 border-green-500/20"
-										: "bg-muted/50 text-muted-foreground border-border/50"
+										: "bg-secondary/60 text-muted-foreground border-border/50"
 								)}>
 									{endpoint?.is_active ? "Active" : "Inactive"}
 								</div>
@@ -551,7 +551,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 
 						<div className="flex flex-wrap gap-1.5 pt-1">
 							{endpoint?.subscribed_events.map((event: string) => (
-								<Badge key={event} variant="secondary" className="text-xs px-2 py-0.5 h-auto font-normal bg-muted/30 text-muted-foreground border-border/20">
+								<Badge key={event} variant="secondary" className="h-auto border-border/20 bg-secondary/60 px-2 py-0.5 text-xs font-normal text-muted-foreground">
 									{event}
 								</Badge>
 							))}
@@ -570,8 +570,8 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 				<EndpointTrafficChart loading={timeseriesLoading} data={chartData} />
 
 				{/* Response Time Percentiles */}
-				<div className="rounded-xl border border-border/30 overflow-hidden bg-background">
-					<div className="bg-muted/5 border-b border-border/30 px-4 py-3">
+				<div className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
+					<div className="border-b border-border/40 bg-secondary/40 px-4 py-3">
 						<h3 className="text-sm font-normal text-foreground">Response Time Percentiles</h3>
 					</div>
 					<div className="p-4 md:p-6">
@@ -637,22 +637,22 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 							<div className="space-y-4">
 								{[1, 2].map(group => (
 									<div key={group} className="relative">
-										<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-muted/10 -z-10" />
+										<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
 										<div className="flex items-center gap-4 mb-4">
-											<div className="w-4 h-4 rounded-full border-2 border-muted/20 bg-background z-10" />
+											<div className="w-4 h-4 rounded-full border-2 border-border/40 bg-card z-10" />
 											<div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
-											<div className="h-px flex-1 bg-muted/10" />
+											<div className="h-px flex-1 bg-border/30" />
 										</div>
 										<div className="space-y-2">
 											{[1, 2, 3].map(i => (
-												<div key={i} className="h-10 w-full bg-muted/5 animate-pulse rounded-xl border border-border/20" />
+												<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/40 bg-card" />
 											))}
 										</div>
 									</div>
 								))}
 							</div>
 						) : !groupedDeliveries || groupedDeliveries.length === 0 ? (
-							<div className="text-center py-16 border border-dashed border-border/40 rounded-xl bg-muted/5">
+							<div className="rounded-lg border border-dashed border-border/50 bg-secondary/30 py-16 text-center">
 								<p className="text-sm font-normal text-muted-foreground">No deliveries found for this endpoint.</p>
 							</div>
 						) : (
@@ -661,7 +661,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 									<div key={date} className="relative group/group">
 										<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10 group-last/group:h-0" />
 										<div className="flex items-center gap-4 mb-4">
-											<div className="w-4 h-4 rounded-full border-2 border-primary/50 bg-background z-10" />
+											<div className="w-4 h-4 rounded-full border-2 border-primary/40 bg-card z-10" />
 											<h2 className="text-xs font-normal uppercase text-foreground/70">{date}</h2>
 											<div className="h-px flex-1 bg-gradient-to-r from-border/30 to-transparent" />
 										</div>
@@ -677,10 +677,10 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 												return (
 													<div key={delivery.id} className={cn("group/item transition-all duration-300", isExpanded ? "scale-[1.002]" : "")}>
 														<div className={cn(
-															"relative border transition-all duration-300 rounded-xl overflow-hidden",
+															"relative overflow-hidden rounded-lg border transition-all duration-300",
 															isExpanded
 																? "border-primary/20 bg-primary/[0.01]"
-																: "border-border/30 bg-background hover:border-sidebar-accent hover:bg-muted/5"
+																: "border-border/40 bg-card hover:border-border/60 hover:bg-accent/60"
 														)}>
 															<div
 																onClick={() => handleRowExpand(delivery.id)}
@@ -833,7 +833,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 						<div className="space-y-2">
 							<Label className="text-xs uppercase font-normal text-muted-foreground">Select Event Type</Label>
 							<Select value={selectedTestEvent} onValueChange={setSelectedTestEvent}>
-								<SelectTrigger className="text-sm w-full bg-muted/10 border-border/50 h-10">
+								<SelectTrigger className="h-10 w-full border-border/50 bg-card text-sm">
 									<SelectValue placeholder="Choose an event to test..." />
 								</SelectTrigger>
 								<SelectContent>
@@ -852,11 +852,11 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 							const examplePayload = eventData?.example_payload
 
 							return (
-								<div className="flex-1 overflow-hidden flex flex-col min-h-0 border border-border/40 rounded-xl bg-muted/5">
+								<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border/40 bg-card">
 									<div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border/30 h-full overflow-hidden">
 										{/* Schema Column */}
 										<div className="flex flex-col min-h-0 h-full">
-											<div className="px-4 py-2 bg-muted/30 border-b border-border/20">
+											<div className="border-b border-border/30 bg-secondary/40 px-4 py-2">
 												<span className="text-xs font-normal text-muted-foreground/60">Expected Schema</span>
 											</div>
 											<div className="flex-1 overflow-y-auto custom-scrollbar p-4">
@@ -869,8 +869,8 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 										</div>
 
 										{/* Example JSON Column */}
-										<div className="flex flex-col min-h-0 h-full bg-[#0d0d12]/40">
-											<div className="px-4 py-2 bg-muted/30 border-b border-border/20 flex items-center justify-between">
+										<div className="flex h-full min-h-0 flex-col bg-secondary/20">
+											<div className="flex items-center justify-between border-b border-border/30 bg-secondary/40 px-4 py-2">
 												<div>
 													<span className="text-xs font-normal text-muted-foreground/60">Expected Schema</span>
 												</div>
@@ -895,14 +895,14 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 								</div>
 							)
 						})() : (
-							<div className="flex-1 border border-dashed border-border/50 rounded-xl flex flex-col items-center justify-center text-center p-8">
+							<div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-border/50 p-8 text-center">
 								<Send className="w-8 h-8 text-muted-foreground/20 mb-3" />
 								<p className="text-xs text-muted-foreground">Select an event type above to view its schema and test payload.</p>
 							</div>
 						)}
 					</div>
 
-					<div className="p-6 border-t border-border/10 bg-muted/5 flex justify-end gap-3">
+					<div className="flex justify-end gap-3 border-t border-border/20 bg-secondary/30 p-6">
 						<Button
 							variant="ghost"
 							size="sm"

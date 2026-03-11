@@ -38,7 +38,7 @@ export default function ChatsPage() {
                 </h1>
                 <Link
                     href="/agents"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground text-background rounded-lg text-[13px] font-normal hover:bg-foreground/90 transition-colors shadow-sm"
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[13px] font-normal text-primary-foreground transition-colors shadow-sm hover:bg-primary/90"
                 >
                     <Plus className="w-4 h-4" />
                     New chat
@@ -57,7 +57,7 @@ export default function ChatsPage() {
                         placeholder="Search your chats..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-4 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all font-normal"
+                        className="w-full rounded-lg border border-border/50 bg-card py-3 pl-10 pr-4 text-[15px] font-normal text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring/40"
                     />
                 </div>
 
@@ -80,7 +80,7 @@ export default function ChatsPage() {
 
                 {/* Error State */}
                 {error && (
-                    <div className="flex items-center justify-center py-20 text-destructive">
+                    <div className="flex items-center justify-center py-20 text-muted-foreground">
                         Failed to load chats
                     </div>
                 )}
@@ -220,7 +220,7 @@ function ChatRow({
     return (
         <Link
             href={`/agents/c/${chat.id}`}
-            className="group flex items-start justify-between py-4 px-3 border-b hover:bg-muted/50 transition-colors -mx-2"
+            className="group -mx-2 flex items-start justify-between rounded-lg border-b border-border/30 px-3 py-4 transition-colors hover:bg-accent/50"
         >
             <div className="flex flex-col gap-1.5 min-w-0 pr-4">
                 <span className="text-[15px] font-normal text-foreground truncate">
