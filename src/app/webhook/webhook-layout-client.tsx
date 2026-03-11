@@ -59,7 +59,7 @@ function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			<div className="flex h-16 items-center border-b border-border/40 px-4 md:px-6 justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+			<div className="flex h-16 items-center px-4 md:px-6 justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
 				<div className="flex items-center gap-8">
 					<Tabs value={activeTab}>
 						<TabsList>

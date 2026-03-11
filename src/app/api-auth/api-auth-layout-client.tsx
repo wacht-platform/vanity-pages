@@ -64,7 +64,7 @@ function ApiAuthLayoutContent({ children }: { children: React.ReactNode }) {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			<header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+			<header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
 				<div className="flex h-16 items-center px-4 md:px-6">
 					<div className="flex items-center gap-8">
 						<Tabs value={pathname?.startsWith("/api-auth/keys") ? "keys" : pathname?.startsWith("/api-auth/logs") ? "logs" : "overview"}>
@@ -80,7 +80,7 @@ function ApiAuthLayoutContent({ children }: { children: React.ReactNode }) {
 				</div>
 
 				{mobileMenuOpen && (
-					<div className="md:hidden border-t border-border/40 bg-background">
+					<div className="md:hidden bg-background">
 						<nav className="px-4 py-3 space-y-1">
 							{navItems.map((item) => {
 								const Icon = item.icon;
