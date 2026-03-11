@@ -16,6 +16,22 @@ type DisconnectTarget = {
     name: string
 } | null
 
+const connectionBadgeClassName = (state: "connected" | "inactive" | "managed") =>
+    cn(
+        "inline-flex items-center rounded-md border px-2 py-1 text-xs font-normal",
+        state === "connected" && "border-primary/20 bg-primary/10 text-primary",
+        state === "inactive" && "border-border bg-secondary text-secondary-foreground",
+        state === "managed" && "border-border bg-accent text-accent-foreground",
+    )
+
+const connectionIconClassName = (state: "connected" | "inactive" | "managed") =>
+    cn(
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border text-xs font-normal",
+        state === "connected" && "border-primary/20 bg-primary/10 text-primary",
+        state === "inactive" && "border-border bg-secondary text-secondary-foreground",
+        state === "managed" && "border-border bg-accent text-accent-foreground",
+    )
+
 export default function IntegrationsPage() {
     const { activeAgent, loading: agentLoading } = useActiveAgent()
     const {
@@ -211,7 +227,7 @@ export default function IntegrationsPage() {
                                         )}
                                     >
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-normal text-muted-foreground">
+                                            <div className={connectionIconClassName(integration.is_active ? "connected" : "inactive")}>
                                                 {integration.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="min-w-0">
@@ -220,13 +236,8 @@ export default function IntegrationsPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 self-end md:self-auto">
-                                            <span className={cn(
-                                                "inline-flex items-center rounded-md px-2 py-1 text-xs font-normal",
-                                                integration.is_active
-                                                    ? "bg-emerald-500/15 text-emerald-600"
-                                                    : "bg-muted text-muted-foreground"
-                                            )}>
-                                                {integration.is_active ? "Active" : "Not connected"}
+                                            <span className={connectionBadgeClassName(integration.is_active ? "connected" : "inactive")}>
+                                                {integration.is_active ? "Connected" : "Not connected"}
                                             </span>
                                             {integration.is_active ? (
                                                 <Button
@@ -241,7 +252,7 @@ export default function IntegrationsPage() {
                                                 </Button>
                                             ) : (
                                                 <Button
-                                                    variant="secondary"
+                                                    variant="default"
                                                     size="sm"
                                                     onClick={() => handleConnect(String(integration.id))}
                                                     disabled={connectingId === String(integration.id)}
@@ -280,7 +291,7 @@ export default function IntegrationsPage() {
                                         )}
                                     >
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                                            <div className={connectionIconClassName(!mcpServer.requires_connection ? "managed" : mcpServer.is_active ? "connected" : "inactive")}>
                                                 <Server className="w-4 h-4" />
                                             </div>
                                             <div className="min-w-0">
@@ -289,16 +300,11 @@ export default function IntegrationsPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 self-end md:self-auto">
-                                            <span className={cn(
-                                                "inline-flex items-center rounded-md px-2 py-1 text-xs font-normal",
-                                                mcpServer.is_active
-                                                    ? "bg-emerald-500/15 text-emerald-600"
-                                                    : "bg-muted text-muted-foreground"
-                                            )}>
-                                                {!mcpServer.requires_connection ? "Automatic" : mcpServer.is_active ? "Active" : "Not connected"}
+                                            <span className={connectionBadgeClassName(!mcpServer.requires_connection ? "managed" : mcpServer.is_active ? "connected" : "inactive")}>
+                                                {!mcpServer.requires_connection ? "Connected" : mcpServer.is_active ? "Connected" : "Not connected"}
                                             </span>
                                             {!mcpServer.requires_connection ? (
-                                                <span className="text-xs text-muted-foreground">No connection needed</span>
+                                                <span className="text-xs text-secondary-foreground">Available by default</span>
                                             ) : mcpServer.is_active ? (
                                                 <Button
                                                     variant="ghost"
@@ -312,7 +318,7 @@ export default function IntegrationsPage() {
                                                 </Button>
                                             ) : (
                                                 <Button
-                                                    variant="secondary"
+                                                    variant="default"
                                                     size="sm"
                                                     onClick={() => handleMcpConnect(String(mcpServer.id))}
                                                     disabled={connectingMcpId === String(mcpServer.id)}
