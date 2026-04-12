@@ -1,580 +1,461 @@
 "use client";
 
 import * as React from "react";
-import { useAgentContext } from "@wacht/nextjs";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  Workflow,
+} from "lucide-react";
+import {
+  useAgentThread,
+  useAgentThreadConversation,
+  useAgentThreadFilesystem,
+  useAgentThreadTaskGraphs,
+  useProjectThreads,
+} from "@wacht/nextjs";
+import {
+  IconFolderCode,
+} from "@tabler/icons-react";
+
+import type { ThreadTaskGraphBundle } from "@wacht/types";
+
 import { useActiveAgent } from "@/components/agent-provider";
+import { ThreadFilesystemPane } from "@/components/agent/thread-chat/filesystem-pane";
+import { ThreadMessageList } from "@/components/agent/thread-chat/message-list";
+import { useThreadApproval } from "@/components/agent/thread-chat/use-thread-approval";
+import { useThreadFilesystemPane } from "@/components/agent/thread-chat/use-thread-filesystem-pane";
+import { ThreadTaskGraphDrawer } from "@/components/agent/thread-task-graph-drawer";
 import { ChatInput } from "@/components/chat/chat-input";
-import { Spinner } from "@/components/ui/spinner";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AgentNavbar } from "@/components/layout/agent-navbar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Download } from "lucide-react";
-import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useMemo, useCallback, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import type {
-    ConversationContent,
-    UserMessageContent,
-    AgentResponseContent,
-    AssistantAcknowledgmentContent,
-    FileData as MessageFileData,
-} from "@wacht/types";
 
-function getDisplayContent(content: ConversationContent): string {
-    switch (content.type) {
-        case "user_message":
-            return (content as UserMessageContent).message;
-        case "agent_response":
-            return (content as AgentResponseContent).response;
-        case "assistant_acknowledgment":
-            return (content as AssistantAcknowledgmentContent)
-                .acknowledgment_message;
-        case "user_input_request":
-            return content.question;
-        case "system_decision":
-            return content.reasoning;
-        case "action_execution_result":
-            return content.task_execution?.approach || "Executing...";
-        case "context_results":
-            return `Found ${content.result_count} results`;
-        default:
-            return "";
-    }
-}
-
-function getMessageFiles(content: ConversationContent): MessageFileData[] {
-    if (content.type !== "user_message") return [];
-    const files = (content as UserMessageContent).files;
-    return Array.isArray(files) ? files : [];
-}
-
-function formatFileSize(sizeBytes?: number): string {
-    if (!sizeBytes || sizeBytes <= 0) return "";
-    const units = ["B", "KB", "MB", "GB"];
-    let size = sizeBytes;
-    let unit = 0;
-    while (size >= 1024 && unit < units.length - 1) {
-        size /= 1024;
-        unit += 1;
-    }
-    return `${size.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
-}
-
-// Format timestamp for display
-function formatTime(timestamp: string): string {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) {
-        return (
-            date.toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-            }) +
-            " at " +
-            date.toLocaleTimeString(undefined, {
-                hour: "2-digit",
-                minute: "2-digit",
-            })
-        );
-    }
-    return date.toLocaleTimeString(undefined, {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-}
-
-// Group consecutive system_decision messages
-type GroupedMessage =
-    | {
-          type: "single";
-          message: any;
-      }
-    | {
-          type: "system_decisions";
-          messages: any[];
+function getThreadStatusMeta(status?: string) {
+  switch (status) {
+    case "running":
+    case "in_progress":
+      return {
+        icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
+        label: "Running",
+        className: "text-blue-600 dark:text-blue-400",
       };
-
-function groupMessages(messages: any[]): GroupedMessage[] {
-    const grouped: GroupedMessage[] = [];
-    let i = 0;
-
-    const displayableMessages = messages.filter((msg) => {
-        const displayContent = getDisplayContent(msg.content);
-        return displayContent && displayContent.trim().length > 0;
-    });
-
-    while (i < displayableMessages.length) {
-        const msg = displayableMessages[i];
-
-        if (msg.content?.type === "system_decision") {
-            // Collect consecutive system_decisions
-            const decisions = [msg];
-            while (
-                i + 1 < displayableMessages.length &&
-                displayableMessages[i + 1].content?.type === "system_decision"
-            ) {
-                i++;
-                decisions.push(displayableMessages[i]);
-            }
-            grouped.push({ type: "system_decisions", messages: decisions });
-        } else {
-            grouped.push({ type: "single", message: msg });
-        }
-        i++;
-    }
-
-    return grouped;
-}
-
-// System Decision Card Component - Claude style
-function SystemDecisionPills({ decisions }: { decisions: any[] }) {
-    const [expanded, setExpanded] = useState(false);
-    const count = decisions.length;
-    const firstDecision = decisions[0];
-
-    return (
-        <div className="my-4">
-            <button
-                onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center justify-between gap-3 border rounded-lg px-3 py-2 hover:bg-accent/5 transition-colors text-left"
-            >
-                <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm text-muted-foreground truncate">
-                        {getDisplayContent(firstDecision.content)}
-                    </span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    {count > 1 && (
-                        <span className="text-xs text-muted-foreground/70">
-                            {count} decisions
-                        </span>
-                    )}
-                    <svg
-                        className={cn(
-                            "w-4 h-4 text-muted-foreground/70 transition-transform",
-                            expanded && "rotate-180",
-                        )}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19 9l-7 7-7-7"
-                        />
-                    </svg>
-                </div>
-            </button>
-
-            {expanded && (
-                <div className="mt-2 border-l pl-4 space-y-0.5 pb-2">
-                    {decisions.map((msg, idx) => (
-                        <div
-                            key={msg.id}
-                            className="flex items-start gap-2 text-sm text-muted-foreground/80"
-                        >
-                            <span className="text-muted-foreground/40 shrink-0 w-4 text-[11px] pt-0.5">
-                                {idx + 1}.
-                            </span>
-                            <span className="leading-relaxed">
-                                {getDisplayContent(msg.content)}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+    case "completed":
+      return {
+        icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+        label: "Completed",
+        className: "text-emerald-600 dark:text-emerald-400",
+      };
+    case "failed":
+    case "blocked":
+    case "rejected":
+      return {
+        icon: <AlertCircle className="h-3.5 w-3.5" />,
+        label: "Needs attention",
+        className: "text-rose-600 dark:text-rose-400",
+      };
+    default:
+      return {
+        icon: <Clock3 className="h-3.5 w-3.5" />,
+        label: "Idle",
+        className: "text-muted-foreground",
+      };
+  }
 }
 
 export default function SingleChatPage() {
-    const params = useParams();
-    const searchParams = useSearchParams();
-    const chatId = params?.chatId as string;
-    const initialMessage = searchParams?.get("message");
-    const sentInitialRef = useRef(false);
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const isLoadingHistoryRef = useRef(false);
-    const [previewFile, setPreviewFile] = useState<{
-        url: string;
-        name: string;
-        mimeType: string;
-    } | null>(null);
+  const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pageShellRef = React.useRef<HTMLDivElement>(null);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const isLoadingHistoryRef = React.useRef(false);
+  const sentInitialRef = React.useRef(false);
 
-    const { activeAgent } = useActiveAgent();
-    const agentName = activeAgent?.name || "default";
+  const chatId = params?.chatId as string;
+  const isDraftChat = chatId === "new";
+  const draftProjectId = searchParams?.get("projectId");
+  const initialMessage = searchParams?.get("message");
 
-    const {
-        messages,
-        sendMessage,
-        isExecuting,
-        isConnected,
-        loadMoreMessages,
-        hasMoreMessages,
-        isLoadingMore,
-        pendingMessage,
-        pendingFiles,
-        resolveMessageFileUrl,
-        downloadMessageFile,
-    } = useAgentContext({
-        agentName,
-        contextId: chatId,
-    });
+  const [resolvedThreadId, setResolvedThreadId] = React.useState<string | null>(
+    isDraftChat ? null : chatId,
+  );
+  const [queuedDraftMessage, setQueuedDraftMessage] = React.useState<{
+    text: string;
+    files: File[];
+  } | null>(null);
+  const [draftAgentId, setDraftAgentId] = React.useState<string>("");
+  const [draftThreadCreationError, setDraftThreadCreationError] = React.useState<string | null>(null);
+  const [showTaskGraph, setShowTaskGraph] = React.useState(false);
+  const [activeGraphId, setActiveGraphId] = React.useState<string | null>(null);
 
-    useEffect(() => {
-        if (initialMessage && !sentInitialRef.current) {
-            sentInitialRef.current = true;
-            sendMessage(initialMessage);
-            window.history.replaceState({}, "", window.location.pathname);
-        }
-    }, [initialMessage, sendMessage]);
+  const { agents } = useActiveAgent();
+  const { createThread } = useProjectThreads(draftProjectId ?? undefined, {
+    enabled: isDraftChat && !!draftProjectId,
+  });
+  const { thread: graphThread } = useAgentThread(
+    resolvedThreadId ?? undefined,
+    !!resolvedThreadId,
+  );
+  const {
+    messages,
+    sendMessage,
+    submitApprovalResponse,
+    cancelExecution,
+    hasActiveRun,
+    isRunning,
+    loadMoreMessages,
+    hasMoreMessages,
+    isLoadingMore,
+    messagesLoading,
+    pendingMessage,
+    pendingFiles,
+    pendingApprovalRequest,
+    activeApprovalRequestId: activeApprovalRequestIdFromState,
+    resolveMessageFileUrl,
+  } = useAgentThreadConversation({
+    threadId: resolvedThreadId ?? "",
+  });
+  const {
+    filesystem,
+    filesystemLoading,
+    filesystemError,
+    getFile,
+    listDirectory,
+    refetch: refetchFilesystem,
+  } = useAgentThreadFilesystem(
+    resolvedThreadId ?? undefined,
+    !!resolvedThreadId,
+  );
+  const {
+    graphs: taskGraphs,
+    has_more: hasMoreGraphs,
+    loadingMore: loadingMoreGraphs,
+    loadMore: loadMoreGraphs,
+  } = useAgentThreadTaskGraphs(
+    resolvedThreadId ?? undefined,
+    !!resolvedThreadId && showTaskGraph,
+  );
 
-    const prevMessageCount = useRef(messages.length);
-    useEffect(() => {
-        if (
-            messages.length > prevMessageCount.current &&
-            !isLoadingHistoryRef.current &&
-            scrollContainerRef.current
-        ) {
-            scrollContainerRef.current.scrollTop =
-                scrollContainerRef.current.scrollHeight;
-        }
-        prevMessageCount.current = messages.length;
-        isLoadingHistoryRef.current = false;
-    }, [messages.length]);
+  const latestRenderedMessageId = messages[messages.length - 1]?.id ?? null;
+  const pendingFilesCount = pendingFiles?.length ?? 0;
+  const filesystemEntries = React.useMemo(() => filesystem?.files || [], [filesystem]);
+  const draftAgentOptions = React.useMemo(
+    () =>
+      agents.map((agent) => ({
+        value: agent.id,
+        label: agent.name,
+      })),
+    [agents],
+  );
 
-    const handleScroll = useCallback(() => {
-        const container = scrollContainerRef.current;
-        if (!container || isLoadingMore || !hasMoreMessages) return;
+  React.useEffect(() => {
+    if (!isDraftChat) return;
 
-        if (container.scrollTop < 100) {
-            isLoadingHistoryRef.current = true;
-            const prevScrollHeight = container.scrollHeight;
+    if (!agents.length) {
+      if (draftAgentId) {
+        setDraftAgentId("");
+      }
+      return;
+    }
 
-            loadMoreMessages().then(() => {
-                requestAnimationFrame(() => {
-                    if (scrollContainerRef.current) {
-                        const newScrollHeight =
-                            scrollContainerRef.current.scrollHeight;
-                        scrollContainerRef.current.scrollTop =
-                            newScrollHeight - prevScrollHeight;
-                    }
-                });
-            });
-        }
-    }, [isLoadingMore, hasMoreMessages, loadMoreMessages]);
+    if (draftAgentId && agents.some((agent) => agent.id === draftAgentId)) {
+      return;
+    }
 
-    const handleSend = async (text: string, files?: File[]) => {
+    setDraftAgentId(agents[0]?.id ?? "");
+  }, [agents, draftAgentId, isDraftChat]);
+
+  const {
+    activeApprovalRequestId,
+    approvalSelections,
+    submittingApprovalRequestId,
+    setApprovalChoice,
+    submitApprovalRequest,
+  } = useThreadApproval({
+    messages,
+    pendingApprovalRequest,
+    activeApprovalRequestIdFromState,
+    submitApprovalResponse,
+  });
+
+  const filesystemPane = useThreadFilesystemPane({
+    filesystemEntries,
+    filesystemLoading,
+    filesystemError,
+    getFile,
+    listDirectory,
+    refetchFilesystem,
+    pageShellRef,
+  });
+
+  React.useEffect(() => {
+    if (!isDraftChat) {
+      setResolvedThreadId(chatId);
+    }
+  }, [chatId, isDraftChat]);
+
+  React.useEffect(() => {
+    if (!taskGraphs.length) {
+      setActiveGraphId(null);
+      return;
+    }
+
+    if (
+      !activeGraphId ||
+      !taskGraphs.some((bundle: ThreadTaskGraphBundle) => bundle.graph.id === activeGraphId)
+    ) {
+      setActiveGraphId(taskGraphs[0].graph.id);
+    }
+  }, [taskGraphs, activeGraphId]);
+
+  const activeGraphBundle = React.useMemo(() => {
+    if (!taskGraphs.length) return null;
+    return (
+      taskGraphs.find((bundle: ThreadTaskGraphBundle) => bundle.graph.id === activeGraphId) ||
+      taskGraphs[0] ||
+      null
+    );
+  }, [taskGraphs, activeGraphId]);
+
+  const handleSend = React.useCallback(
+    async (text: string, files?: File[]) => {
+      if (!isDraftChat) {
+        setDraftThreadCreationError(null);
         await sendMessage(text, files);
+        return;
+      }
+
+      if (!draftProjectId) return;
+      if (!draftAgentId) {
+        setDraftThreadCreationError(
+          "Select an agent before starting the thread.",
+        );
+        return;
+      }
+
+      setDraftThreadCreationError(null);
+      const thread = await createThread({
+        agent_id: draftAgentId,
+        title: text.trim().slice(0, 50) || "New chat",
+        thread_purpose: "conversation",
+      });
+
+      setResolvedThreadId(thread.id);
+      setQueuedDraftMessage({
+        text,
+        files: files ?? [],
+      });
+      router.replace(`/agents/c/${thread.id}`);
+    },
+    [createThread, draftAgentId, draftProjectId, isDraftChat, router, sendMessage],
+  );
+
+  React.useEffect(() => {
+    if (!queuedDraftMessage || !resolvedThreadId) return;
+
+    const run = async () => {
+      await sendMessage(queuedDraftMessage.text, queuedDraftMessage.files);
+      setQueuedDraftMessage(null);
     };
 
-    // Group consecutive system_decisions
-    const groupedMessages = useMemo(() => groupMessages(messages), [messages]);
-    const showInitialLoading =
-        messages.length === 0 &&
-        !isConnected &&
-        !isExecuting &&
-        !pendingMessage &&
-        !(pendingFiles && pendingFiles.length > 0);
+    void run();
+  }, [queuedDraftMessage, resolvedThreadId, sendMessage]);
 
-    return (
-        <div className="flex flex-col h-full relative bg-background">
-            <div className="shrink-0 h-10 flex items-center px-4" />
+  React.useEffect(() => {
+    if (!initialMessage || sentInitialRef.current) return;
 
-            <div
-                ref={scrollContainerRef}
-                className="flex-1 overflow-y-auto px-4 pb-64"
-                onScroll={handleScroll}
-            >
-                {isLoadingMore && (
-                    <div className="flex justify-center py-4">
-                        <Spinner size="sm" />
-                    </div>
-                )}
+    sentInitialRef.current = true;
+    void handleSend(initialMessage);
+    window.history.replaceState({}, "", window.location.pathname);
+  }, [handleSend, initialMessage]);
 
-                <div className="max-w-3xl mx-auto pt-8 space-y-4">
-                    {showInitialLoading && (
-                        <div className="space-y-4 py-4">
-                            {[...Array(4)].map((_, i) => (
-                                <div
-                                    key={`chat-skeleton-${i}`}
-                                    className={cn(
-                                        "flex gap-4",
-                                        i % 2 === 0
-                                            ? "justify-start"
-                                            : "justify-end",
-                                    )}
-                                >
-                                    {i % 2 === 0 && (
-                                        <Skeleton className="w-8 h-8 rounded-sm shrink-0" />
-                                    )}
-                                    <div
-                                        className={cn(
-                                            "max-w-[78%] space-y-2",
-                                            i % 2 === 0
-                                                ? ""
-                                                : "flex flex-col items-end",
-                                        )}
-                                    >
-                                        <Skeleton className="h-4 w-56 rounded-md" />
-                                        <Skeleton className="h-4 w-40 rounded-md" />
-                                        <Skeleton className="h-3 w-20 rounded-md" />
-                                    </div>
-                                    {i % 2 !== 0 && (
-                                        <Skeleton className="w-8 h-8 rounded-full shrink-0" />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    {groupedMessages.map((group, idx) => {
-                        if (group.type === "system_decisions") {
-                            return (
-                                <SystemDecisionPills
-                                    key={`group-${idx}`}
-                                    decisions={group.messages}
-                                />
-                            );
-                        }
+  React.useLayoutEffect(() => {
+    if (!isLoadingHistoryRef.current && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+    isLoadingHistoryRef.current = false;
+  }, [latestRenderedMessageId, pendingMessage, pendingFilesCount, hasActiveRun]);
 
-                        const msg = group.message;
-                        const messageFiles = getMessageFiles(msg.content);
-                        return (
-                            <div
-                                key={msg.id}
-                                className={cn(
-                                    "flex gap-4",
-                                    msg.role === "user"
-                                        ? "justify-end"
-                                        : "justify-start items-start",
-                                )}
-                            >
-                                {msg.role === "assistant" && (
-                                    <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-normal shrink-0">
-                                        A
-                                    </div>
-                                )}
+  const handleScroll = React.useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container || isLoadingMore || !hasMoreMessages) return;
 
-                                <div
-                                    className={cn(
-                                        "max-w-[85%]",
-                                        msg.role === "user"
-                                            ? "flex-1 flex flex-col items-end"
-                                            : "",
-                                    )}
-                                >
-                                    {msg.role === "user" ? (
-                                        <>
-                                            <div className="rounded-[12px] bg-secondary px-4 py-2.5 text-[15px] leading-relaxed text-secondary-foreground">
-                                                {getDisplayContent(msg.content)}
-                                            </div>
-                                            {messageFiles.length > 0 && (
-                                                <div className="mt-2 flex flex-wrap justify-end gap-2 w-full">
-                                                    {messageFiles.map((file, idx) => {
-                                                        const fileUrl = resolveMessageFileUrl(file);
-                                                        return (
-                                                            <button
-                                                                type="button"
-                                                                key={`${file.filename}-${idx}`}
-                                                                onClick={() =>
-                                                                    fileUrl &&
-                                                                    setPreviewFile({
-                                                                        url: fileUrl,
-                                                                        name: file.filename,
-                                                                        mimeType:
-                                                                            file.mime_type,
-                                                                    })
-                                                                }
-                                                                className="inline-flex items-center gap-2 rounded-md border border-border/40 bg-card px-3 py-1.5 text-[11px] text-foreground transition-colors hover:bg-accent disabled:opacity-50"
-                                                                disabled={!fileUrl}
-                                                            >
-                                                                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                                                <span className="truncate max-w-65">
-                                                                    {file.filename}
-                                                                </span>
-                                                                <span className="text-muted-foreground">
-                                                                    {file.size_bytes
-                                                                        ? formatFileSize(file.size_bytes)
-                                                                        : "Preview"}
-                                                                </span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                            <span className="text-[11px] text-muted-foreground mt-1">
-                                                {formatTime(msg.timestamp)}
-                                            </span>
-                                        </>
-                                    ) : msg.content?.type ===
-                                      "user_input_request" ? (
-                                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-                                            <span className="text-xs font-normal text-amber-500 block mb-1">
-                                                Input Required
-                                            </span>
-                                            <span className="text-foreground">
-                                                {getDisplayContent(msg.content)}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
-                                            <ReactMarkdown>
-                                                {getDisplayContent(msg.content)}
-                                            </ReactMarkdown>
-                                        </div>
-                                    )}
-                                </div>
+    if (container.scrollTop < 100) {
+      isLoadingHistoryRef.current = true;
+      const previousScrollHeight = container.scrollHeight;
 
-                                {msg.role === "user" && (
-                                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-xs font-normal">
-                                        U
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                    {(pendingMessage || (pendingFiles && pendingFiles.length > 0)) && (
-                        <div className="flex gap-4 justify-end">
-                            <div className="flex flex-col items-end max-w-[85%]">
-                                {pendingMessage && (
-                                    <div className="rounded-[12px] bg-secondary/70 px-4 py-2.5 text-[15px] leading-relaxed text-secondary-foreground opacity-70">
-                                        {pendingMessage}
-                                    </div>
-                                )}
-                                {pendingFiles && pendingFiles.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap justify-end gap-2 w-full">
-                                        {pendingFiles.map((file, idx) => (
-                                            <div
-                                                key={`${file.name}-${file.size}-${idx}`}
-                                                className="inline-flex items-center gap-2 rounded-md border border-border/40 bg-card/80 px-3 py-1.5 text-[11px] text-foreground/80"
-                                            >
-                                                <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
-                                                <span className="truncate max-w-65">
-                                                    {file.name}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-xs font-normal opacity-70">
-                                U
-                            </div>
-                        </div>
-                    )}
-                    {isExecuting &&
-                        !pendingMessage &&
-                        !(pendingFiles && pendingFiles.length > 0) && (
-                        <div className="flex gap-4 justify-start items-center">
-                            <div className="w-8 h-8 rounded-sm bg-primary text-primary-foreground flex items-center justify-center text-xs font-normal shrink-0">
-                                A
-                            </div>
-                            <div className="flex items-center gap-1.5 px-3 py-2">
-                                <span
-                                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
-                                    style={{
-                                        animationDelay: "0ms",
-                                        animationDuration: "1s",
-                                    }}
-                                />
-                                <span
-                                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
-                                    style={{
-                                        animationDelay: "150ms",
-                                        animationDuration: "1s",
-                                    }}
-                                />
-                                <span
-                                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
-                                    style={{
-                                        animationDelay: "300ms",
-                                        animationDuration: "1s",
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+      loadMoreMessages().then(() => {
+        requestAnimationFrame(() => {
+          if (!scrollContainerRef.current) return;
+          const nextScrollHeight = scrollContainerRef.current.scrollHeight;
+          scrollContainerRef.current.scrollTop = nextScrollHeight - previousScrollHeight;
+        });
+      });
+    }
+  }, [hasMoreMessages, isLoadingMore, loadMoreMessages]);
 
-            <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-background via-background to-transparent pt-10 pb-6 px-4">
-                <div className="max-w-3xl mx-auto">
-                    <ChatInput
-                        placeholder="Reply..."
-                        className="min-h-13"
-                        agentName={activeAgent?.name}
-                        onSend={handleSend}
-                        isSending={Boolean(pendingMessage) || Boolean(pendingFiles?.length)}
-                        disabled={isExecuting}
-                    />
-                    <div className="text-center mt-2">
-                        <span className="text-[11px] text-muted-foreground">
-                            AI can make mistakes. Please use with discretion.
-                        </span>
-                    </div>
-                </div>
-            </div>
+  const handleReachGraphStripEnd = React.useCallback(() => {
+    void loadMoreGraphs();
+  }, [loadMoreGraphs]);
 
-            {previewFile && (
+  const showInitialLoading =
+    !!resolvedThreadId &&
+    messagesLoading &&
+    messages.length === 0 &&
+    !pendingMessage &&
+    !(pendingFiles && pendingFiles.length > 0);
+  const chatTitle = graphThread?.title?.trim() || (resolvedThreadId ? `thr-${resolvedThreadId.slice(-6)}` : "New Chat");
+  const threadStatusMeta = getThreadStatusMeta(graphThread?.status);
+
+  return (
+    <div
+      ref={pageShellRef}
+      className={cn(
+        "relative h-full overflow-hidden bg-background",
+        filesystemPane.isFilesystemResizing && "select-none",
+      )}
+    >
+      <div className="flex h-full w-full flex-col pb-2 md:pb-3">
+        <AgentNavbar
+          left={(
+            <div className="flex min-w-0 items-center gap-2.5">
+              <h1 className="truncate text-base font-normal text-foreground">{chatTitle}</h1>
+              {graphThread ? (
                 <div
-                    className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-                    onClick={() => setPreviewFile(null)}
+                  className={cn(
+                    "inline-flex h-4 w-4 items-center justify-center",
+                    threadStatusMeta.className,
+                  )}
+                  title={threadStatusMeta.label}
                 >
-                    <div
-                        className="relative max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-lg border border-border bg-popover"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-border/50">
-                            <div className="min-w-0 pr-4">
-                                <span className="text-xs text-muted-foreground truncate block">
-                                    {previewFile.name}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
-                                    onClick={() =>
-                                        downloadMessageFile({
-                                            filename: previewFile.name,
-                                            mime_type: previewFile.mimeType,
-                                            url: previewFile.url,
-                                        })
-                                    }
-                                    aria-label="Download file"
-                                >
-                                    <Download className="w-4 h-4" />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="text-xs text-muted-foreground hover:text-foreground"
-                                    onClick={() => setPreviewFile(null)}
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                        <div className="p-3 flex items-center justify-center max-h-[82vh] overflow-auto">
-                            {previewFile.mimeType.startsWith("image/") ? (
-                                <img
-                                    src={previewFile.url}
-                                    alt={previewFile.name}
-                                    className="max-w-full max-h-[78vh] object-contain rounded-md"
-                                />
-                            ) : (
-                                <div className="text-sm text-muted-foreground">
-                                    No preview available
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                  {threadStatusMeta.icon}
                 </div>
-            )}
+              ) : null}
+            </div>
+          )}
+          right={(
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setShowTaskGraph((current) => !current)}
+                disabled={!resolvedThreadId}
+                title="Task graph"
+              >
+                <Workflow className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => filesystemPane.setShowFilesystem((current) => !current)}
+                disabled={!resolvedThreadId}
+                title="Files"
+              >
+                <IconFolderCode className="h-3.5 w-3.5" />
+              </Button>
+            </>
+          )}
+        />
+
+        <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <ThreadMessageList
+              messages={messages}
+              showInitialLoading={showInitialLoading}
+              isLoadingMore={isLoadingMore}
+              scrollContainerRef={scrollContainerRef}
+              onScroll={handleScroll}
+              activeApprovalRequestId={activeApprovalRequestId}
+              approvalSelections={approvalSelections}
+              submittingApprovalRequestId={submittingApprovalRequestId}
+              onSetApprovalChoice={setApprovalChoice}
+              onSubmitApprovalRequest={submitApprovalRequest}
+              resolveMessageFileUrl={resolveMessageFileUrl}
+              onOpenAttachmentPath={filesystemPane.openFilesystemPath}
+              pendingMessage={pendingMessage}
+              pendingFiles={pendingFiles}
+              isRunning={isRunning}
+            />
+
+          <div className="bg-background px-3 pb-3 pt-2">
+            <div className="mx-auto w-full max-w-3xl">
+              {isRunning ? (
+                <div className="mb-2 flex items-center justify-between px-1 py-1">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-2.5 py-1 text-xs text-blue-600 dark:text-blue-400">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Run in progress</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => void cancelExecution()}
+                  >
+                    Stop
+                  </Button>
+                </div>
+              ) : null}
+              {draftThreadCreationError ? (
+                <div className="mb-2 rounded-md border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                  {draftThreadCreationError}
+                </div>
+              ) : null}
+              <ChatInput
+                placeholder="Reply…"
+                onSend={handleSend}
+                isSending={Boolean(pendingMessage) || Boolean(pendingFiles?.length)}
+                agentOptions={isDraftChat ? draftAgentOptions : undefined}
+                selectedAgentId={isDraftChat ? draftAgentId : undefined}
+                onSelectedAgentIdChange={isDraftChat ? setDraftAgentId : undefined}
+              />
+            </div>
+          </div>
+          </div>
+
+          <ThreadFilesystemPane
+            showFilesystem={filesystemPane.showFilesystem}
+            activeFilesystemPaneWidth={filesystemPane.activeFilesystemPaneWidth}
+            startFilesystemResize={filesystemPane.startFilesystemResize}
+            onClose={() => filesystemPane.setShowFilesystem(false)}
+            onRefresh={filesystemPane.refreshFilesystemTree}
+            filesystemSelection={filesystemPane.filesystemSelection}
+            setFilesystemSelection={filesystemPane.setFilesystemSelection}
+            expandedFilesystemDirs={filesystemPane.expandedFilesystemDirs}
+            filesystemTreeEntries={filesystemPane.filesystemTreeEntries}
+            filesystemTreeLoading={filesystemPane.filesystemTreeLoading}
+            filesystemTreeErrors={filesystemPane.filesystemTreeErrors}
+            rootFilesystemEntries={filesystemPane.rootFilesystemEntries}
+            rootFilesystemLoading={filesystemPane.rootFilesystemLoading}
+            rootFilesystemError={filesystemPane.rootFilesystemError}
+            selectedFilesystemPreviewPath={filesystemPane.selectedFilesystemPreviewPath}
+            selectedFilesystemFileLoading={filesystemPane.selectedFilesystemFileLoading}
+            selectedFilesystemFile={filesystemPane.selectedFilesystemFile}
+            selectedFilesystemFileError={filesystemPane.selectedFilesystemFileError}
+            selectedFilesystemImageUrl={filesystemPane.selectedFilesystemImageUrl}
+            onToggleDirectory={filesystemPane.toggleFilesystemDirectory}
+            onDownloadSelectedFile={filesystemPane.downloadSelectedFilesystemFile}
+          />
         </div>
-    );
+      </div>
+
+      <ThreadTaskGraphDrawer
+        open={showTaskGraph}
+        onOpenChange={setShowTaskGraph}
+        thread={graphThread}
+        activeBundle={activeGraphBundle}
+        allGraphs={taskGraphs}
+        hasMoreGraphs={hasMoreGraphs}
+        loadingMoreGraphs={loadingMoreGraphs}
+        activeGraphId={activeGraphId || ""}
+        onSelectGraph={setActiveGraphId}
+        onReachEnd={handleReachGraphStripEnd}
+      />
+    </div>
+  );
 }

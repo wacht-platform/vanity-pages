@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import { DeploymentInitialized, DeploymentProvider } from "@wacht/nextjs";
 import "./globals.css";
 import { ClientProviders } from "@/components/providers";
-import type { Metadata } from "next";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -23,45 +22,19 @@ const newsreader = Newsreader({
 
 export const dynamic = "force-dynamic";
 
-function generatePublicKey(rawHost: string) {
-  const host = rawHost.trim();
-  if (!host) return null;
+function deriveFrontendApiBase(rawHost: string): string | null {
+    const host = rawHost.trim();
+    if (!host) return null;
 
-  const slug = host.split(".")[0];
-  const backendUrl = host.split(".").slice(1).join(".");
-  if (!backendUrl) return null;
+    const slug = host.split(".")[0];
+    const backendUrl = host.split(".").slice(1).join(".");
+    if (!backendUrl) return null;
 
-  if (backendUrl.includes("trywacht.xyz")) {
-      return `https://${slug}.fapi.trywacht.xyz`;
-  }
-  return `https://frontend.${backendUrl}`;
-}
-
-type Meta = {
-    app_name: string;
-    favicon_image_url: string;
-};
-
-export async function generateMetadata(): Promise<Metadata> {
-    try {
-        const headersList = await headers();
-        const host =
-            headersList.get("x-forwarded-host") ||
-            headersList.get("host");
-
-        const meta: { data: Meta } = await fetch(
-            `${host}/.well-known/meta`,
-        ).then((res) => res.json());
-
-        return {
-            title: meta.data.app_name,
-            icons: [{ url: meta.data.favicon_image_url }],
-        };
-    } catch (error) {
-        return {
-            title: "Vanity Pages",
-        };
+    if (backendUrl.includes("trywacht.xyz")) {
+        return `https://${slug}.fapi.trywacht.xyz`;
     }
+
+    return `https://frontend.${backendUrl}`;
 }
 
 export default async function RootLayout({
@@ -69,22 +42,21 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    let publicKey = "";
+    const headersList = await headers();
+    const portalHost =
+        headersList.get("x-forwarded-host") ||
+        headersList.get("host") ||
+        "";
 
-    try {
-        const headersList = await headers();
-        const host =
-            headersList.get("x-forwarded-host") ||
-            headersList.get("host") ||
-            "";
-
-        publicKey = `pk_test_${Buffer.from(generatePublicKey(host)!).toString("base64")}`;
-    } catch (error) {}
+    const frontendApiBase = deriveFrontendApiBase(portalHost) || "";
+    const publicKey = frontendApiBase
+        ? `pk_test_${Buffer.from(frontendApiBase).toString("base64")}`
+        : "";
 
     return (
         <html lang="en" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} bg-background font-sans text-foreground antialiased`}
             >
                 <DeploymentProvider publicKey={publicKey}>
                     <DeploymentInitialized>

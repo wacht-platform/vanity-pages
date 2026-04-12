@@ -19,6 +19,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog"
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
 import { AlertTriangle, ArrowUpRight, Check, Copy, RotateCw } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -262,7 +263,7 @@ export default function WebhookPage() {
 											boxShadow: "0 12px 32px rgba(0,0,0,0.10)",
 										}}
 										itemStyle={{ color: "var(--popover-foreground)" }}
-											formatter={(value: number | string | undefined, name: string | undefined) => {
+											formatter={(value: ValueType | undefined, name: NameType | undefined) => {
 												const key = String(name).toLowerCase()
 												const label =
 													key.includes("deliver") ? "Deliveries" :

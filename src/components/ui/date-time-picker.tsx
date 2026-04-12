@@ -79,7 +79,7 @@ export function DateTimePicker({
 					/>
 				</div>
 				<div className="border-t border-border/40 p-3 pt-2">
-					<div className="mb-1 flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground">
+					<div className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-wide text-muted-foreground">
 						<Clock3 className="h-3 w-3" />
 						Time
 					</div>

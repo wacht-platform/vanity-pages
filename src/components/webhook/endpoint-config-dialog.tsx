@@ -335,7 +335,7 @@ export function EndpointConfigDialog({
 																				<h4 className="text-[11px] uppercase font-normal text-muted-foreground/60">Example JSON</h4>
 																				<button onClick={(e) => { e.stopPropagation(); if (event.example_payload) navigator.clipboard.writeText(JSON.stringify(event.example_payload, null, 2)) }} className="text-xs font-normal text-primary hover:underline">Copy</button>
 																			</div>
-																			<div className="p-3 bg-[#0d0d12] rounded-lg border border-white/5 overflow-hidden">
+																			<div className="p-3 bg-card rounded-lg border border-border overflow-hidden">
 																				{event.example_payload ? <div className="max-h-[300px] overflow-y-auto custom-scrollbar"><JsonViewer data={event.example_payload} /></div> : <p className="text-[11px] font-normal text-muted-foreground/40 italic py-2">No example payload provided.</p>}
 																			</div>
 																		</div>

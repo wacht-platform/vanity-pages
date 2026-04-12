@@ -23,9 +23,15 @@ export function Spinner({ size = "md", className }: SpinnerProps) {
     );
 }
 
-export function LoadingScreen({ message = "Loading..." }: { message?: string }) {
+export function LoadingScreen({
+    message = "Loading...",
+    className,
+}: {
+    message?: string;
+    className?: string;
+}) {
     return (
-        <div className="h-full flex flex-col items-center justify-center gap-4 bg-background">
+        <div className={cn("flex h-full w-full flex-col items-center justify-center gap-3 px-4 font-sans", className)}>
             <Spinner size="lg" />
             <p className="text-sm text-muted-foreground">{message}</p>
         </div>

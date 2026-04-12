@@ -1,20 +1,20 @@
 "use client";
 
-import React, { createContext, useContext } from "react";
-import { useAgentSession } from "@wacht/nextjs";
-import { AgentWithIntegrations } from "@wacht/types";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useActors, useAgentSession } from "@wacht/nextjs";
+import type { Actor, Agent } from "@wacht/types";
 
 interface ActiveAgentContextType {
-    activeAgent: AgentWithIntegrations | null;
-    setActiveAgent: (agent: AgentWithIntegrations) => void;
-    agents: AgentWithIntegrations[];
+    agents: Agent[];
+    actor: Actor | null;
+    actorId: string | null;
     loading: boolean;
     hasSession: boolean;
     sessionError: Error | null;
     sessionId: string | null;
-    contextGroup: string | null;
+    isSidebarCollapsed: boolean;
+    setIsSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 const ActiveAgentContext = createContext<ActiveAgentContextType | undefined>(undefined);
@@ -30,12 +30,20 @@ export function ActiveAgentProvider({ children }: { children: React.ReactNode })
         sessionLoading,
         sessionError,
         sessionId,
-        contextGroup,
+        actor,
         agents,
-        activeAgent,
-        setActiveAgent,
         ticketExchanged
     } = useAgentSession(ticket);
+    const {
+        actors,
+        loading: actorsLoading,
+    } = useActors({
+        enabled: hasSession && !sessionLoading && !actor,
+    });
+
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+    const resolvedActor = actor ?? actors[0] ?? null;
+    const loading = sessionLoading || (hasSession && !actor && actorsLoading);
 
     useEffect(() => {
         if (ticket && ticketExchanged) {
@@ -43,17 +51,31 @@ export function ActiveAgentProvider({ children }: { children: React.ReactNode })
         }
     }, [ticket, ticketExchanged, router, pathname]);
 
-    return (
-        <ActiveAgentContext.Provider value={{
-            activeAgent,
-            setActiveAgent,
+    const value = useMemo(
+        () => ({
             agents,
-            loading: sessionLoading,
+            actor: resolvedActor,
+            actorId: resolvedActor?.id ?? null,
+            loading,
             hasSession,
             sessionError,
             sessionId,
-            contextGroup
-        }}>
+            isSidebarCollapsed,
+            setIsSidebarCollapsed,
+        }),
+        [
+            agents,
+            resolvedActor,
+            loading,
+            hasSession,
+            sessionError,
+            sessionId,
+            isSidebarCollapsed,
+        ],
+    );
+
+    return (
+        <ActiveAgentContext.Provider value={value}>
             {children}
         </ActiveAgentContext.Provider>
     );

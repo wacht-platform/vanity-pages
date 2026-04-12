@@ -1,6 +1,7 @@
 "use client"
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
 
 type ChartPoint = {
 	time: string
@@ -57,7 +58,7 @@ export function EndpointTrafficChart({ loading, data }: Props) {
 									boxShadow: "0 12px 32px rgba(0,0,0,0.10)",
 								}}
 								itemStyle={{ color: "var(--popover-foreground)" }}
-								formatter={(value: number | string | undefined, name: string | undefined) => {
+								formatter={(value: ValueType | undefined, name: NameType | undefined) => {
 									const key = String(name).toLowerCase()
 									const label =
 										key.includes("success") ? "Successful" :
