@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useActors, useAgentSession } from "@wacht/nextjs";
+import { useAgentSession } from "@wacht/nextjs";
 import type { Actor, Agent } from "@wacht/types";
 
 interface ActiveAgentContextType {
@@ -34,16 +34,9 @@ export function ActiveAgentProvider({ children }: { children: React.ReactNode })
         agents,
         ticketExchanged
     } = useAgentSession(ticket);
-    const {
-        actors,
-        loading: actorsLoading,
-    } = useActors({
-        enabled: hasSession && !sessionLoading && !actor,
-    });
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
-    const resolvedActor = actor ?? actors[0] ?? null;
-    const loading = sessionLoading || (hasSession && !actor && actorsLoading);
+    const loading = sessionLoading;
 
     useEffect(() => {
         if (ticket && ticketExchanged) {
@@ -54,8 +47,8 @@ export function ActiveAgentProvider({ children }: { children: React.ReactNode })
     const value = useMemo(
         () => ({
             agents,
-            actor: resolvedActor,
-            actorId: resolvedActor?.id ?? null,
+            actor,
+            actorId: actor?.id ?? null,
             loading,
             hasSession,
             sessionError,
@@ -65,7 +58,7 @@ export function ActiveAgentProvider({ children }: { children: React.ReactNode })
         }),
         [
             agents,
-            resolvedActor,
+            actor,
             loading,
             hasSession,
             sessionError,

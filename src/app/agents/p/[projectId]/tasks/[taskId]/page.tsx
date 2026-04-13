@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useActorProjects, useProjectTaskBoardItem } from "@wacht/nextjs";
 import type {
     ActorProject,
+    ProjectTaskBoardItemAssignment,
     ProjectTaskBoardItemEvent,
     ProjectTaskWorkspaceFileEntry,
 } from "@wacht/types";
@@ -16,6 +17,7 @@ import {
     IconPlus,
     IconFileText,
     IconChecklist,
+    IconRoute,
 } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { RichTextMarkdownInput } from "@/components/agent/rich-text-markdown-input";
@@ -27,9 +29,10 @@ import { cn } from "@/lib/utils";
 
 type TaskPaneSelection =
     | { kind: "event"; eventId: string }
+    | { kind: "assignment"; assignmentId: string }
     | { kind: "compose" };
 
-type TaskSurfaceTab = "journal" | "files";
+type TaskSurfaceTab = "journal" | "assignments" | "files";
 
 const EVENT_NARRATIVE_KEYS = [
     "details",
@@ -122,6 +125,20 @@ function getStatusIndicator(status?: string) {
         available: "bg-amber-500",
     };
     return <div className={cn("size-1.5 rounded-full shrink-0", colors[status || ""] || "bg-muted-foreground/40")} />;
+}
+
+function formatLabel(value?: string) {
+    if (!value) return "Unknown";
+    return value
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatAssignmentStatus(assignment: ProjectTaskBoardItemAssignment) {
+    if (assignment.result_status) {
+        return `${formatLabel(assignment.status)} · ${formatLabel(assignment.result_status)}`;
+    }
+    return formatLabel(assignment.status);
 }
 
 function normalizeWorkspacePath(value: unknown) {
@@ -405,10 +422,17 @@ export default function ProjectTaskDetailPage() {
     const {
         item,
         events,
+        assignments,
+        eventsHasMore,
+        eventsLoadingMore,
+        assignmentsHasMore,
+        assignmentsLoadingMore,
         loading,
         error,
         archiveItem,
         unarchiveItem,
+        loadMoreEvents,
+        loadMoreAssignments,
         appendJournal,
         taskWorkspace,
         taskWorkspaceLoading,
@@ -416,7 +440,7 @@ export default function ProjectTaskDetailPage() {
         getTaskWorkspaceFile,
         listTaskWorkspaceDirectory,
         refetchTaskWorkspace,
-    } = useProjectTaskBoardItem(taskId, !!taskId, { includeArchived: true });
+    } = useProjectTaskBoardItem(projectId, taskId, !!taskId, { includeArchived: true });
 
     const workspaceEntries = React.useMemo<ProjectTaskWorkspaceFileEntry[]>(
         () => taskWorkspace?.files || [],
@@ -429,6 +453,15 @@ export default function ProjectTaskDetailPage() {
                     timestampValue(b.created_at) - timestampValue(a.created_at),
             ),
         [events],
+    );
+    const orderedAssignments = React.useMemo<ProjectTaskBoardItemAssignment[]>(
+        () =>
+            [...assignments].sort(
+                (a: ProjectTaskBoardItemAssignment, b: ProjectTaskBoardItemAssignment) =>
+                    a.assignment_order - b.assignment_order ||
+                    timestampValue(b.updated_at) - timestampValue(a.updated_at),
+            ),
+        [assignments],
     );
 
     const [activeTab, setActiveTab] = React.useState<TaskSurfaceTab>("journal");
@@ -446,6 +479,13 @@ export default function ProjectTaskDetailPage() {
             ? events.find(
                   (event: ProjectTaskBoardItemEvent) =>
                       event.id === selection.eventId,
+                  ) || null
+            : null;
+    const selectedAssignment =
+        selection?.kind === "assignment"
+            ? assignments.find(
+                  (assignment: ProjectTaskBoardItemAssignment) =>
+                      assignment.id === selection.assignmentId,
               ) || null
             : null;
 
@@ -484,10 +524,23 @@ export default function ProjectTaskDetailPage() {
     }), [openWorkspacePath]);
 
     React.useEffect(() => {
-        if (!selection && orderedEvents.length > 0) {
+        if (selection?.kind === "compose") return;
+        if (activeTab === "assignments") {
+            if (
+                selection?.kind !== "assignment" &&
+                orderedAssignments.length > 0
+            ) {
+                setSelection({
+                    kind: "assignment",
+                    assignmentId: orderedAssignments[0].id,
+                });
+            }
+            return;
+        }
+        if (selection?.kind !== "event" && orderedEvents.length > 0) {
             setSelection({ kind: "event", eventId: orderedEvents[0].id });
         }
-    }, [selection, orderedEvents]);
+    }, [activeTab, selection, orderedAssignments, orderedEvents]);
 
     const handleSubmitJournal = async () => {
         const summary = journalSummary.trim();
@@ -582,7 +635,7 @@ export default function ProjectTaskDetailPage() {
                     <div className="flex min-h-0 flex-1 flex-col">
                         <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 px-4">
                             <div className="flex rounded-md border border-border/50 p-0.5">
-                                {(["journal", "files"] as const).map((tab) => (
+                                {(["journal", "assignments", "files"] as const).map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -620,36 +673,126 @@ export default function ProjectTaskDetailPage() {
                                 <div className="flex w-[300px] flex-col border-r border-border/50">
                                     <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-hide">
                                         <div className="space-y-px">
-                                            {orderedEvents.map((event) => (
-                                                <button
-                                                    key={event.id}
-                                                    onClick={() => setSelection({ kind: "event", eventId: event.id })}
-                                                    className={cn(
-                                                        "group flex w-full items-center gap-3 rounded px-3 py-1.5 text-left transition-all",
-                                                        selection?.kind === "event" && selection.eventId === event.id ? "bg-accent/40" : "hover:bg-accent/20"
-                                                    )}
-                                                >
-                                                    <IconFileText
-                                                        size={14}
-                                                        className={cn(
-                                                            "shrink-0",
-                                                            selection?.kind === "event" && selection.eventId === event.id ? "text-foreground" : "text-muted-foreground/60"
-                                                        )}
-                                                    />
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="truncate text-sm font-normal">{getJournalListTitle(event)}</div>
-                                                        <div className="text-xs text-muted-foreground/60">{getJournalListMeta(event)}</div>
-                                                    </div>
-                                                </button>
-                                            ))}
+                                            {activeTab === "assignments"
+                                                ? orderedAssignments.map((assignment) => (
+                                                      <button
+                                                          key={assignment.id}
+                                                          onClick={() =>
+                                                              setSelection({
+                                                                  kind: "assignment",
+                                                                  assignmentId:
+                                                                      assignment.id,
+                                                              })
+                                                          }
+                                                          className={cn(
+                                                              "group flex w-full items-center gap-3 rounded px-3 py-1.5 text-left transition-all",
+                                                              selection?.kind === "assignment" &&
+                                                                  selection.assignmentId ===
+                                                                      assignment.id
+                                                                  ? "bg-accent/40"
+                                                                  : "hover:bg-accent/20",
+                                                          )}
+                                                      >
+                                                          <IconRoute
+                                                              size={14}
+                                                              className={cn(
+                                                                  "shrink-0",
+                                                                  selection?.kind ===
+                                                                      "assignment" &&
+                                                                      selection.assignmentId ===
+                                                                          assignment.id
+                                                                      ? "text-foreground"
+                                                                      : "text-muted-foreground/60",
+                                                              )}
+                                                          />
+                                                          <div className="min-w-0 flex-1">
+                                                              <div className="truncate text-sm font-normal">
+                                                                  {`${assignment.assignment_order}. ${formatLabel(assignment.assignment_role)}`}
+                                                              </div>
+                                                              <div className="text-xs text-muted-foreground/60">
+                                                                  {formatAssignmentStatus(assignment)}
+                                                              </div>
+                                                          </div>
+                                                      </button>
+                                                  ))
+                                                : orderedEvents.map((event) => (
+                                                      <button
+                                                          key={event.id}
+                                                          onClick={() =>
+                                                              setSelection({
+                                                                  kind: "event",
+                                                                  eventId: event.id,
+                                                              })
+                                                          }
+                                                          className={cn(
+                                                              "group flex w-full items-center gap-3 rounded px-3 py-1.5 text-left transition-all",
+                                                              selection?.kind === "event" &&
+                                                                  selection.eventId ===
+                                                                      event.id
+                                                                  ? "bg-accent/40"
+                                                                  : "hover:bg-accent/20",
+                                                          )}
+                                                      >
+                                                          <IconFileText
+                                                              size={14}
+                                                              className={cn(
+                                                                  "shrink-0",
+                                                                  selection?.kind ===
+                                                                      "event" &&
+                                                                      selection.eventId === event.id
+                                                                      ? "text-foreground"
+                                                                      : "text-muted-foreground/60",
+                                                              )}
+                                                          />
+                                                          <div className="min-w-0 flex-1">
+                                                              <div className="truncate text-sm font-normal">
+                                                                  {getJournalListTitle(event)}
+                                                              </div>
+                                                              <div className="text-xs text-muted-foreground/60">
+                                                                  {getJournalListMeta(event)}
+                                                              </div>
+                                                          </div>
+                                                      </button>
+                                                  ))}
                                         </div>
+                                        {activeTab === "assignments" ? (
+                                            assignmentsHasMore ? (
+                                                <div className="px-3 pt-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => void loadMoreAssignments()}
+                                                        disabled={assignmentsLoadingMore}
+                                                        className="w-full rounded-md border border-border/50 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/20 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        {assignmentsLoadingMore
+                                                            ? "Loading..."
+                                                            : "Load more assignments"}
+                                                    </button>
+                                                </div>
+                                            ) : null
+                                        ) : eventsHasMore ? (
+                                            <div className="px-3 pt-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void loadMoreEvents()}
+                                                    disabled={eventsLoadingMore}
+                                                    className="w-full rounded-md border border-border/50 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/20 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                                                >
+                                                    {eventsLoadingMore ? "Loading..." : "Load older entries"}
+                                                </button>
+                                            </div>
+                                        ) : null}
                                     </div>
                                 </div>
 
                                 <div className="flex min-w-0 flex-1 flex-col bg-background">
                                     <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 px-4 md:px-5">
                                         <div className="max-w-md truncate text-sm font-normal text-muted-foreground">
-                                            {selection?.kind === "event" ? getEventDocumentPath(selectedEvent!) : "New Entry"}
+                                            {selection?.kind === "event"
+                                                ? getEventDocumentPath(selectedEvent!)
+                                                : selection?.kind === "assignment"
+                                                  ? `${selectedAssignment?.assignment_order}. ${formatLabel(selectedAssignment?.assignment_role)}`
+                                                  : "New Entry"}
                                         </div>
                                     </div>
 
@@ -695,6 +838,71 @@ export default function ProjectTaskDetailPage() {
                                                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkWorkspaceLinks]} components={markdownComponents}>
                                                     {buildEventMarkdown(selectedEvent)}
                                                 </ReactMarkdown>
+                                            </div>
+                                        ) : selection?.kind === "assignment" && selectedAssignment ? (
+                                            <div className="max-w-2xl space-y-6">
+                                                <div className="space-y-2">
+                                                    <h2 className="text-base font-normal">
+                                                        {`${selectedAssignment.assignment_order}. ${formatLabel(selectedAssignment.assignment_role)}`}
+                                                    </h2>
+                                                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                                        <span>{formatAssignmentStatus(selectedAssignment)}</span>
+                                                        <span>·</span>
+                                                        <span>{new Date(selectedAssignment.updated_at).toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+
+                                                {selectedAssignment.instructions ? (
+                                                    <div className={DOCUMENT_PROSE_CLASSNAME}>
+                                                        <ReactMarkdown
+                                                            remarkPlugins={[remarkGfm, remarkWorkspaceLinks]}
+                                                            components={markdownComponents}
+                                                        >
+                                                            {selectedAssignment.instructions}
+                                                        </ReactMarkdown>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-sm italic text-muted-foreground">
+                                                        No instructions recorded.
+                                                    </p>
+                                                )}
+
+                                                <div className="grid gap-3 text-sm text-muted-foreground">
+                                                    {selectedAssignment.result_summary ? (
+                                                        <div>
+                                                            <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
+                                                                Result
+                                                            </div>
+                                                            <div className="text-foreground/90">
+                                                                {selectedAssignment.result_summary}
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
+                                                    {selectedAssignment.handoff_file_path ? (
+                                                        <div>
+                                                            <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
+                                                                Handoff File
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    openWorkspacePath(
+                                                                        selectedAssignment.handoff_file_path ?? null,
+                                                                    )
+                                                                }
+                                                                className="text-foreground underline decoration-divider underline-offset-4 hover:decoration-foreground/40"
+                                                            >
+                                                                {selectedAssignment.handoff_file_path}
+                                                            </button>
+                                                        </div>
+                                                    ) : null}
+                                                    <div>
+                                                        <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
+                                                            Thread
+                                                        </div>
+                                                        <div>{selectedAssignment.thread_id}</div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         ) : null}
                                     </div>
