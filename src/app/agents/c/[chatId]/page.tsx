@@ -237,11 +237,12 @@ export default function SingleChatPage() {
       }
 
       setDraftThreadCreationError(null);
-      const thread = await createThread({
+      const result = await createThread({
         agent_id: draftAgentId,
         title: text.trim().slice(0, 50) || "New chat",
         thread_purpose: "conversation",
       });
+      const thread = result.data;
 
       setResolvedThreadId(thread.id);
       setQueuedDraftMessage({

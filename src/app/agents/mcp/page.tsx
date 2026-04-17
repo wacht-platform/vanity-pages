@@ -184,14 +184,12 @@ export default function AgentMcpPage() {
                                                                     server.id,
                                                                 );
                                                                 try {
-                                                                    const {
-                                                                        auth_url,
-                                                                    } =
+                                                                    const result =
                                                                         await connect(
                                                                             server.id,
                                                                         );
                                                                     window.open(
-                                                                        auth_url,
+                                                                        result.data.auth_url,
                                                                         "_blank",
                                                                         "noopener,noreferrer",
                                                                     );

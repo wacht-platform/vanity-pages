@@ -113,24 +113,24 @@ export default function AgentsLandingPage() {
                 </div>
             ) : (
                 <div className="space-y-8">
-                    <ProjectTableSection
-                        title="Projects"
-                        emptyLabel={
-                            search
-                                ? "No matching active projects"
-                                : "No active projects"
-                        }
-                        projects={activeProjects}
-                        onArchive={archiveProject}
-                        onUnarchive={unarchiveProject}
-                    />
+                        <ProjectTableSection
+                            title="Projects"
+                            emptyLabel={
+                                search
+                                    ? "No matching active projects"
+                                    : "No active projects"
+                            }
+                            projects={activeProjects}
+                            onArchive={async (projectId) => (await archiveProject(projectId)).data}
+                            onUnarchive={async (projectId) => (await unarchiveProject(projectId)).data}
+                        />
 
                     {archivedProjects.length > 0 ? (
                         <ProjectTableSection
                             title="Archived"
                             projects={archivedProjects}
-                            onArchive={archiveProject}
-                            onUnarchive={unarchiveProject}
+                            onArchive={async (projectId) => (await archiveProject(projectId)).data}
+                            onUnarchive={async (projectId) => (await unarchiveProject(projectId)).data}
                         />
                     ) : null}
                 </div>

@@ -88,17 +88,17 @@ export function WebhookAppProvider({ children }: { children: React.ReactNode }) 
 			sessionError,
 			sessionId,
 			reload: refetch,
-			createEndpoint,
-			updateEndpoint,
-			deleteEndpoint,
-			testEndpoint,
-			rotateSecret,
-			updateSettings,
-			replayDelivery,
-			cancelReplayTask,
-			fetchReplayTaskStatus,
-			fetchReplayTasks,
-			fetchDeliveryDetail
+			createEndpoint: async (options) => (await createEndpoint(options)).data,
+			updateEndpoint: async (endpointId, options) => (await updateEndpoint(endpointId, options)).data,
+			deleteEndpoint: async (endpointId) => (await deleteEndpoint(endpointId)).data,
+			testEndpoint: async (endpointId, options) => (await testEndpoint(endpointId, options)).data,
+			rotateSecret: async () => (await rotateSecret()).data,
+			updateSettings: async (options) => (await updateSettings(options)).data,
+			replayDelivery: async (options) => (await replayDelivery(options)).data,
+			cancelReplayTask: async (options) => (await cancelReplayTask(options)).data,
+			fetchReplayTaskStatus: async (options) => (await fetchReplayTaskStatus(options)).data,
+			fetchReplayTasks: async (options) => (await fetchReplayTasks(options)).data,
+			fetchDeliveryDetail: async (deliveryId) => (await fetchDeliveryDetail(deliveryId)).data
 		}}>
 			{children}
 		</WebhookAppContext.Provider>

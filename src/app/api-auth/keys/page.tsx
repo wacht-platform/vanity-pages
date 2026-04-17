@@ -74,8 +74,8 @@ export default function ApiAuthKeysPage() {
 		setIsCreating(true)
 		try {
 			const expiresAt = newKeyExpiresAt ? new Date(newKeyExpiresAt).toISOString() : undefined
-			const keyData = await createApiKey({ name: newKeyName.trim(), expires_at: expiresAt })
-			setSecretValue(keyData.secret)
+			const result = await createApiKey({ name: newKeyName.trim(), expires_at: expiresAt })
+			setSecretValue(result.data.secret)
 			setCreateOpen(false)
 			setSecretOpen(true)
 			setNewKeyName("")
@@ -93,8 +93,8 @@ export default function ApiAuthKeysPage() {
 		if (!selectedKeyId || rotatingKeyId !== null) return
 		setRotatingKeyId(selectedKeyId)
 		try {
-			const keyData = await rotateApiKey({ key_id: selectedKeyId })
-			setSecretValue(keyData.secret)
+			const result = await rotateApiKey({ key_id: selectedKeyId })
+			setSecretValue(result.data.secret)
 			setRotateOpen(false)
 			setSecretOpen(true)
 			toast.success("API key rotated")

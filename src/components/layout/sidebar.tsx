@@ -116,14 +116,14 @@ export function AppSidebar({ className }: { className?: string }) {
 
     return (
         <>
-            <SidebarCommand
-                currentProjectId={currentProjectId}
-                open={isCommandOpen}
-                onOpenChange={setIsCommandOpen}
-                agents={agents}
-                onCreateProject={createProject}
-                projects={projects}
-            />
+                <SidebarCommand
+                    currentProjectId={currentProjectId}
+                    open={isCommandOpen}
+                    onOpenChange={setIsCommandOpen}
+                    agents={agents}
+                    onCreateProject={async (request) => (await createProject(request)).data}
+                    projects={projects}
+                />
 
             <button
                 type="button"
@@ -158,7 +158,7 @@ export function AppSidebar({ className }: { className?: string }) {
                         currentProjectId={currentProjectId}
                         workspaceLoading={workspaceLoading}
                         agents={agents}
-                        onCreateProject={createProject}
+                        onCreateProject={async (request) => (await createProject(request)).data}
                         onOpenCommand={() => setIsCommandOpen(true)}
                         onExpand={() => setIsSidebarCollapsed(false)}
                         onProjectSelect={(projectId) => {
@@ -173,7 +173,7 @@ export function AppSidebar({ className }: { className?: string }) {
                         openProjectId={openProjectId}
                         workspaceLoading={workspaceLoading}
                         agents={agents}
-                        onCreateProject={createProject}
+                        onCreateProject={async (request) => (await createProject(request)).data}
                         onOpenCommand={() => setIsCommandOpen(true)}
                         onCollapse={() => setIsSidebarCollapsed(true)}
                         onToggleProject={(projectId) =>

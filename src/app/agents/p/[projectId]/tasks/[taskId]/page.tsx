@@ -548,7 +548,8 @@ export default function ProjectTaskDetailPage() {
         setJournalSubmitting(true);
         setJournalSubmitError(null);
         try {
-            const event = await appendJournal({ summary, body_markdown: journalBody.trim() || undefined }, journalFiles);
+            const result = await appendJournal({ summary, body_markdown: journalBody.trim() || undefined }, journalFiles);
+            const event = result.data;
             setJournalSummary(""); setJournalBody(""); setJournalFiles([]);
             setSelection({ kind: "event", eventId: event.id });
         } catch (err) {
@@ -659,12 +660,12 @@ export default function ProjectTaskDetailPage() {
                         </div>
 
                         {activeTab === "files" ? (
-                            <TaskWorkspaceExplorer
+                        <TaskWorkspaceExplorer
                                 rootEntries={workspaceEntries}
                                 rootLoading={taskWorkspaceLoading}
                                 rootError={taskWorkspaceError ? String(taskWorkspaceError) : null}
-                                getFile={getTaskWorkspaceFile}
-                                listDirectory={listTaskWorkspaceDirectory}
+                                getFile={async (path) => (await getTaskWorkspaceFile(path)).data}
+                                listDirectory={async (path) => (await listTaskWorkspaceDirectory(path)).data}
                                 refetchRoot={refetchTaskWorkspace}
                                 requestedPath={requestedWorkspacePath}
                             />
