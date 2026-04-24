@@ -257,10 +257,10 @@ function ExpandedSidebar({
                                 active={pathname === "/agents"}
                             />
                             <TopLevelLink
-                                href="/agents/mcp"
+                                href="/agents/integrations"
                                 icon={<IconConnection size={15} stroke={1.9} />}
-                                label="MCP"
-                                active={pathname === "/agents/mcp"}
+                                label="Integrations"
+                                active={pathname === "/agents/integrations"}
                             />
                         </div>
                     </SidebarSection>
@@ -378,12 +378,12 @@ function CollapsedSidebar({
             </Link>
 
             <Link
-                href="/agents/mcp"
+                href="/agents/integrations"
                 className={cn(
                     shellButtonClass,
-                    pathname === "/agents/mcp" && primaryNavItemActiveClass,
+                    pathname === "/agents/integrations" && primaryNavItemActiveClass,
                 )}
-                title="MCP"
+                title="Integrations"
             >
                 <IconConnection size={16} stroke={1.9} />
             </Link>
