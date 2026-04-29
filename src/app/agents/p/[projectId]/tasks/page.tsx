@@ -7,9 +7,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useActorProjects, useProjectTasks } from "@wacht/nextjs";
 import type { ActorProject, ProjectTaskBoardItem } from "@wacht/types";
-import { IconPaperclip, IconPlus, IconChecklist } from "@tabler/icons-react";
+import { IconPlus, IconChecklist } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
-import { RichTextMarkdownInput } from "@/components/agent/rich-text-markdown-input";
+import { CreateTaskDialog } from "@/components/agent/task-board-dialogs";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -222,12 +222,6 @@ export default function ProjectTasksPage() {
     });
     const project =
         projects.find((item: ActorProject) => item.id === projectId) || null;
-    const [isInlineFormOpen, setIsInlineFormOpen] = React.useState(false);
-    const [inlineTitle, setInlineTitle] = React.useState("");
-    const [inlineDescription, setInlineDescription] = React.useState("");
-    const [inlineFiles, setInlineFiles] = React.useState<File[]>([]);
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const inlineFileInputRef = React.useRef<HTMLInputElement | null>(null);
     const {
         tasks: activeTasks,
         loading: activeTasksLoading,
@@ -265,38 +259,6 @@ export default function ProjectTasksPage() {
             })),
         [activeTasks],
     );
-
-    const resetInlineForm = React.useCallback(() => {
-        setInlineTitle("");
-        setInlineDescription("");
-        setInlineFiles([]);
-        setIsInlineFormOpen(false);
-    }, []);
-
-    const submitInlineTask = React.useCallback(async () => {
-        if (!inlineTitle.trim() || isSubmitting) return;
-        setIsSubmitting(true);
-        try {
-            await createTask(
-                {
-                    title: inlineTitle.trim(),
-                    description: inlineDescription.trim() || undefined,
-                    priority: "neutral",
-                },
-                inlineFiles,
-            );
-            resetInlineForm();
-        } finally {
-            setIsSubmitting(false);
-        }
-    }, [
-        createTask,
-        inlineDescription,
-        inlineFiles,
-        inlineTitle,
-        isSubmitting,
-        resetInlineForm,
-    ]);
 
     if (!hasSession) {
         return (
@@ -365,113 +327,23 @@ export default function ProjectTasksPage() {
                                         </span>
                                     </div>
 
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setIsInlineFormOpen(
-                                                (current) => !current,
-                                            )
+                                    <CreateTaskDialog
+                                        onCreate={async (request, files) => {
+                                            await createTask(request, files);
+                                        }}
+                                        trigger={
+                                            <button
+                                                type="button"
+                                                className="flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-normal text-primary-foreground transition-colors"
+                                            >
+                                                <IconPlus size={13} stroke={2.5} />
+                                                <span>New Task</span>
+                                            </button>
                                         }
-                                        className="flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-normal text-primary-foreground transition-colors"
-                                    >
-                                        <IconPlus size={13} stroke={2.5} />
-                                        <span>New Task</span>
-                                    </button>
+                                    />
                                 </div>
                             </div>
                         </div>
-
-                        {/* Inline Form Container */}
-                        {isInlineFormOpen && (
-                            <div className="border-b border-border/50">
-                                <div className="px-4 py-4 md:px-5">
-                                    <div className="rounded-lg border border-border/60 bg-background p-4">
-                                        <input
-                                            autoFocus
-                                            value={inlineTitle}
-                                            onChange={(e) =>
-                                                setInlineTitle(e.target.value)
-                                            }
-                                            onKeyDown={(e) => {
-                                                if (
-                                                    e.key === "Enter" &&
-                                                    inlineTitle.trim()
-                                                )
-                                                    submitInlineTask();
-                                                if (e.key === "Escape")
-                                                    resetInlineForm();
-                                            }}
-                                            className="mb-3 w-full border-none bg-transparent text-base font-normal outline-none placeholder:text-muted-foreground"
-                                            placeholder="What needs to be done?"
-                                        />
-                                        <RichTextMarkdownInput
-                                            value={inlineDescription}
-                                            onChange={setInlineDescription}
-                                            placeholder="Add more details..."
-                                            contentClassName="min-h-[100px] text-sm leading-relaxed"
-                                        />
-                                        <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3">
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        inlineFileInputRef.current?.click()
-                                                    }
-                                                    className="flex h-7 items-center gap-1.5 rounded-md bg-secondary/50 px-2 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-                                                >
-                                                    <IconPaperclip
-                                                        size={12}
-                                                        stroke={2}
-                                                    />
-                                                    <span>Attach</span>
-                                                </button>
-                                                <input
-                                                    ref={inlineFileInputRef}
-                                                    type="file"
-                                                    multiple
-                                                    className="hidden"
-                                                    onChange={(e) =>
-                                                        setInlineFiles(
-                                                            Array.from(
-                                                                e.target
-                                                                    .files ||
-                                                                    [],
-                                                            ),
-                                                        )
-                                                    }
-                                                />
-                                                {inlineFiles.length > 0 && (
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {inlineFiles.length}{" "}
-                                                        files
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={resetInlineForm}
-                                                    className="h-8 px-3 text-sm text-muted-foreground hover:text-foreground"
-                                                >
-                                                    Cancel
-                                                </button>
-                                                <button
-                                                    disabled={
-                                                        !inlineTitle.trim() ||
-                                                        isSubmitting
-                                                    }
-                                                    onClick={submitInlineTask}
-                                                    className="h-8 rounded-md bg-primary px-4 text-sm font-normal text-primary-foreground transition-opacity disabled:opacity-50"
-                                                >
-                                                    {isSubmitting
-                                                        ? "Creating..."
-                                                        : "Create Task"}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
 
                         <div className="flex w-full flex-col gap-6 px-4 py-4 md:px-5">
                             <section className="flex flex-col gap-4">

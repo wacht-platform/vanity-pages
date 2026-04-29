@@ -21,6 +21,7 @@ import {
 } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { RichTextMarkdownInput } from "@/components/agent/rich-text-markdown-input";
+import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
 import { TaskWorkspaceExplorer } from "@/components/agent/task-workspace-explorer";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -431,6 +432,7 @@ export default function ProjectTaskDetailPage() {
         error,
         archiveItem,
         unarchiveItem,
+        updateItem,
         loadMoreEvents,
         loadMoreAssignments,
         appendJournal,
@@ -603,6 +605,12 @@ export default function ProjectTaskDetailPage() {
                     <div className="flex items-center gap-2">
                         {getPriorityIcon(item.priority)}
                     </div>
+                    <EditTaskDialog
+                        task={item}
+                        onUpdate={async (request, files) => {
+                            await updateItem(request, files);
+                        }}
+                    />
                     <button
                         onClick={async () => item.archived_at ? await unarchiveItem() : await archiveItem()}
                         className="flex h-8 items-center gap-1.5 rounded-md border border-border/40 px-3 text-sm transition-colors hover:bg-accent/50"
