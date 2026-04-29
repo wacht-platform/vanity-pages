@@ -276,7 +276,7 @@ function TaskForm({
                         setField("scheduleKind", value as TaskFormValues["scheduleKind"])
                     }
                 >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                         <SelectValue placeholder="No schedule" />
                     </SelectTrigger>
                     <SelectContent>
@@ -314,24 +314,22 @@ function TaskForm({
                 </div>
             ) : null}
 
-            <div className="grid gap-4 md:grid-cols-[180px]">
-                <div className="grid gap-2">
-                    <Label className="font-normal" htmlFor="task-priority">Priority</Label>
-                    <Select
-                        value={values.priority}
-                        onValueChange={(value) => setField("priority", value as TaskFormValues["priority"])}
-                    >
-                        <SelectTrigger id="task-priority" className="w-full">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="urgent">Urgent</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="neutral">Neutral</SelectItem>
-                            <SelectItem value="low">Low</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className="grid gap-2">
+                <Label className="font-normal" htmlFor="task-priority">Priority</Label>
+                <Select
+                    value={values.priority}
+                    onValueChange={(value) => setField("priority", value as TaskFormValues["priority"])}
+                >
+                    <SelectTrigger id="task-priority" className="w-full">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="neutral">Neutral</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="grid gap-2">
