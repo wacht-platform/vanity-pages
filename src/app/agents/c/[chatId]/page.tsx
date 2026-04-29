@@ -10,17 +10,14 @@ import {
   Workflow,
 } from "lucide-react";
 import {
-  useAgentThread,
   useAgentThreadConversation,
   useAgentThreadFilesystem,
   useAgentThreadTaskGraphs,
   useProjectThreads,
 } from "@wacht/nextjs";
-import {
-  IconFolderCode,
-} from "@tabler/icons-react";
+import { IconFolderCode } from "@tabler/icons-react";
 
-import type { ThreadTaskGraphBundle } from "@wacht/types";
+import type { AgentThread, ThreadTaskGraphBundle } from "@wacht/types";
 
 import { useActiveAgent } from "@/components/agent-provider";
 import { ThreadFilesystemPane } from "@/components/agent/thread-chat/filesystem-pane";
@@ -33,36 +30,85 @@ import { AgentNavbar } from "@/components/layout/agent-navbar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-function getThreadStatusMeta(status?: string) {
-  switch (status) {
-    case "running":
-    case "in_progress":
-      return {
-        icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
-        label: "Running",
-        className: "text-blue-600 dark:text-blue-400",
-      };
-    case "completed":
-      return {
-        icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-        label: "Completed",
-        className: "text-emerald-600 dark:text-emerald-400",
-      };
-    case "failed":
-    case "blocked":
-    case "rejected":
-      return {
-        icon: <AlertCircle className="h-3.5 w-3.5" />,
-        label: "Needs attention",
-        className: "text-rose-600 dark:text-rose-400",
-      };
-    default:
-      return {
-        icon: <Clock3 className="h-3.5 w-3.5" />,
-        label: "Idle",
-        className: "text-muted-foreground",
-      };
+type DraftMessage = {
+  text: string;
+  files: File[];
+};
+
+type ThreadStatusKind = "active" | "completed" | "attention" | "idle";
+
+const ACTIVE_THREAD_STATUSES = new Set<AgentThread["status"]>([
+  "running",
+  "in_progress",
+]);
+const COMPLETED_THREAD_STATUSES = new Set<AgentThread["status"]>([
+  "completed",
+]);
+const ATTENTION_THREAD_STATUSES = new Set<AgentThread["status"]>([
+  "failed",
+  "blocked",
+  "rejected",
+]);
+
+function getThreadStatusKind(
+  status: AgentThread["status"] | undefined,
+  isRunning: boolean,
+): ThreadStatusKind {
+  if (isRunning || (status && ACTIVE_THREAD_STATUSES.has(status))) {
+    return "active";
   }
+
+  if (status && COMPLETED_THREAD_STATUSES.has(status)) {
+    return "completed";
+  }
+
+  if (status && ATTENTION_THREAD_STATUSES.has(status)) {
+    return "attention";
+  }
+
+  return "idle";
+}
+
+function getThreadStatusMeta(kind: ThreadStatusKind) {
+  if (kind === "active") {
+    return {
+      icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
+      label: "Running",
+      className: "text-blue-600 dark:text-blue-400",
+    };
+  }
+
+  if (kind === "completed") {
+    return {
+      icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+      label: "Completed",
+      className: "text-emerald-600 dark:text-emerald-400",
+    };
+  }
+
+  if (kind === "attention") {
+    return {
+      icon: <AlertCircle className="h-3.5 w-3.5" />,
+      label: "Needs attention",
+      className: "text-rose-600 dark:text-rose-400",
+    };
+  }
+
+  return {
+    icon: <Clock3 className="h-3.5 w-3.5" />,
+    label: "Idle",
+    className: "text-muted-foreground",
+  };
+}
+
+function createChatTitle(thread: AgentThread | null, threadId: string | null) {
+  const title = thread?.title?.trim();
+  if (title) return title;
+  return threadId ? `thr-${threadId.slice(-6)}` : "New Chat";
+}
+
+function createDraftTitle(message: string) {
+  return message.trim().slice(0, 50) || "New chat";
 }
 
 export default function SingleChatPage() {
@@ -79,27 +125,23 @@ export default function SingleChatPage() {
   const draftProjectId = searchParams?.get("projectId");
   const initialMessage = searchParams?.get("message");
 
-  const [resolvedThreadId, setResolvedThreadId] = React.useState<string | null>(
-    isDraftChat ? null : chatId,
-  );
-  const [queuedDraftMessage, setQueuedDraftMessage] = React.useState<{
-    text: string;
-    files: File[];
-  } | null>(null);
+  const [queuedDraftMessage, setQueuedDraftMessage] =
+    React.useState<DraftMessage | null>(null);
+  const [createdThread, setCreatedThread] =
+    React.useState<AgentThread | null>(null);
   const [draftAgentId, setDraftAgentId] = React.useState<string>("");
-  const [draftThreadCreationError, setDraftThreadCreationError] = React.useState<string | null>(null);
+  const [draftThreadCreationError, setDraftThreadCreationError] =
+    React.useState<string | null>(null);
   const [showTaskGraph, setShowTaskGraph] = React.useState(false);
   const [activeGraphId, setActiveGraphId] = React.useState<string | null>(null);
+  const resolvedThreadId = isDraftChat ? createdThread?.id ?? null : chatId;
 
   const { agents } = useActiveAgent();
   const { createThread } = useProjectThreads(draftProjectId ?? undefined, {
     enabled: isDraftChat && !!draftProjectId,
   });
-  const { thread: graphThread } = useAgentThread(
-    resolvedThreadId ?? undefined,
-    !!resolvedThreadId,
-  );
   const {
+    thread,
     messages,
     sendMessage,
     submitApprovalResponse,
@@ -117,6 +159,7 @@ export default function SingleChatPage() {
     resolveMessageFileUrl,
   } = useAgentThreadConversation({
     threadId: resolvedThreadId ?? "",
+    initialThread: createdThread,
   });
   const {
     filesystem,
@@ -141,7 +184,10 @@ export default function SingleChatPage() {
 
   const latestRenderedMessageId = messages[messages.length - 1]?.id ?? null;
   const pendingFilesCount = pendingFiles?.length ?? 0;
-  const filesystemEntries = React.useMemo(() => filesystem?.files || [], [filesystem]);
+  const filesystemEntries = React.useMemo(
+    () => filesystem?.files || [],
+    [filesystem],
+  );
   const draftAgentOptions = React.useMemo(
     () =>
       agents.map((agent) => ({
@@ -150,23 +196,13 @@ export default function SingleChatPage() {
       })),
     [agents],
   );
-
-  React.useEffect(() => {
-    if (!isDraftChat) return;
-
-    if (!agents.length) {
-      if (draftAgentId) {
-        setDraftAgentId("");
-      }
-      return;
-    }
-
+  const selectedDraftAgentId = React.useMemo(() => {
     if (draftAgentId && agents.some((agent) => agent.id === draftAgentId)) {
-      return;
+      return draftAgentId;
     }
 
-    setDraftAgentId(agents[0]?.id ?? "");
-  }, [agents, draftAgentId, isDraftChat]);
+    return agents[0]?.id ?? "";
+  }, [agents, draftAgentId]);
 
   const {
     activeApprovalRequestId,
@@ -191,34 +227,25 @@ export default function SingleChatPage() {
     pageShellRef,
   });
 
-  React.useEffect(() => {
-    if (!isDraftChat) {
-      setResolvedThreadId(chatId);
-    }
-  }, [chatId, isDraftChat]);
-
-  React.useEffect(() => {
-    if (!taskGraphs.length) {
-      setActiveGraphId(null);
-      return;
-    }
-
-    if (
-      !activeGraphId ||
-      !taskGraphs.some((bundle: ThreadTaskGraphBundle) => bundle.graph.id === activeGraphId)
-    ) {
-      setActiveGraphId(taskGraphs[0].graph.id);
-    }
-  }, [taskGraphs, activeGraphId]);
-
-  const activeGraphBundle = React.useMemo(() => {
+  const effectiveActiveGraphId = React.useMemo(() => {
     if (!taskGraphs.length) return null;
-    return (
-      taskGraphs.find((bundle: ThreadTaskGraphBundle) => bundle.graph.id === activeGraphId) ||
-      taskGraphs[0] ||
-      null
-    );
+    if (
+      activeGraphId &&
+      taskGraphs.some((bundle) => bundle.graph.id === activeGraphId)
+    ) {
+      return activeGraphId;
+    }
+    return taskGraphs[0].graph.id;
   }, [taskGraphs, activeGraphId]);
+  const activeGraphBundle = React.useMemo(() => {
+    if (!effectiveActiveGraphId) return null;
+    return (
+      taskGraphs.find(
+        (bundle: ThreadTaskGraphBundle) =>
+          bundle.graph.id === effectiveActiveGraphId,
+      ) ?? null
+    );
+  }, [taskGraphs, effectiveActiveGraphId]);
 
   const handleSend = React.useCallback(
     async (text: string, files?: File[]) => {
@@ -229,7 +256,7 @@ export default function SingleChatPage() {
       }
 
       if (!draftProjectId) return;
-      if (!draftAgentId) {
+      if (!selectedDraftAgentId) {
         setDraftThreadCreationError(
           "Select an agent before starting the thread.",
         );
@@ -238,20 +265,27 @@ export default function SingleChatPage() {
 
       setDraftThreadCreationError(null);
       const result = await createThread({
-        agent_id: draftAgentId,
-        title: text.trim().slice(0, 50) || "New chat",
+        agent_id: selectedDraftAgentId,
+        title: createDraftTitle(text),
         thread_purpose: "conversation",
       });
       const thread = result.data;
 
-      setResolvedThreadId(thread.id);
+      setCreatedThread(thread);
       setQueuedDraftMessage({
         text,
         files: files ?? [],
       });
       router.replace(`/agents/c/${thread.id}`);
     },
-    [createThread, draftAgentId, draftProjectId, isDraftChat, router, sendMessage],
+    [
+      createThread,
+      draftProjectId,
+      isDraftChat,
+      router,
+      sendMessage,
+      selectedDraftAgentId,
+    ],
   );
 
   React.useEffect(() => {
@@ -275,10 +309,16 @@ export default function SingleChatPage() {
 
   React.useLayoutEffect(() => {
     if (!isLoadingHistoryRef.current && scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      scrollContainerRef.current.scrollTop =
+        scrollContainerRef.current.scrollHeight;
     }
     isLoadingHistoryRef.current = false;
-  }, [latestRenderedMessageId, pendingMessage, pendingFilesCount, hasActiveRun]);
+  }, [
+    latestRenderedMessageId,
+    pendingMessage,
+    pendingFilesCount,
+    hasActiveRun,
+  ]);
 
   const handleScroll = React.useCallback(() => {
     const container = scrollContainerRef.current;
@@ -292,7 +332,8 @@ export default function SingleChatPage() {
         requestAnimationFrame(() => {
           if (!scrollContainerRef.current) return;
           const nextScrollHeight = scrollContainerRef.current.scrollHeight;
-          scrollContainerRef.current.scrollTop = nextScrollHeight - previousScrollHeight;
+          scrollContainerRef.current.scrollTop =
+            nextScrollHeight - previousScrollHeight;
         });
       });
     }
@@ -308,9 +349,9 @@ export default function SingleChatPage() {
     messages.length === 0 &&
     !pendingMessage &&
     !(pendingFiles && pendingFiles.length > 0);
-  const chatTitle = graphThread?.title?.trim() || (resolvedThreadId ? `thr-${resolvedThreadId.slice(-6)}` : "New Chat");
-  const displayThreadStatus = isRunning ? "running" : graphThread?.status;
-  const threadStatusMeta = getThreadStatusMeta(displayThreadStatus);
+  const chatTitle = createChatTitle(thread, resolvedThreadId);
+  const threadStatusKind = getThreadStatusKind(thread?.status, isRunning);
+  const threadStatusMeta = getThreadStatusMeta(threadStatusKind);
 
   return (
     <div
@@ -324,8 +365,10 @@ export default function SingleChatPage() {
         <AgentNavbar
           left={(
             <div className="flex min-w-0 items-center gap-2.5">
-              <h1 className="truncate text-base font-normal text-foreground">{chatTitle}</h1>
-              {(graphThread || isRunning) ? (
+              <h1 className="truncate text-base font-normal text-foreground">
+                {chatTitle}
+              </h1>
+              {(thread || isRunning) ? (
                 <div
                   className={cn(
                     "inline-flex h-4 w-4 items-center justify-center",
@@ -354,7 +397,9 @@ export default function SingleChatPage() {
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                onClick={() => filesystemPane.setShowFilesystem((current) => !current)}
+                onClick={() =>
+                  filesystemPane.setShowFilesystem((current) => !current)
+                }
                 disabled={!resolvedThreadId}
                 title="Files"
               >
@@ -384,40 +429,46 @@ export default function SingleChatPage() {
               isRunning={isRunning}
             />
 
-          <div className="bg-background px-3 pb-3 pt-2">
-            <div className="mx-auto w-full max-w-3xl">
-              {isRunning ? (
-                <div className="mb-2 flex items-center justify-between px-1 py-1">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-2.5 py-1 text-xs text-blue-600 dark:text-blue-400">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span>Run in progress</span>
+            <div className="bg-background px-3 pb-3 pt-2">
+              <div className="mx-auto w-full max-w-3xl">
+                {isRunning ? (
+                  <div className="mb-2 flex items-center justify-between px-1 py-1">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-2.5 py-1 text-xs text-blue-600 dark:text-blue-400">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Run in progress</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => void cancelExecution()}
+                    >
+                      Stop
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => void cancelExecution()}
-                  >
-                    Stop
-                  </Button>
-                </div>
-              ) : null}
-              {draftThreadCreationError ? (
-                <div className="mb-2 rounded-md border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-                  {draftThreadCreationError}
-                </div>
-              ) : null}
-              <ChatInput
-                placeholder="Reply…"
-                onSend={handleSend}
-                isSending={Boolean(pendingMessage) || Boolean(pendingFiles?.length)}
-                agentOptions={isDraftChat ? draftAgentOptions : undefined}
-                selectedAgentId={isDraftChat ? draftAgentId : undefined}
-                onSelectedAgentIdChange={isDraftChat ? setDraftAgentId : undefined}
-              />
+                ) : null}
+                {draftThreadCreationError ? (
+                  <div className="mb-2 rounded-md border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                    {draftThreadCreationError}
+                  </div>
+                ) : null}
+                <ChatInput
+                  placeholder="Reply…"
+                  onSend={handleSend}
+                  isSending={
+                    Boolean(pendingMessage) || Boolean(pendingFiles?.length)
+                  }
+                  agentOptions={isDraftChat ? draftAgentOptions : undefined}
+                  selectedAgentId={
+                    isDraftChat ? selectedDraftAgentId : undefined
+                  }
+                  onSelectedAgentIdChange={
+                    isDraftChat ? setDraftAgentId : undefined
+                  }
+                />
+              </div>
             </div>
-          </div>
           </div>
 
           <ThreadFilesystemPane
@@ -449,12 +500,12 @@ export default function SingleChatPage() {
       <ThreadTaskGraphDrawer
         open={showTaskGraph}
         onOpenChange={setShowTaskGraph}
-        thread={graphThread}
+        thread={thread}
         activeBundle={activeGraphBundle}
         allGraphs={taskGraphs}
         hasMoreGraphs={hasMoreGraphs}
         loadingMoreGraphs={loadingMoreGraphs}
-        activeGraphId={activeGraphId || ""}
+        activeGraphId={effectiveActiveGraphId || ""}
         onSelectGraph={setActiveGraphId}
         onReachEnd={handleReachGraphStripEnd}
       />
