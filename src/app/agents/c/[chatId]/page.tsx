@@ -309,7 +309,8 @@ export default function SingleChatPage() {
     !pendingMessage &&
     !(pendingFiles && pendingFiles.length > 0);
   const chatTitle = graphThread?.title?.trim() || (resolvedThreadId ? `thr-${resolvedThreadId.slice(-6)}` : "New Chat");
-  const threadStatusMeta = getThreadStatusMeta(graphThread?.status);
+  const displayThreadStatus = isRunning ? "running" : graphThread?.status;
+  const threadStatusMeta = getThreadStatusMeta(displayThreadStatus);
 
   return (
     <div
@@ -324,7 +325,7 @@ export default function SingleChatPage() {
           left={(
             <div className="flex min-w-0 items-center gap-2.5">
               <h1 className="truncate text-base font-normal text-foreground">{chatTitle}</h1>
-              {graphThread ? (
+              {(graphThread || isRunning) ? (
                 <div
                   className={cn(
                     "inline-flex h-4 w-4 items-center justify-center",
