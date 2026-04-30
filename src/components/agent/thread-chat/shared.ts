@@ -220,6 +220,13 @@ export function isNoteToolResult(content: ConversationContent): boolean {
   return output?.tool_name === "note";
 }
 
+export function isNoteMessage(content: ConversationContent): boolean {
+  return (
+    isNoteToolResult(content) ||
+    (content.type === "system_decision" && content.step === "note")
+  );
+}
+
 function getNoteToolMessage(content: { input: unknown }): string {
   const input = isRecord(content.input) ? content.input : null;
   const entry = input?.entry;
@@ -278,9 +285,11 @@ export function messageDisplayKind(content: ConversationContent): "user" | "agen
 }
 
 export function isEventStyleMessage(content: ConversationContent): boolean {
+  if (isNoteMessage(content)) return false;
+
   return (
     content.type === "system_decision" ||
-    (content.type === "tool_result" && !isNoteToolResult(content)) ||
+    content.type === "tool_result" ||
     content.type === "approval_request" ||
     content.type === "approval_response" ||
     content.type === "execution_summary"

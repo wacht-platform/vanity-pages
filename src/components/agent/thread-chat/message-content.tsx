@@ -20,7 +20,7 @@ import {
 import {
   formatAttachmentLabel,
   getDisplayContent,
-  isNoteToolResult,
+  isNoteMessage,
   type ApprovalChoice,
 } from "./shared";
 import { ToolDetailSection } from "./structured-value";
@@ -114,6 +114,20 @@ export function StructuredConversationContent({
   ) => void;
   onSubmitApprovalRequest: (requestId: string) => Promise<void>;
 }) {
+  if (isNoteMessage(content)) {
+    return (
+      <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 prose-p:text-sm prose-p:leading-relaxed prose-headings:font-semibold prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/30">
+        <ReactMarkdown
+          remarkPlugins={threadChatRemarkPlugins}
+          rehypePlugins={threadChatRehypePlugins}
+          components={threadChatMarkdownComponents}
+        >
+          {getDisplayContent(content)}
+        </ReactMarkdown>
+      </div>
+    );
+  }
+
   switch (content.type) {
     case "approval_request":
       return (
@@ -132,19 +146,6 @@ export function StructuredConversationContent({
     case "system_decision":
       return <SystemDecisionEventCard content={content} />;
     case "tool_result":
-      if (isNoteToolResult(content)) {
-        return (
-          <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 prose-p:text-sm prose-p:leading-relaxed prose-headings:font-semibold prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/30">
-            <ReactMarkdown
-              remarkPlugins={threadChatRemarkPlugins}
-              rehypePlugins={threadChatRehypePlugins}
-              components={threadChatMarkdownComponents}
-            >
-              {getDisplayContent(content)}
-            </ReactMarkdown>
-          </div>
-        );
-      }
       return <ToolResultEventCard content={content} />;
     case "execution_summary":
       return <ExecutionSummaryCard content={content} />;
