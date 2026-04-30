@@ -208,6 +208,22 @@ export function isPreviewableTextFile(path?: string, mimeType?: string) {
   );
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function isNoteToolResult(content: ConversationContent): boolean {
+  return content.type === "tool_result" && content.tool_name === "note";
+}
+
+function getNoteToolMessage(content: { input: unknown }): string {
+  const input = isRecord(content.input) ? content.input : null;
+  const entry = input?.entry;
+  return typeof entry === "string" && entry.trim()
+    ? entry.trim()
+    : "Recorded a note.";
+}
+
 export function getDisplayContent(content: ConversationContent): string {
   switch (content.type) {
     case "user_message":
@@ -215,6 +231,9 @@ export function getDisplayContent(content: ConversationContent): string {
     case "steer":
       return (content as SteerContent).message;
     case "tool_result":
+      if (isNoteToolResult(content)) {
+        return getNoteToolMessage(content);
+      }
       return content.tool_name;
     case "approval_request":
       return (content as ApprovalRequestContent).description;
@@ -257,7 +276,7 @@ export function messageDisplayKind(content: ConversationContent): "user" | "agen
 export function isEventStyleMessage(content: ConversationContent): boolean {
   return (
     content.type === "system_decision" ||
-    content.type === "tool_result" ||
+    (content.type === "tool_result" && !isNoteToolResult(content)) ||
     content.type === "approval_request" ||
     content.type === "approval_response" ||
     content.type === "execution_summary"

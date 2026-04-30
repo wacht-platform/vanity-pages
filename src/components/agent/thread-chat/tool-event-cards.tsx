@@ -17,7 +17,6 @@ import {
   IconTerminal2,
   IconTool,
   IconWorldSearch,
-  IconWriting,
 } from "@tabler/icons-react";
 
 import type { SystemDecisionContent, ToolResultContent } from "@wacht/types";
@@ -947,21 +946,6 @@ function ThreadMutationCard({ content }: { content: ToolResultContent }) {
   );
 }
 
-function NoteCard({ content }: { content: ToolResultContent }) {
-  const input = asRecord(content.input);
-  return (
-    <InlineEventRow
-      icon={<IconWriting className="h-3.5 w-3.5" />}
-      title="Note"
-      meta={<StatusBadge content={content} />}
-    >
-      <div className="text-sm leading-6 text-foreground/78">
-        {asString(input?.entry) || "Recorded a note."}
-      </div>
-    </InlineEventRow>
-  );
-}
-
 function AbortTaskCard({ content }: { content: ToolResultContent }) {
   const input = asRecord(content.input);
   return (
@@ -1053,8 +1037,6 @@ export function ToolResultEventCard({ content }: { content: ToolResultContent })
     case "task_graph_mark_failed":
     case "task_graph_reset":
       return <TaskGraphCard content={content} />;
-    case "note":
-      return <NoteCard content={content} />;
     case "abort_task":
       return <AbortTaskCard content={content} />;
     default:
