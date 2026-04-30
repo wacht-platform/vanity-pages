@@ -213,7 +213,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function isNoteToolResult(content: ConversationContent): boolean {
-  return content.type === "tool_result" && content.tool_name === "note";
+  if (content.type !== "tool_result") return false;
+  if (content.tool_name === "note") return true;
+
+  const output = isRecord(content.output) ? content.output : null;
+  return output?.tool_name === "note";
 }
 
 function getNoteToolMessage(content: { input: unknown }): string {

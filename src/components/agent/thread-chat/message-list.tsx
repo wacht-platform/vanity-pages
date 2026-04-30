@@ -21,6 +21,7 @@ import {
     getMessageFiles,
     getResponseAttachments,
     isEventStyleMessage,
+    isNoteToolResult,
     messageDisplayKind,
     type ApprovalChoice,
 } from "./shared";
@@ -120,8 +121,11 @@ export function ThreadMessageList({
                         const eventStyleMessage = isEventStyleMessage(
                             message.content,
                         );
+                        const noteToolMessage = isNoteToolResult(
+                            message.content,
+                        );
 
-                        if (eventStyleMessage) {
+                        if (eventStyleMessage && !noteToolMessage) {
                             return (
                                 <div key={message.id} className="px-3 py-0.5">
                                     <StructuredConversationContent
