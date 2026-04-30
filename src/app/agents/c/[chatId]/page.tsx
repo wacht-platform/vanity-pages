@@ -36,6 +36,14 @@ type DraftMessage = {
 };
 
 type ThreadStatusKind = "active" | "completed" | "attention" | "idle";
+type NewThreadRunHandoff = {
+  threadId: string;
+  message: string;
+  expiresAt: number;
+};
+
+const NEW_THREAD_RUN_HANDOFF_PREFIX = "wacht:new-thread-run:";
+const NEW_THREAD_RUN_HANDOFF_TTL_MS = 60_000;
 
 const ACTIVE_THREAD_STATUSES = new Set<AgentThread["status"]>([
   "running",
@@ -111,6 +119,75 @@ function createDraftTitle(message: string) {
   return message.trim().slice(0, 50) || "New chat";
 }
 
+function newThreadRunHandoffKey(threadId: string) {
+  return `${NEW_THREAD_RUN_HANDOFF_PREFIX}${threadId}`;
+}
+
+function readNewThreadRunHandoff(threadId: string | null) {
+  if (!threadId || typeof window === "undefined") return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(newThreadRunHandoffKey(threadId));
+    if (!raw) return null;
+
+    const handoff = JSON.parse(raw) as Partial<NewThreadRunHandoff>;
+    if (
+      handoff.threadId !== threadId ||
+      typeof handoff.message !== "string" ||
+      typeof handoff.expiresAt !== "number" ||
+      handoff.expiresAt <= Date.now()
+    ) {
+      window.sessionStorage.removeItem(newThreadRunHandoffKey(threadId));
+      return null;
+    }
+
+    return handoff as NewThreadRunHandoff;
+  } catch {
+    return null;
+  }
+}
+
+function writeNewThreadRunHandoff(threadId: string, message: string) {
+  if (typeof window === "undefined") return;
+
+  const handoff: NewThreadRunHandoff = {
+    threadId,
+    message,
+    expiresAt: Date.now() + NEW_THREAD_RUN_HANDOFF_TTL_MS,
+  };
+
+  try {
+    window.sessionStorage.setItem(
+      newThreadRunHandoffKey(threadId),
+      JSON.stringify(handoff),
+    );
+  } catch {}
+}
+
+function clearNewThreadRunHandoff(threadId: string | null) {
+  if (!threadId || typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(newThreadRunHandoffKey(threadId));
+  } catch {}
+}
+
+function hasAgentSideMessage(messages: Array<{ content: { type: string } }>) {
+  return messages.some((message) => message.content.type !== "user_message");
+}
+
+function hasUserMessage(
+  messages: Array<{ content: { type: string; message?: string } }>,
+  text: string,
+) {
+  const normalizedText = text.trim();
+  return messages.some(
+    (message) =>
+      message.content.type === "user_message" &&
+      message.content.message?.trim() === normalizedText,
+  );
+}
+
 export default function SingleChatPage() {
   const params = useParams();
   const router = useRouter();
@@ -132,6 +209,12 @@ export default function SingleChatPage() {
   const [draftAgentId, setDraftAgentId] = React.useState<string>("");
   const [draftThreadCreationError, setDraftThreadCreationError] =
     React.useState<string | null>(null);
+  const [newThreadRunHandoff, setNewThreadRunHandoff] =
+    React.useState<NewThreadRunHandoff | null>(() =>
+      readNewThreadRunHandoff(
+        chatId && chatId !== "new" ? String(chatId) : null,
+      ),
+    );
   const [showTaskGraph, setShowTaskGraph] = React.useState(false);
   const [activeGraphId, setActiveGraphId] = React.useState<string | null>(null);
   const resolvedThreadId = isDraftChat ? createdThread?.id ?? null : chatId;
@@ -271,6 +354,8 @@ export default function SingleChatPage() {
       });
       const thread = result.data;
 
+      writeNewThreadRunHandoff(thread.id, text);
+      setNewThreadRunHandoff(readNewThreadRunHandoff(thread.id));
       setCreatedThread(thread);
       setQueuedDraftMessage({
         text,
@@ -298,6 +383,41 @@ export default function SingleChatPage() {
 
     void run();
   }, [queuedDraftMessage, resolvedThreadId, sendMessage]);
+
+  React.useEffect(() => {
+    if (!resolvedThreadId) {
+      window.setTimeout(() => setNewThreadRunHandoff(null), 0);
+      return;
+    }
+
+    window.setTimeout(
+      () => setNewThreadRunHandoff(readNewThreadRunHandoff(resolvedThreadId)),
+      0,
+    );
+  }, [resolvedThreadId]);
+
+  React.useEffect(() => {
+    if (!newThreadRunHandoff || newThreadRunHandoff.threadId !== resolvedThreadId) {
+      return;
+    }
+
+    if (newThreadRunHandoff.expiresAt <= Date.now() || hasAgentSideMessage(messages)) {
+      clearNewThreadRunHandoff(resolvedThreadId);
+      window.setTimeout(() => setNewThreadRunHandoff(null), 0);
+    }
+  }, [messages, newThreadRunHandoff, resolvedThreadId]);
+
+  React.useEffect(() => {
+    if (!newThreadRunHandoff) return;
+
+    const timeoutMs = Math.max(0, newThreadRunHandoff.expiresAt - Date.now());
+    const timeout = window.setTimeout(() => {
+      clearNewThreadRunHandoff(newThreadRunHandoff.threadId);
+      setNewThreadRunHandoff(null);
+    }, timeoutMs);
+
+    return () => window.clearTimeout(timeout);
+  }, [newThreadRunHandoff]);
 
   React.useEffect(() => {
     if (!initialMessage || sentInitialRef.current) return;
@@ -350,7 +470,16 @@ export default function SingleChatPage() {
     !pendingMessage &&
     !(pendingFiles && pendingFiles.length > 0);
   const chatTitle = createChatTitle(thread, resolvedThreadId);
-  const threadStatusKind = getThreadStatusKind(thread?.status, isRunning);
+  const hasNewThreadRunHandoff =
+    !!newThreadRunHandoff &&
+    newThreadRunHandoff.threadId === resolvedThreadId;
+  const showRunFeedback = isRunning || hasNewThreadRunHandoff;
+  const showHandoffPendingMessage =
+    hasNewThreadRunHandoff &&
+    !hasUserMessage(messages, newThreadRunHandoff.message);
+  const displayedPendingMessage =
+    pendingMessage ?? (showHandoffPendingMessage ? newThreadRunHandoff.message : null);
+  const threadStatusKind = getThreadStatusKind(thread?.status, showRunFeedback);
   const threadStatusMeta = getThreadStatusMeta(threadStatusKind);
 
   return (
@@ -368,7 +497,7 @@ export default function SingleChatPage() {
               <h1 className="truncate text-base font-normal text-foreground">
                 {chatTitle}
               </h1>
-              {(thread || isRunning) ? (
+              {(thread || showRunFeedback) ? (
                 <div
                   className={cn(
                     "inline-flex h-4 w-4 items-center justify-center",
@@ -424,14 +553,14 @@ export default function SingleChatPage() {
               onSubmitApprovalRequest={submitApprovalRequest}
               resolveMessageFileUrl={resolveMessageFileUrl}
               onOpenAttachmentPath={filesystemPane.openFilesystemPath}
-              pendingMessage={pendingMessage}
+              pendingMessage={displayedPendingMessage}
               pendingFiles={pendingFiles}
-              isRunning={isRunning}
+              isRunning={showRunFeedback}
             />
 
             <div className="bg-background px-3 pb-3 pt-2">
               <div className="mx-auto w-full max-w-3xl">
-                {isRunning ? (
+                {showRunFeedback ? (
                   <div className="mb-2 flex items-center justify-between px-1 py-1">
                     <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-2.5 py-1 text-xs text-blue-600 dark:text-blue-400">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -457,7 +586,7 @@ export default function SingleChatPage() {
                   placeholder="Reply…"
                   onSend={handleSend}
                   isSending={
-                    Boolean(pendingMessage) || Boolean(pendingFiles?.length)
+                    Boolean(displayedPendingMessage) || Boolean(pendingFiles?.length)
                   }
                   agentOptions={isDraftChat ? draftAgentOptions : undefined}
                   selectedAgentId={
