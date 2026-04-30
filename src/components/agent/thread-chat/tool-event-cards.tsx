@@ -3,8 +3,6 @@
 import * as React from "react";
 import {
   IconBrain,
-  IconCircleCheck,
-  IconCode,
   IconClock,
   IconDatabaseSearch,
   IconFilePlus,
@@ -24,14 +22,13 @@ import {
 
 import type { SystemDecisionContent, ToolResultContent } from "@wacht/types";
 
-import { JsonViewer } from "@/components/json-viewer";
-
 import {
   getDecisionStepMeta,
   InlineEventRow,
   InlineStatusBadge,
 } from "./event-row";
 import { LazyCodeFileViewer } from "./lazy-code-file-viewer";
+import { ToolDetailSection } from "./structured-value";
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -78,6 +75,21 @@ function toolOutputData(content: ToolResultContent) {
   return asRecord(envelope?.data) ?? envelope;
 }
 
+function toolOutputError(content: ToolResultContent) {
+  const envelope = toolOutputEnvelope(content);
+  const envelopeError = envelope?.error;
+  if (typeof content.error === "string" && content.error.trim()) {
+    return content.error.trim();
+  }
+  if (typeof envelopeError === "string" && envelopeError.trim()) {
+    return envelopeError.trim();
+  }
+  if (isObjectRecord(envelopeError)) {
+    return asString(envelopeError.message) ?? JSON.stringify(envelopeError);
+  }
+  return null;
+}
+
 function StatusBadge({ content }: { content: ToolResultContent }) {
   return (
     <InlineStatusBadge
@@ -105,6 +117,28 @@ function MetaList({
           <span className="text-foreground/82">{item.value}</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ErrorNotice({ content }: { content: ToolResultContent }) {
+  const message = toolOutputError(content);
+  if (!message) return null;
+
+  return (
+    <div className="rounded-xl border border-rose-500/20 bg-rose-500/8 px-3 py-2 text-sm leading-6 text-rose-700 dark:text-rose-300">
+      {message}
+    </div>
+  );
+}
+
+function ToolPayloadDetails({ content }: { content: ToolResultContent }) {
+  const output = toolOutputData(content);
+
+  return (
+    <div className="space-y-3">
+      <ToolDetailSection label="Input" data={content.input} />
+      <ToolDetailSection label="Output" data={output} />
     </div>
   );
 }
@@ -434,9 +468,8 @@ function UnknownToolCard({ content }: { content: ToolResultContent }) {
       title={formatLabel(content.tool_name)}
       badge={<StatusBadge content={content} />}
     >
-      <div className="rounded-xl border border-border/45 bg-background/60 p-3">
-        <JsonViewer data={{ input: content.input, output: content.output }} />
-      </div>
+      <ErrorNotice content={content} />
+      <ToolPayloadDetails content={content} />
     </ToolInlineRow>
   );
 }
@@ -573,7 +606,6 @@ function SleepCard({ content }: { content: ToolResultContent }) {
 
 function SnapshotCard({ content }: { content: ToolResultContent }) {
   const input = asRecord(content.input);
-  const output = toolOutputData(content);
   return (
     <InlineEventRow
       icon={<IconClock className="h-3.5 w-3.5" />}
@@ -662,24 +694,6 @@ function KnowledgeSearchCard({ content }: { content: ToolResultContent }) {
   );
 }
 
-function CreateProjectTaskCard({ content }: { content: ToolResultContent }) {
-  const input = asRecord(content.input);
-  const output = toolOutputData(content);
-  const taskKey = asString(output?.task_key) || asString(output?.created_task_key);
-  return (
-    <ToolInlineRow
-      icon={<IconListDetails className="h-4 w-4" />}
-      title={asString(input?.title) || "Create Project Task"}
-      subtitle={asString(input?.description)}
-      badge={<StatusBadge content={content} />}
-    >
-      {taskKey ? (
-        <div className="text-sm leading-6 text-foreground/78">{taskKey}</div>
-      ) : null}
-    </ToolInlineRow>
-  );
-}
-
 function ListThreadsCard({ content }: { content: ToolResultContent }) {
   const output = toolOutputData(content);
   return (
@@ -707,6 +721,7 @@ function TaskGraphCard({ content }: { content: ToolResultContent }) {
     task_graph_fail_node: "Task Graph: Fail Node",
     task_graph_mark_completed: "Task Graph: Mark Completed",
     task_graph_mark_failed: "Task Graph: Mark Failed",
+    task_graph_reset: "Task Graph: Reset",
   };
 
   return (
@@ -739,6 +754,7 @@ function TaskGraphCard({ content }: { content: ToolResultContent }) {
           {asString(input?.description) || asString(input?.reason)}
         </div>
       ) : null}
+      <ErrorNotice content={content} />
     </InlineEventRow>
   );
 }
@@ -834,6 +850,136 @@ function SaveMemoryCard({ content }: { content: ToolResultContent }) {
   );
 }
 
+function UpdateMemoryCard({ content }: { content: ToolResultContent }) {
+  const input = asRecord(content.input);
+  const output = toolOutputData(content);
+  return (
+    <ToolInlineRow
+      icon={<IconBrain className="h-4 w-4" />}
+      title="Update Memory"
+      subtitle={asString(input?.memory_id)}
+      badge={<StatusBadge content={content} />}
+    >
+      <ErrorNotice content={content} />
+      {asString(input?.content) ? (
+        <div className="text-sm leading-6 text-foreground/78">{input?.content as string}</div>
+      ) : null}
+      <MetaList
+        items={[
+          { label: "Category", value: asString(input?.category) },
+          { label: "Scope", value: asString(input?.scope) },
+          { label: "Signals", value: asArray(input?.signals).length || null },
+          { label: "Related", value: asArray(input?.related).length || null },
+        ]}
+      />
+      <ToolDetailSection label="Output" data={output} />
+    </ToolInlineRow>
+  );
+}
+
+function ProjectTaskMutationCard({ content }: { content: ToolResultContent }) {
+  const input = asRecord(content.input);
+  const output = toolOutputData(content);
+  const titleMap: Record<string, string> = {
+    create_project_task: "Create Project Task",
+    update_project_task: "Update Project Task",
+    assign_project_task: "Assign Project Task",
+  };
+  const taskKey =
+    asString(input?.task_key) ||
+    asString(output?.task_key) ||
+    asString(output?.created_task_key);
+
+  return (
+    <ToolInlineRow
+      icon={<IconListDetails className="h-4 w-4" />}
+      title={asString(input?.title) || titleMap[content.tool_name] || "Project Task"}
+      subtitle={taskKey || asString(input?.description)}
+      badge={<StatusBadge content={content} />}
+    >
+      <ErrorNotice content={content} />
+      <MetaList
+        items={[
+          { label: "Status", value: asString(input?.status) || asString(output?.status) },
+          { label: "Priority", value: asString(input?.priority) || asString(output?.priority) },
+          { label: "Assignments", value: asArray(input?.assignments).length || null },
+          {
+            label: "Board item",
+            value: asString(output?.board_item_id) || asString(output?.created_board_item_id),
+          },
+        ]}
+      />
+      {asString(input?.description) ? (
+        <div className="text-sm leading-6 text-foreground/78">{input?.description as string}</div>
+      ) : null}
+      <ToolDetailSection label="Schedule" data={input?.schedule} />
+      <ToolDetailSection label="Assignments" data={input?.assignments} />
+      <ToolDetailSection label="Output" data={output} />
+    </ToolInlineRow>
+  );
+}
+
+function ThreadMutationCard({ content }: { content: ToolResultContent }) {
+  const input = asRecord(content.input);
+  const output = toolOutputData(content);
+  const title = content.tool_name === "create_thread" ? "Create Thread" : "Update Thread";
+
+  return (
+    <ToolInlineRow
+      icon={<IconGitBranch className="h-4 w-4" />}
+      title={asString(input?.title) || title}
+      subtitle={asString(input?.thread_id) || asString(output?.thread_id)}
+      badge={<StatusBadge content={content} />}
+    >
+      <ErrorNotice content={content} />
+      <MetaList
+        items={[
+          { label: "Responsibility", value: asString(input?.responsibility) },
+          { label: "Agent", value: asString(input?.assigned_agent_name) },
+          { label: "Reusable", value: asBoolean(input?.reusable) },
+          { label: "Assignments", value: asBoolean(input?.accepts_assignments) },
+        ]}
+      />
+      <ToolDetailSection label="Capability tags" data={input?.capability_tags} />
+      <ToolDetailSection label="Metadata" data={input?.metadata} />
+      <ToolDetailSection label="Output" data={output} />
+    </ToolInlineRow>
+  );
+}
+
+function NoteCard({ content }: { content: ToolResultContent }) {
+  const input = asRecord(content.input);
+  return (
+    <InlineEventRow
+      icon={<IconWriting className="h-3.5 w-3.5" />}
+      title="Note"
+      meta={<StatusBadge content={content} />}
+    >
+      <div className="text-sm leading-6 text-foreground/78">
+        {asString(input?.entry) || "Recorded a note."}
+      </div>
+    </InlineEventRow>
+  );
+}
+
+function AbortTaskCard({ content }: { content: ToolResultContent }) {
+  const input = asRecord(content.input);
+  return (
+    <InlineEventRow
+      icon={<IconShieldExclamation className="h-3.5 w-3.5" />}
+      title="Abort Task"
+      meta={<StatusBadge content={content} />}
+      defaultOpen
+    >
+      <ErrorNotice content={content} />
+      <div className="text-sm leading-6 text-foreground/78">
+        {asString(input?.reason) || asString(input?.reasoning) || "Task aborted."}
+      </div>
+      <MetaList items={[{ label: "Outcome", value: asString(input?.outcome) }]} />
+    </InlineEventRow>
+  );
+}
+
 function DecisionReasonRow({
   content,
 }: {
@@ -887,10 +1033,17 @@ export function ToolResultEventCard({ content }: { content: ToolResultContent })
       return <LoadMemoryCard content={content} />;
     case "save_memory":
       return <SaveMemoryCard content={content} />;
+    case "update_memory":
+      return <UpdateMemoryCard content={content} />;
     case "create_project_task":
-      return <CreateProjectTaskCard content={content} />;
+    case "update_project_task":
+    case "assign_project_task":
+      return <ProjectTaskMutationCard content={content} />;
     case "list_threads":
       return <ListThreadsCard content={content} />;
+    case "create_thread":
+    case "update_thread":
+      return <ThreadMutationCard content={content} />;
     case "task_graph_add_node":
     case "task_graph_add_dependency":
     case "task_graph_mark_in_progress":
@@ -898,7 +1051,12 @@ export function ToolResultEventCard({ content }: { content: ToolResultContent })
     case "task_graph_fail_node":
     case "task_graph_mark_completed":
     case "task_graph_mark_failed":
+    case "task_graph_reset":
       return <TaskGraphCard content={content} />;
+    case "note":
+      return <NoteCard content={content} />;
+    case "abort_task":
+      return <AbortTaskCard content={content} />;
     default:
       return <UnknownToolCard content={content} />;
   }

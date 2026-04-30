@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LazyCodeFileViewer } from "./lazy-code-file-viewer";
 import {
   threadChatMarkdownComponents,
-  threadChatRehypePlugins,
-  threadChatRemarkPlugins,
+  threadChatRehypePluginsWithMath,
+  threadChatRemarkPluginsWithMath,
 } from "./markdown";
 import {
   isCsvFile,
@@ -431,8 +431,8 @@ export function FilePreviewPane({
             <div className="px-4 py-3">
               <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:font-normal prose-p:text-sm prose-p:leading-6 prose-li:text-sm prose-pre:border prose-pre:border-border prose-pre:bg-accent/10 prose-code:text-sm prose-code:before:content-none prose-code:after:content-none">
                 <ReactMarkdown
-                  remarkPlugins={threadChatRemarkPlugins}
-                  rehypePlugins={threadChatRehypePlugins}
+                  remarkPlugins={threadChatRemarkPluginsWithMath}
+                  rehypePlugins={threadChatRehypePluginsWithMath}
                   components={threadChatMarkdownComponents}
                 >
                   {officePreview}
@@ -474,8 +474,8 @@ export function FilePreviewPane({
           <div className="px-4 py-3">
             <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:font-normal prose-p:text-sm prose-p:leading-6 prose-li:text-sm prose-pre:border prose-pre:border-border prose-pre:bg-accent/10 prose-code:text-sm prose-code:before:content-none prose-code:after:content-none">
               <ReactMarkdown
-                remarkPlugins={threadChatRemarkPlugins}
-                rehypePlugins={threadChatRehypePlugins}
+                remarkPlugins={threadChatRemarkPluginsWithMath}
+                rehypePlugins={threadChatRehypePluginsWithMath}
                 components={threadChatMarkdownComponents}
               >
                 {textContent}

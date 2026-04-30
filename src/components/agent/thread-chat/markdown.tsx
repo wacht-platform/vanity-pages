@@ -5,8 +5,14 @@ import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 
-export const threadChatRemarkPlugins = [remarkGfm, remarkMath];
-export const threadChatRehypePlugins = [rehypeHighlight, rehypeRaw, rehypeKatex];
+export const threadChatRemarkPlugins = [remarkGfm];
+export const threadChatRehypePlugins = [rehypeHighlight, rehypeRaw];
+export const threadChatRemarkPluginsWithMath = [remarkGfm, remarkMath];
+export const threadChatRehypePluginsWithMath = [
+  rehypeHighlight,
+  rehypeRaw,
+  rehypeKatex,
+];
 
 export const threadChatMarkdownComponents: Components = {
   code({ className, children, ...props }) {
