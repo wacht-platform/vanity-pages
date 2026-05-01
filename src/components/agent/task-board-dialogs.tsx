@@ -18,8 +18,15 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextMarkdownInput } from "@/components/agent/rich-text-markdown-input";
 
@@ -47,15 +54,21 @@ function valuesFromTask(task: ProjectTaskBoardItem): TaskFormValues {
         title: task.title || "",
         description: task.description || "",
         scheduleKind:
-            schedule?.schedule_kind === "once" || schedule?.schedule_kind === "interval"
+            schedule?.schedule_kind === "once" ||
+            schedule?.schedule_kind === "interval"
                 ? schedule.schedule_kind
                 : "none",
         nextRunAt: formatDateTimeLocal(schedule?.next_run_at),
-        intervalSeconds: schedule?.interval_seconds ? String(schedule.interval_seconds) : "",
+        intervalSeconds: schedule?.interval_seconds
+            ? String(schedule.interval_seconds)
+            : "",
     };
 }
 
-function normalizeNextRunAt(value: string, scheduleKind: TaskFormValues["scheduleKind"]) {
+function normalizeNextRunAt(
+    value: string,
+    scheduleKind: TaskFormValues["scheduleKind"],
+) {
     if (scheduleKind === "none" || !value) return undefined;
     const iso = new Date(value).toISOString();
     return Number.isNaN(Date.parse(iso)) ? undefined : iso;
@@ -74,14 +87,18 @@ function formatDateTimeLocal(value?: string) {
 }
 
 type CreateTaskDialogProps = {
-    onCreate: (request: CreateProjectTaskBoardItemRequest, files?: File[]) => Promise<void>;
+    onCreate: (
+        request: CreateProjectTaskBoardItemRequest,
+        files?: File[],
+    ) => Promise<void>;
     trigger?: React.ReactNode;
 };
 
 export function CreateTaskDialog({ onCreate, trigger }: CreateTaskDialogProps) {
     const [open, setOpen] = React.useState(false);
     const [submitting, setSubmitting] = React.useState(false);
-    const [values, setValues] = React.useState<TaskFormValues>(defaultTaskValues);
+    const [values, setValues] =
+        React.useState<TaskFormValues>(defaultTaskValues);
     const [files, setFiles] = React.useState<File[]>([]);
 
     React.useEffect(() => {
@@ -95,16 +112,26 @@ export function CreateTaskDialog({ onCreate, trigger }: CreateTaskDialogProps) {
         if (!values.title.trim()) return;
         setSubmitting(true);
         try {
-            await onCreate({
-                title: values.title.trim(),
-                description: values.description.trim() || undefined,
-                schedule_kind: values.scheduleKind === "none" ? undefined : values.scheduleKind,
-                next_run_at: normalizeNextRunAt(values.nextRunAt, values.scheduleKind),
-                interval_seconds:
-                    values.scheduleKind === "interval" && values.intervalSeconds.trim()
-                        ? Number(values.intervalSeconds)
-                        : undefined,
-            }, files);
+            await onCreate(
+                {
+                    title: values.title.trim(),
+                    description: values.description.trim() || undefined,
+                    schedule_kind:
+                        values.scheduleKind === "none"
+                            ? undefined
+                            : values.scheduleKind,
+                    next_run_at: normalizeNextRunAt(
+                        values.nextRunAt,
+                        values.scheduleKind,
+                    ),
+                    interval_seconds:
+                        values.scheduleKind === "interval" &&
+                        values.intervalSeconds.trim()
+                            ? Number(values.intervalSeconds)
+                            : undefined,
+                },
+                files,
+            );
             setOpen(false);
         } finally {
             setSubmitting(false);
@@ -126,17 +153,32 @@ export function CreateTaskDialog({ onCreate, trigger }: CreateTaskDialogProps) {
             </DialogTrigger>
             <DialogContent className="max-w-xl">
                 <DialogHeader>
-                    <DialogTitle className="text-base font-normal">Create Task</DialogTitle>
+                    <DialogTitle className="text-base font-normal">
+                        Create Task
+                    </DialogTitle>
                     <DialogDescription className="text-sm">
                         Keep this simple. Add the task title and a short brief.
                     </DialogDescription>
                 </DialogHeader>
-                <TaskForm values={values} onChange={setValues} files={files} onFilesChange={setFiles} />
+                <TaskForm
+                    values={values}
+                    onChange={setValues}
+                    files={files}
+                    onFilesChange={setFiles}
+                />
                 <DialogFooter>
-                    <Button variant="outline" className="font-normal" onClick={() => setOpen(false)}>
+                    <Button
+                        variant="outline"
+                        className="font-normal"
+                        onClick={() => setOpen(false)}
+                    >
                         Cancel
                     </Button>
-                    <Button className="font-normal" disabled={submitting || !values.title.trim()} onClick={submit}>
+                    <Button
+                        className="font-normal"
+                        disabled={submitting || !values.title.trim()}
+                        onClick={submit}
+                    >
                         {submitting ? "Creating..." : "Create task"}
                     </Button>
                 </DialogFooter>
@@ -147,13 +189,18 @@ export function CreateTaskDialog({ onCreate, trigger }: CreateTaskDialogProps) {
 
 type EditTaskDialogProps = {
     task: ProjectTaskBoardItem;
-    onUpdate: (request: UpdateProjectTaskBoardItemRequest, files?: File[]) => Promise<void>;
+    onUpdate: (
+        request: UpdateProjectTaskBoardItemRequest,
+        files?: File[],
+    ) => Promise<void>;
 };
 
 export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
     const [open, setOpen] = React.useState(false);
     const [submitting, setSubmitting] = React.useState(false);
-    const [values, setValues] = React.useState<TaskFormValues>(() => valuesFromTask(task));
+    const [values, setValues] = React.useState<TaskFormValues>(() =>
+        valuesFromTask(task),
+    );
     const [files, setFiles] = React.useState<File[]>([]);
 
     React.useEffect(() => {
@@ -170,17 +217,28 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
         if (!values.title.trim()) return;
         setSubmitting(true);
         try {
-            await onUpdate({
-                title: values.title.trim(),
-                description: values.description.trim() || undefined,
-                schedule_kind: values.scheduleKind === "none" ? undefined : values.scheduleKind,
-                next_run_at: normalizeNextRunAt(values.nextRunAt, values.scheduleKind),
-                interval_seconds:
-                    values.scheduleKind === "interval" && values.intervalSeconds.trim()
-                        ? Number(values.intervalSeconds)
-                        : undefined,
-                clear_schedule: values.scheduleKind === "none" && !!task.schedule,
-            }, files);
+            await onUpdate(
+                {
+                    title: values.title.trim(),
+                    description: values.description.trim() || undefined,
+                    schedule_kind:
+                        values.scheduleKind === "none"
+                            ? undefined
+                            : values.scheduleKind,
+                    next_run_at: normalizeNextRunAt(
+                        values.nextRunAt,
+                        values.scheduleKind,
+                    ),
+                    interval_seconds:
+                        values.scheduleKind === "interval" &&
+                        values.intervalSeconds.trim()
+                            ? Number(values.intervalSeconds)
+                            : undefined,
+                    clear_schedule:
+                        values.scheduleKind === "none" && !!task.schedule,
+                },
+                files,
+            );
             setOpen(false);
         } finally {
             setSubmitting(false);
@@ -190,21 +248,39 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="font-normal">Edit task</Button>
+                <Button variant="outline" className="font-normal">
+                    Edit task
+                </Button>
             </DialogTrigger>
             <DialogContent className="max-w-xl">
                 <DialogHeader>
-                    <DialogTitle className="text-base font-normal">Edit Task</DialogTitle>
+                    <DialogTitle className="text-base font-normal">
+                        Edit Task
+                    </DialogTitle>
                     <DialogDescription className="text-sm">
-                        Update the core task details without changing its assignment history.
+                        Update the core task details without changing its
+                        assignment history.
                     </DialogDescription>
                 </DialogHeader>
-                <TaskForm values={values} onChange={setValues} files={files} onFilesChange={setFiles} />
+                <TaskForm
+                    values={values}
+                    onChange={setValues}
+                    files={files}
+                    onFilesChange={setFiles}
+                />
                 <DialogFooter>
-                    <Button variant="outline" className="font-normal" onClick={() => setOpen(false)}>
+                    <Button
+                        variant="outline"
+                        className="font-normal"
+                        onClick={() => setOpen(false)}
+                    >
                         Cancel
                     </Button>
-                    <Button className="font-normal" disabled={submitting || !values.title.trim()} onClick={submit}>
+                    <Button
+                        className="font-normal"
+                        disabled={submitting || !values.title.trim()}
+                        onClick={submit}
+                    >
                         {submitting ? "Saving..." : "Save changes"}
                     </Button>
                 </DialogFooter>
@@ -225,14 +301,19 @@ function TaskForm({
     onFilesChange: React.Dispatch<React.SetStateAction<File[]>>;
 }) {
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-    const setField = <K extends keyof TaskFormValues>(key: K, value: TaskFormValues[K]) => {
+    const setField = <K extends keyof TaskFormValues>(
+        key: K,
+        value: TaskFormValues[K],
+    ) => {
         onChange((current) => ({ ...current, [key]: value }));
     };
 
     return (
         <div className="grid gap-5 py-2">
             <div className="grid gap-2">
-                <Label className="font-normal" htmlFor="task-title">Title</Label>
+                <Label className="font-normal" htmlFor="task-title">
+                    Title
+                </Label>
                 <Input
                     id="task-title"
                     value={values.title}
@@ -242,7 +323,9 @@ function TaskForm({
             </div>
 
             <div className="grid gap-2">
-                <Label className="font-normal" htmlFor="task-description">Description</Label>
+                <Label className="font-normal" htmlFor="task-description">
+                    Description
+                </Label>
                 <RichTextMarkdownInput
                     value={values.description}
                     onChange={(value) => setField("description", value)}
@@ -257,7 +340,10 @@ function TaskForm({
                 <Select
                     value={values.scheduleKind}
                     onValueChange={(value) =>
-                        setField("scheduleKind", value as TaskFormValues["scheduleKind"])
+                        setField(
+                            "scheduleKind",
+                            value as TaskFormValues["scheduleKind"],
+                        )
                     }
                 >
                     <SelectTrigger className="w-full">
@@ -266,7 +352,9 @@ function TaskForm({
                     <SelectContent>
                         <SelectItem value="none">No schedule</SelectItem>
                         <SelectItem value="once">One-off</SelectItem>
-                        <SelectItem value="interval">Recurring interval</SelectItem>
+                        <SelectItem value="interval">
+                            Recurring interval
+                        </SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -274,28 +362,39 @@ function TaskForm({
             {values.scheduleKind !== "none" ? (
                 <div className="grid gap-5 md:grid-cols-2">
                     <div className="grid gap-2">
-                        <Label className="font-normal" htmlFor="task-next-run-at">Next run at</Label>
-                        <Input
-                            id="task-next-run-at"
-                            type="datetime-local"
+                        <Label
+                            className="font-normal"
+                            htmlFor="task-next-run-at"
+                        >
+                            Next run at
+                        </Label>
+                        <DateTimePicker
                             value={values.nextRunAt}
-                            onChange={(event) => setField("nextRunAt", event.target.value)}
+                            onChange={(value) => setField("nextRunAt", value)}
+                            placeholder="Pick a date and time"
                         />
                     </div>
                     {values.scheduleKind === "interval" ? (
                         <div className="grid gap-2">
-                            <Label className="font-normal" htmlFor="task-interval-seconds">Interval seconds</Label>
+                            <Label
+                                className="font-normal"
+                                htmlFor="task-interval-seconds"
+                            >
+                                Interval seconds
+                            </Label>
                             <Input
                                 id="task-interval-seconds"
                                 type="number"
                                 min={600}
                                 value={values.intervalSeconds}
-                                onChange={(event) => setField("intervalSeconds", event.target.value)}
+                                onChange={(event) =>
+                                    setField(
+                                        "intervalSeconds",
+                                        event.target.value,
+                                    )
+                                }
                                 placeholder="3600"
                             />
-                            <p className="text-xs text-muted-foreground">
-                                Minimum 600 seconds (10 minutes).
-                            </p>
                         </div>
                     ) : null}
                 </div>
@@ -331,12 +430,19 @@ function TaskForm({
                                 key={`${file.name}-${index}`}
                                 className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/20 px-2 py-1 text-xs text-foreground/80"
                             >
-                                <span className="max-w-[220px] truncate">{file.name}</span>
+                                <span className="max-w-[220px] truncate">
+                                    {file.name}
+                                </span>
                                 <button
                                     type="button"
                                     className="text-muted-foreground/60 transition-colors hover:text-foreground"
                                     onClick={() => {
-                                        onFilesChange((current) => current.filter((_, itemIndex) => itemIndex !== index));
+                                        onFilesChange((current) =>
+                                            current.filter(
+                                                (_, itemIndex) =>
+                                                    itemIndex !== index,
+                                            ),
+                                        );
                                     }}
                                     aria-label={`Remove ${file.name}`}
                                 >
