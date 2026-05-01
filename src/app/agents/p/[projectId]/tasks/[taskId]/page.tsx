@@ -17,6 +17,7 @@ import {
 } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
+import { PendingQuestionCard } from "@/components/agent/pending-question-card";
 import { TaskWorkspaceExplorer } from "@/components/agent/task-workspace-explorer";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -233,6 +234,7 @@ export default function ProjectTaskDetailPage() {
         archiveItem,
         unarchiveItem,
         cancelItem,
+        submitAnswer,
         updateItem,
         loadMoreAssignments,
         taskWorkspace,
@@ -404,6 +406,14 @@ export default function ProjectTaskDetailPage() {
                             ) : (
                                 <p className="text-sm italic text-muted-foreground">No description provided.</p>
                             )}
+                            {item.pending_question ? (
+                                <PendingQuestionCard
+                                    pending={item.pending_question}
+                                    onSubmit={async (submission) => {
+                                        await submitAnswer(submission);
+                                    }}
+                                />
+                            ) : null}
                         </div>
                     </div>
 

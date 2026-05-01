@@ -23,6 +23,7 @@ import { useActiveAgent } from "@/components/agent-provider";
 import { ThreadFilesystemPane } from "@/components/agent/thread-chat/filesystem-pane";
 import { ThreadMessageList } from "@/components/agent/thread-chat/message-list";
 import { useThreadApproval } from "@/components/agent/thread-chat/use-thread-approval";
+import { useThreadClarification } from "@/components/agent/thread-chat/use-thread-clarification";
 import { useThreadFilesystemPane } from "@/components/agent/thread-chat/use-thread-filesystem-pane";
 import { ThreadTaskGraphDrawer } from "@/components/agent/thread-task-graph-drawer";
 import { ChatInput } from "@/components/chat/chat-input";
@@ -238,7 +239,8 @@ export default function SingleChatPage() {
     pendingMessage,
     pendingFiles,
     pendingApprovalRequest,
-    activeApprovalRequestId: activeApprovalRequestIdFromState,
+    pendingClarificationRequest,
+    submitAnswer,
     resolveMessageFileUrl,
   } = useAgentThreadConversation({
     threadId: resolvedThreadId ?? "",
@@ -296,8 +298,17 @@ export default function SingleChatPage() {
   } = useThreadApproval({
     messages,
     pendingApprovalRequest,
-    activeApprovalRequestIdFromState,
     submitApprovalResponse,
+  });
+
+  const {
+    activeClarificationRequestId,
+    submittingClarificationRequestId,
+    submitClarificationAnswer,
+  } = useThreadClarification({
+    messages,
+    pendingClarificationRequest,
+    submitAnswer,
   });
 
   const filesystemPane = useThreadFilesystemPane({
@@ -551,6 +562,9 @@ export default function SingleChatPage() {
               submittingApprovalRequestId={submittingApprovalRequestId}
               onSetApprovalChoice={setApprovalChoice}
               onSubmitApprovalRequest={submitApprovalRequest}
+              activeClarificationRequestId={activeClarificationRequestId}
+              submittingClarificationRequestId={submittingClarificationRequestId}
+              onSubmitClarificationAnswer={submitClarificationAnswer}
               resolveMessageFileUrl={resolveMessageFileUrl}
               onOpenAttachmentPath={filesystemPane.openFilesystemPath}
               pendingMessage={displayedPendingMessage}

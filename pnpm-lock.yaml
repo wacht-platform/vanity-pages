@@ -84,14 +84,14 @@ importers:
         specifier: ^4.25.9
         version: 4.25.9(@babel/runtime@7.29.2)(@codemirror/autocomplete@6.20.1)(@codemirror/language@6.12.3)(@codemirror/lint@6.9.5)(@codemirror/search@6.7.0)(@codemirror/state@6.6.0)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.41.1)(codemirror@6.0.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@wacht/jsx':
-        specifier: 1.0.0-beta.34
-        version: 1.0.0-beta.34(@wacht/types@1.0.0-beta.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)
+        specifier: 1.0.0-beta.36
+        version: 1.0.0-beta.36(@wacht/types@1.0.0-beta.29)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)
       '@wacht/nextjs':
         specifier: ^1.0.0-beta.27
-        version: 1.0.0-beta.27(@wacht/jsx@1.0.0-beta.34(@wacht/types@1.0.0-beta.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2))(@wacht/types@1.0.0-beta.27)(next@16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)
+        version: 1.0.0-beta.27(@wacht/jsx@1.0.0-beta.36(@wacht/types@1.0.0-beta.29)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2))(@wacht/types@1.0.0-beta.29)(next@16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)
       '@wacht/types':
-        specifier: ^1.0.0-beta.27
-        version: 1.0.0-beta.27
+        specifier: ^1.0.0-beta.29
+        version: 1.0.0-beta.29
       '@xyflow/react':
         specifier: ^12.10.1
         version: 12.10.2(@types/react@19.2.14)(immer@11.1.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -2136,10 +2136,10 @@ packages:
     resolution: {integrity: sha512-Rnjn9ektxSnw5X9AdCk9V+hzFpai3OQluLS/ng7kaD1BCSMk0OlsPZjQU6XZ24X3QXNW8EUGsHG2BAkQlCiEyw==}
     engines: {node: '>=20'}
 
-  '@wacht/jsx@1.0.0-beta.34':
-    resolution: {integrity: sha512-fDbxGfF79Yz9FWzqEiSsg6Qq2a2of2WMnsv/Gj/Dk2LXrGfODyoZnswGyrY3j/fbFsismRzxxcdLZlnqLw2u1Q==}
+  '@wacht/jsx@1.0.0-beta.36':
+    resolution: {integrity: sha512-yMJAHTDf8sbAEBDTQJf569/1ijC1nRIB9FgJMgrC/Pq671byP1NNRnJW+r1fbWPFicXgdedvW5m/h7wnIWD9tg==}
     peerDependencies:
-      '@wacht/types': ^1.0.0-beta.26
+      '@wacht/types': ^1.0.0-beta.29
       react: '>=19.0.0'
       react-dom: '>=19.0.0'
 
@@ -2152,8 +2152,8 @@ packages:
       react: '>=19.0.0'
       react-dom: '>=19.0.0'
 
-  '@wacht/types@1.0.0-beta.27':
-    resolution: {integrity: sha512-KTqFsLuWz1M+i1xus+/e1kXNTpyhk4MIed3Xs/Oz/Dni8jyJEzULXcph/dLq1Oetzc3dEJMPjas2nXK/hwMZvQ==}
+  '@wacht/types@1.0.0-beta.29':
+    resolution: {integrity: sha512-FdXUyGtCEpWrrd46+myDhdNe8FN2ywgpvd7PKo58k88LIqGaZK3jVZntwE0NblQUXebI3xnROnoce7ve9M4/JA==}
 
   '@xyflow/react@12.10.2':
     resolution: {integrity: sha512-CgIi6HwlcHXwlkTpr0fxLv/0sRVNZ8IdwKLzzeCscaYBwpvfcH1QFOCeaTCuEn1FQEs/B8CjnTSjhs8udgmBgQ==}
@@ -6182,10 +6182,10 @@ snapshots:
       '@noble/curves': 2.2.0
       jose: 4.15.9
 
-  '@wacht/jsx@1.0.0-beta.34(@wacht/types@1.0.0-beta.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)':
+  '@wacht/jsx@1.0.0-beta.36(@wacht/types@1.0.0-beta.29)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)':
     dependencies:
       '@phosphor-icons/react': 2.1.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@wacht/types': 1.0.0-beta.27
+      '@wacht/types': 1.0.0-beta.29
       qrcode.react: 4.2.0(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
@@ -6198,11 +6198,11 @@ snapshots:
       - react-native
       - rollup
 
-  '@wacht/nextjs@1.0.0-beta.27(@wacht/jsx@1.0.0-beta.34(@wacht/types@1.0.0-beta.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2))(@wacht/types@1.0.0-beta.27)(next@16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)':
+  '@wacht/nextjs@1.0.0-beta.27(@wacht/jsx@1.0.0-beta.36(@wacht/types@1.0.0-beta.29)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2))(@wacht/types@1.0.0-beta.29)(next@16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)':
     dependencies:
       '@wacht/backend': 1.0.0-beta.15
-      '@wacht/jsx': 1.0.0-beta.34(@wacht/types@1.0.0-beta.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)
-      '@wacht/types': 1.0.0-beta.27
+      '@wacht/jsx': 1.0.0-beta.36(@wacht/types@1.0.0-beta.29)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.60.2)
+      '@wacht/types': 1.0.0-beta.29
       next: 16.1.1(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
@@ -6210,7 +6210,7 @@ snapshots:
     transitivePeerDependencies:
       - rollup
 
-  '@wacht/types@1.0.0-beta.27': {}
+  '@wacht/types@1.0.0-beta.29': {}
 
   '@xyflow/react@12.10.2(@types/react@19.2.14)(immer@11.1.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:

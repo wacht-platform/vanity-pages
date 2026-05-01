@@ -503,10 +503,11 @@ function WriteFileCard({ content }: { content: ToolResultContent }) {
   const input = asRecord(content.input);
   const path = asString(input?.path) || "file.txt";
   const value = asString(input?.content) || "";
+  const isAppend = content.tool_name === "append_file" || input?.append === true;
   return (
     <ToolInlineRow
       icon={<IconFilePlus className="h-4 w-4" />}
-      title={input?.append === true ? "Append File" : "Write File"}
+      title={isAppend ? "Append File" : "Write File"}
       subtitle={path}
       badge={<StatusBadge content={content} />}
     >
@@ -992,6 +993,7 @@ export function ToolResultEventCard({ content }: { content: ToolResultContent })
     case "read_file":
       return <ReadFileCard content={content} />;
     case "write_file":
+    case "append_file":
       return <WriteFileCard content={content} />;
     case "edit_file":
       return <EditFileCard content={content} />;

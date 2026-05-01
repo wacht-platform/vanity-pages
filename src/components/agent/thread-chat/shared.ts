@@ -278,6 +278,8 @@ export function messageDisplayKind(content: ConversationContent): "user" | "agen
     case "system_decision":
     case "approval_request":
     case "execution_summary":
+    case "clarification_request":
+    case "clarification_response":
       return "system";
     default:
       return "agent";
@@ -292,7 +294,9 @@ export function isEventStyleMessage(content: ConversationContent): boolean {
     content.type === "tool_result" ||
     content.type === "approval_request" ||
     content.type === "approval_response" ||
-    content.type === "execution_summary"
+    content.type === "execution_summary" ||
+    content.type === "clarification_request" ||
+    content.type === "clarification_response"
   );
 }
 

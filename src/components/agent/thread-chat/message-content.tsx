@@ -5,12 +5,17 @@ import ReactMarkdown from "react-markdown";
 import { IconFileText, IconFolderOpen } from "@tabler/icons-react";
 
 import type {
+  AnswerSubmission,
   ConversationAttachment as ResponseAttachment,
   ConversationContent,
   ExecutionSummaryContent,
 } from "@wacht/types";
 
 import { ApprovalRequestCard, ApprovalResponseCard } from "./approval-cards";
+import {
+  ClarificationRequestCard,
+  ClarificationResponseCard,
+} from "./clarification-cards";
 import { InlineEventRow } from "./event-row";
 import {
   threadChatMarkdownComponents,
@@ -100,6 +105,9 @@ export function StructuredConversationContent({
   submittingApprovalRequestId,
   onSetApprovalChoice,
   onSubmitApprovalRequest,
+  activeClarificationRequestId,
+  submittingClarificationRequestId,
+  onSubmitClarificationAnswer,
 }: {
   content: ConversationContent;
   messageId: string;
@@ -113,6 +121,12 @@ export function StructuredConversationContent({
     submitImmediately?: boolean,
   ) => void;
   onSubmitApprovalRequest: (requestId: string) => Promise<void>;
+  activeClarificationRequestId: string | null;
+  submittingClarificationRequestId: string | null;
+  onSubmitClarificationAnswer: (
+    requestId: string,
+    submission: AnswerSubmission,
+  ) => Promise<void>;
 }) {
   if (isNoteMessage(content)) {
     return (
@@ -149,6 +163,19 @@ export function StructuredConversationContent({
       return <ToolResultEventCard content={content} />;
     case "execution_summary":
       return <ExecutionSummaryCard content={content} />;
+    case "clarification_request":
+      return (
+        <ClarificationRequestCard
+          content={content}
+          isActive={activeClarificationRequestId === messageId}
+          submitting={submittingClarificationRequestId === messageId}
+          onSubmit={(submission) =>
+            onSubmitClarificationAnswer(messageId, submission)
+          }
+        />
+      );
+    case "clarification_response":
+      return <ClarificationResponseCard content={content} />;
     default:
       return (
         <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 prose-p:text-sm prose-p:leading-relaxed prose-headings:font-semibold prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/30">

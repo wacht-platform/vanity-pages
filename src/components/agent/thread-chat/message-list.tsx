@@ -4,7 +4,7 @@ import * as React from "react";
 import ReactMarkdown from "react-markdown";
 import { IconSparkles } from "@tabler/icons-react";
 
-import type { ConversationMessage, FileData } from "@wacht/types";
+import type { AnswerSubmission, ConversationMessage, FileData } from "@wacht/types";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
@@ -55,6 +55,9 @@ export function ThreadMessageList({
     submittingApprovalRequestId,
     onSetApprovalChoice,
     onSubmitApprovalRequest,
+    activeClarificationRequestId,
+    submittingClarificationRequestId,
+    onSubmitClarificationAnswer,
     resolveMessageFileUrl,
     onOpenAttachmentPath,
     pendingMessage,
@@ -76,6 +79,12 @@ export function ThreadMessageList({
         submitImmediately?: boolean,
     ) => void;
     onSubmitApprovalRequest: (requestId: string) => Promise<void>;
+    activeClarificationRequestId: string | null;
+    submittingClarificationRequestId: string | null;
+    onSubmitClarificationAnswer: (
+        requestId: string,
+        submission: AnswerSubmission,
+    ) => Promise<void>;
     resolveMessageFileUrl: (file: FileData | null | undefined) => string | null;
     onOpenAttachmentPath: (path: string) => void;
     pendingMessage: string | null;
@@ -159,6 +168,15 @@ export function ThreadMessageList({
                                         }
                                         onSubmitApprovalRequest={
                                             onSubmitApprovalRequest
+                                        }
+                                        activeClarificationRequestId={
+                                            activeClarificationRequestId
+                                        }
+                                        submittingClarificationRequestId={
+                                            submittingClarificationRequestId
+                                        }
+                                        onSubmitClarificationAnswer={
+                                            onSubmitClarificationAnswer
                                         }
                                     />
                                 </div>
@@ -267,6 +285,15 @@ export function ThreadMessageList({
                                         }
                                         onSubmitApprovalRequest={
                                             onSubmitApprovalRequest
+                                        }
+                                        activeClarificationRequestId={
+                                            activeClarificationRequestId
+                                        }
+                                        submittingClarificationRequestId={
+                                            submittingClarificationRequestId
+                                        }
+                                        onSubmitClarificationAnswer={
+                                            onSubmitClarificationAnswer
                                         }
                                     />
                                     <AgentMessageAttachments

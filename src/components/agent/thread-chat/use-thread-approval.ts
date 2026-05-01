@@ -32,12 +32,10 @@ function matchesPendingApprovalRequest(
 export function useThreadApproval({
   messages,
   pendingApprovalRequest,
-  activeApprovalRequestIdFromState,
   submitApprovalResponse,
 }: {
   messages: ConversationMessage[];
   pendingApprovalRequest: ThreadPendingApprovalRequestState | null;
-  activeApprovalRequestIdFromState: string | null;
   submitApprovalResponse: (
     requestId: string,
     approvals: ToolApprovalDecision[],
@@ -65,10 +63,6 @@ export function useThreadApproval({
   }, [messages]);
 
   const activeApprovalRequestId = useMemo(() => {
-    if (activeApprovalRequestIdFromState) {
-      return activeApprovalRequestIdFromState;
-    }
-
     if (!pendingApprovalRequest) {
       return null;
     }
@@ -85,12 +79,7 @@ export function useThreadApproval({
     }
 
     return null;
-  }, [
-    activeApprovalRequestIdFromState,
-    messages,
-    pendingApprovalRequest,
-    resolvedApprovalRequestIds,
-  ]);
+  }, [messages, pendingApprovalRequest, resolvedApprovalRequestIds]);
 
   const defaultApprovalSelections = useMemo(() => {
     if (!activeApprovalRequestId) {
