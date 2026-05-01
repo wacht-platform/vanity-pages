@@ -175,8 +175,8 @@ export default function ThreadDetailPage() {
         () =>
             [...assignments].sort(
                 (a, b) =>
-                    a.assignment_order - b.assignment_order ||
-                    timestampValue(b.updated_at) - timestampValue(a.updated_at),
+                    timestampValue(a.created_at) - timestampValue(b.created_at) ||
+                    a.id.localeCompare(b.id),
             ),
         [assignments],
     );
@@ -402,7 +402,7 @@ export default function ThreadDetailPage() {
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <div className="truncate text-sm text-foreground">
-                                                    {`${assignment.assignment_order}. ${formatLabel(assignment.assignment_role)}`}
+                                                    {formatLabel(assignment.assignment_role)}
                                                 </div>
                                                 <div className="mt-1 text-sm text-muted-foreground">
                                                     {formatRelativeDate(

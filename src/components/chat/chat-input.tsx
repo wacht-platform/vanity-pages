@@ -47,6 +47,7 @@ export function ChatInput({
     const [message, setMessage] = React.useState("");
     const [selectedFiles, setSelectedFiles] = React.useState<FileData[]>([]);
     const [isFocused, setIsFocused] = React.useState(false);
+    const [editorResetKey, setEditorResetKey] = React.useState(0);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const isBusy = isSending || disabled;
 
@@ -63,6 +64,7 @@ export function ChatInput({
         const filesToSend = selectedFiles.map((f) => f.file);
         setMessage("");
         setSelectedFiles([]);
+        setEditorResetKey((value) => value + 1);
 
         await Promise.resolve(onSend(trimmedMessage, filesToSend));
     };
@@ -131,6 +133,7 @@ export function ChatInput({
                 onBlurCapture={() => setIsFocused(false)}
             >
                 <RichTextMarkdownInput
+                    key={editorResetKey}
                     value={message}
                     onChange={setMessage}
                     disabled={isBusy}

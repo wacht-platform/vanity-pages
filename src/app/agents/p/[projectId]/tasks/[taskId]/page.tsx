@@ -247,12 +247,20 @@ export default function ProjectTaskDetailPage() {
         () => taskWorkspace?.files || [],
         [taskWorkspace],
     );
+    const getWorkspaceFile = React.useCallback(
+        async (path: string) => (await getTaskWorkspaceFile(path)).data,
+        [getTaskWorkspaceFile],
+    );
+    const listWorkspaceDirectory = React.useCallback(
+        async (path?: string) => (await listTaskWorkspaceDirectory(path)).data,
+        [listTaskWorkspaceDirectory],
+    );
     const orderedAssignments = React.useMemo<ProjectTaskBoardItemAssignment[]>(
         () =>
             [...assignments].sort(
                 (a: ProjectTaskBoardItemAssignment, b: ProjectTaskBoardItemAssignment) =>
-                    a.assignment_order - b.assignment_order ||
-                    timestampValue(b.updated_at) - timestampValue(a.updated_at),
+                    timestampValue(a.created_at) - timestampValue(b.created_at) ||
+                    a.id.localeCompare(b.id),
             ),
         [assignments],
     );
@@ -423,8 +431,8 @@ export default function ProjectTaskDetailPage() {
                                 rootEntries={workspaceEntries}
                                 rootLoading={taskWorkspaceLoading}
                                 rootError={taskWorkspaceError ? String(taskWorkspaceError) : null}
-                                getFile={async (path) => (await getTaskWorkspaceFile(path)).data}
-                                listDirectory={async (path) => (await listTaskWorkspaceDirectory(path)).data}
+                                getFile={getWorkspaceFile}
+                                listDirectory={listWorkspaceDirectory}
                                 refetchRoot={refetchTaskWorkspace}
                                 requestedPath={requestedWorkspacePath}
                             />
@@ -462,7 +470,7 @@ export default function ProjectTaskDetailPage() {
                                                     />
                                                     <div className="min-w-0 flex-1">
                                                         <div className="truncate text-sm font-normal">
-                                                            {`${assignment.assignment_order}. ${formatLabel(assignment.assignment_role)}`}
+                                                            {formatLabel(assignment.assignment_role)}
                                                         </div>
                                                         <div className="text-xs text-muted-foreground/60">
                                                             {formatAssignmentStatus(assignment)}
@@ -492,7 +500,7 @@ export default function ProjectTaskDetailPage() {
                                     <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 px-4 md:px-5">
                                         <div className="max-w-md truncate text-sm font-normal text-muted-foreground">
                                             {selection?.kind === "assignment"
-                                                ? `${selectedAssignment?.assignment_order}. ${formatLabel(selectedAssignment?.assignment_role)}`
+                                                ? formatLabel(selectedAssignment?.assignment_role)
                                                 : ""}
                                         </div>
                                     </div>
@@ -502,7 +510,7 @@ export default function ProjectTaskDetailPage() {
                                             <div className="max-w-2xl space-y-6">
                                                 <div className="space-y-2">
                                                     <h2 className="text-base font-normal">
-                                                        {`${selectedAssignment.assignment_order}. ${formatLabel(selectedAssignment.assignment_role)}`}
+                                                        {formatLabel(selectedAssignment.assignment_role)}
                                                     </h2>
                                                     <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                                                         <span>{formatAssignmentStatus(selectedAssignment)}</span>

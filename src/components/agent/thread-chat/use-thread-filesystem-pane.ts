@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
 
 import type { ProjectTaskWorkspaceFileEntry } from "@wacht/types";
@@ -55,6 +55,11 @@ export function useThreadFilesystemPane({
   >({});
   const [filesystemPaneWidth, setFilesystemPaneWidth] = useState<number | null>(null);
   const [isFilesystemResizing, setIsFilesystemResizing] = useState(false);
+  const getFileRef = useRef(getFile);
+
+  useEffect(() => {
+    getFileRef.current = getFile;
+  }, [getFile]);
 
   useEffect(() => {
     setFilesystemTreeEntries((current) => ({
@@ -236,7 +241,7 @@ export function useThreadFilesystemPane({
       setSelectedFilesystemFileError(null);
 
       try {
-        const data = await getFile(selectedFilesystemPath);
+        const data = await getFileRef.current(selectedFilesystemPath);
         if (cancelled) return;
         setSelectedFilesystemFile(data);
       } catch (error) {
@@ -257,7 +262,7 @@ export function useThreadFilesystemPane({
     return () => {
       cancelled = true;
     };
-  }, [getFile, selectedFilesystemPath]);
+  }, [selectedFilesystemPath]);
 
   useEffect(() => {
     if (!selectedFilesystemFile || !isImageMimeType(selectedFilesystemFile.mime_type)) {

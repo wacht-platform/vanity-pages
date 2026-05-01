@@ -254,6 +254,11 @@ export function TaskWorkspaceExplorer({
   const [selectedFileLoading, setSelectedFileLoading] = React.useState(false);
   const [selectedFileError, setSelectedFileError] = React.useState<string | null>(null);
   const [selectedFileRefreshNonce, setSelectedFileRefreshNonce] = React.useState(0);
+  const getFileRef = React.useRef(getFile);
+
+  React.useEffect(() => {
+    getFileRef.current = getFile;
+  }, [getFile]);
 
   React.useEffect(() => {
     setTreeEntries((current) => ({
@@ -370,7 +375,7 @@ export function TaskWorkspaceExplorer({
       setSelectedFileLoading(true);
       setSelectedFileError(null);
       try {
-        const data = await getFile(selectedFilePath);
+        const data = await getFileRef.current(selectedFilePath);
         if (cancelled) return;
         setSelectedFile(data);
       } catch (error) {
@@ -389,7 +394,7 @@ export function TaskWorkspaceExplorer({
     return () => {
       cancelled = true;
     };
-  }, [getFile, selectedFilePath, selectedFileRefreshNonce]);
+  }, [selectedFilePath, selectedFileRefreshNonce]);
 
   const handleRefresh = React.useCallback(async () => {
     await refetchRoot();
