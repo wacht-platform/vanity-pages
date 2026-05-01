@@ -3,6 +3,7 @@
 import React from "react";
 import { Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RichTextMarkdownInput } from "@/components/agent/rich-text-markdown-input";
 import { Spinner } from "@/components/ui/spinner";
 import { IconArrowUp, IconPaperclip, IconX } from "@tabler/icons-react";
 import {
@@ -47,22 +48,7 @@ export function ChatInput({
     const [selectedFiles, setSelectedFiles] = React.useState<FileData[]>([]);
     const [isFocused, setIsFocused] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
     const isBusy = isSending || disabled;
-
-    const autoResize = () => {
-        const el = textareaRef.current;
-        if (!el) return;
-        el.style.height = "auto";
-        el.style.height = Math.min(el.scrollHeight, 180) + "px";
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            void handleSend();
-        }
-    };
 
     const handleSend = async () => {
         const trimmedMessage = message.trim();
@@ -77,9 +63,6 @@ export function ChatInput({
         const filesToSend = selectedFiles.map((f) => f.file);
         setMessage("");
         setSelectedFiles([]);
-        if (textareaRef.current) {
-            textareaRef.current.style.height = "auto";
-        }
 
         await Promise.resolve(onSend(trimmedMessage, filesToSend));
     };
@@ -143,22 +126,26 @@ export function ChatInput({
                 </div>
             )}
 
-            <textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => {
-                    setMessage(e.target.value);
-                    autoResize();
-                }}
-                disabled={isBusy}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                onKeyDown={handleKeyDown}
-                rows={1}
-                className="min-h-11 w-full resize-none bg-transparent px-3 pb-2 pt-3 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground/50 disabled:cursor-not-allowed"
-                placeholder={placeholder}
-                style={{ height: "44px" }}
-            />
+            <div
+                onFocusCapture={() => setIsFocused(true)}
+                onBlurCapture={() => setIsFocused(false)}
+            >
+                <RichTextMarkdownInput
+                    value={message}
+                    onChange={setMessage}
+                    disabled={isBusy}
+                    onSubmit={() => void handleSend()}
+                    showToolbar={isFocused || Boolean(message)}
+                    className="max-h-[180px] min-h-11 overflow-y-auto px-3 pb-2 pt-3 text-sm leading-6 text-foreground"
+                    contentClassName={cn(
+                        "text-sm leading-6 text-foreground",
+                        "prose-p:min-h-6 prose-a:text-primary prose-code:text-[0.9em]",
+                        "placeholder:text-muted-foreground/50",
+                        isBusy && "cursor-not-allowed",
+                    )}
+                    placeholder={placeholder}
+                />
+            </div>
 
             <input
                 type="file"

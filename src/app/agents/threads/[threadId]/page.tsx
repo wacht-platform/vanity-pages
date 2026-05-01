@@ -19,13 +19,11 @@ import {
     useActorProjects,
     useAgentThread,
     useAgentThreadAssignments,
-    useAgentThreadEvents,
     useAgentThreadTaskGraphs,
 } from "@wacht/nextjs";
 import type {
     ActorProject,
     ProjectTaskBoardItemAssignment,
-    ThreadEvent,
     ThreadTaskGraphBundle,
 } from "@wacht/types";
 import { EditThreadDialog } from "@/components/agent/thread-editor-dialog";
@@ -44,8 +42,6 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-
-type ThreadSurfaceTab = "events" | "assignments";
 
 const DOCUMENT_PROSE_CLASSNAME =
     "prose prose-sm prose-invert max-w-none text-sm leading-6 text-muted-foreground font-normal " +
@@ -155,14 +151,6 @@ export default function ThreadDetailPage() {
         () => new Map(agents.map((agent) => [agent.id, agent.name])),
         [agents],
     );
-    const {
-        events,
-        loading: eventsLoading,
-        hasMore: eventsHasMore,
-        loadingMore: eventsLoadingMore,
-        loadMore: loadMoreEvents,
-        refetch: refetchEvents,
-    } = useAgentThreadEvents(threadId, { enabled: !!threadId });
     const showAssignments =
         !!thread && !!project && project.coordinator_thread_id !== thread.id;
     const {
@@ -183,14 +171,6 @@ export default function ThreadDetailPage() {
         latestGraph,
     } = useAgentThreadTaskGraphs(threadId, !!threadId);
 
-    const orderedEvents = useMemo(
-        () =>
-            [...events].sort(
-                (a, b) =>
-                    timestampValue(b.created_at) - timestampValue(a.created_at),
-            ),
-        [events],
-    );
     const orderedAssignments = useMemo(
         () =>
             [...assignments].sort(
@@ -199,11 +179,6 @@ export default function ThreadDetailPage() {
                     timestampValue(b.updated_at) - timestampValue(a.updated_at),
             ),
         [assignments],
-    );
-    const [activeTab, setActiveTab] =
-        React.useState<ThreadSurfaceTab>("events");
-    const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
-        null,
     );
     const [selectedAssignmentId, setSelectedAssignmentId] = React.useState<
         string | null
@@ -239,21 +214,11 @@ export default function ThreadDetailPage() {
         [allGraphs, activeGraphId],
     );
 
-    const selectedEvent = selectedEventId
-        ? events.find((event: ThreadEvent) => event.id === selectedEventId) ||
-          null
-        : null;
     const selectedAssignment = selectedAssignmentId
         ? assignments.find(
-              (assignment: ProjectTaskBoardItemAssignment) =>
-                  assignment.id === selectedAssignmentId,
+              (assignment) => assignment.id === selectedAssignmentId,
           ) || null
         : null;
-    const selectedActivity = selectedAssignment
-        ? { kind: "assignment" as const, assignment: selectedAssignment }
-        : selectedEvent
-          ? { kind: "event" as const, event: selectedEvent }
-          : null;
 
     if (!threadId)
         return (
@@ -390,12 +355,11 @@ export default function ThreadDetailPage() {
                         <section className="min-w-0 overflow-hidden rounded-lg border border-border/50">
                             <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
                                 <h2 className="text-sm font-normal">
-                                    Activity
+                                    Assignments
                                 </h2>
                                 <button
                                     onClick={() => {
                                         void refetchThread();
-                                        void refetchEvents();
                                         if (showAssignments)
                                             void refetchAssignments();
                                     }}
@@ -404,160 +368,70 @@ export default function ThreadDetailPage() {
                                     <IconRefresh size={13} />
                                 </button>
                             </div>
-                            <div className="border-b border-border/50 px-4 py-2">
-                                {showAssignments ? (
-                                    <div className="flex rounded-md border border-border/40 p-0.5">
-                                        {(
-                                            ["events", "assignments"] as const
-                                        ).map((tab) => (
-                                            <button
-                                                key={tab}
-                                                onClick={() =>
-                                                    setActiveTab(tab)
-                                                }
-                                                className={cn(
-                                                    "flex-1 rounded px-2.5 py-0.5 text-sm font-normal capitalize transition-all",
-                                                    activeTab === tab
-                                                        ? "border border-border bg-background text-foreground"
-                                                        : "text-muted-foreground hover:text-foreground",
-                                                )}
-                                            >
-                                                {tab}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-sm text-muted-foreground">
-                                        Events
-                                    </div>
-                                )}
-                            </div>
                             <div className="max-h-[70vh] overflow-y-auto">
-                                {activeTab === "events"
-                                    ? eventsLoading
-                                        ? [...Array(4)].map((_, index) => (
-                                              <div
-                                                  key={index}
-                                                  className="p-2.5"
-                                              >
-                                                  <Skeleton className="h-10 rounded" />
-                                              </div>
-                                          ))
-                                        : orderedEvents.map((event) => (
-                                              <button
-                                                  key={event.id}
-                                                  onClick={() => {
-                                                      setSelectedEventId(
-                                                          event.id,
-                                                      );
-                                                      setSelectedAssignmentId(
-                                                          null,
-                                                      );
-                                                  }}
-                                                  className="flex w-full items-start gap-3 border-b border-border/50 px-4 py-2.5 text-left transition-colors hover:bg-accent/20"
-                                              >
-                                                  <div className="mt-1">
-                                                      {getStatusIndicator(
-                                                          event.status,
-                                                      )}
-                                                  </div>
-                                                  <div className="min-w-0 flex-1">
-                                                      <div className="truncate text-sm text-foreground">
-                                                          {formatLabel(
-                                                              event.event_type,
-                                                          )}
-                                                      </div>
-                                                      <div className="mt-1 text-sm text-muted-foreground">
-                                                          {formatRelativeDate(
-                                                              event.created_at,
-                                                          )}{" "}
-                                                          ·{" "}
-                                                          {formatTime(
-                                                              event.created_at,
-                                                          )}
-                                                      </div>
-                                                  </div>
-                                              </button>
-                                          ))
-                                    : assignmentsLoading
-                                      ? [...Array(4)].map((_, index) => (
-                                            <div key={index} className="p-2.5">
-                                                <Skeleton className="h-10 rounded" />
+                                {!showAssignments ? (
+                                    <p className="px-4 py-10 text-sm text-muted-foreground">
+                                        Coordinator threads do not receive assignments.
+                                    </p>
+                                ) : assignmentsLoading ? (
+                                    [...Array(4)].map((_, index) => (
+                                        <div key={index} className="p-2.5">
+                                            <Skeleton className="h-10 rounded" />
+                                        </div>
+                                    ))
+                                ) : orderedAssignments.length === 0 ? (
+                                    <p className="px-4 py-10 text-sm text-muted-foreground">
+                                        No assignments yet.
+                                    </p>
+                                ) : (
+                                    orderedAssignments.map((assignment) => (
+                                        <button
+                                            key={assignment.id}
+                                            onClick={() => {
+                                                setSelectedAssignmentId(
+                                                    assignment.id,
+                                                );
+                                            }}
+                                            className="flex w-full items-start gap-3 border-b border-border/50 px-4 py-2.5 text-left transition-colors hover:bg-accent/20"
+                                        >
+                                            <div className="mt-1">
+                                                {getStatusIndicator(
+                                                    assignment.result_status ||
+                                                        assignment.status,
+                                                )}
                                             </div>
-                                        ))
-                                      : orderedAssignments.map((assignment) => (
-                                            <button
-                                                key={assignment.id}
-                                                onClick={() => {
-                                                    setSelectedAssignmentId(
-                                                        assignment.id,
-                                                    );
-                                                    setSelectedEventId(null);
-                                                }}
-                                                className="flex w-full items-start gap-3 border-b border-border/50 px-4 py-2.5 text-left transition-colors hover:bg-accent/20"
-                                            >
-                                                <div className="mt-1">
-                                                    {getStatusIndicator(
-                                                        assignment.result_status ||
-                                                            assignment.status,
+                                            <div className="min-w-0 flex-1">
+                                                <div className="truncate text-sm text-foreground">
+                                                    {`${assignment.assignment_order}. ${formatLabel(assignment.assignment_role)}`}
+                                                </div>
+                                                <div className="mt-1 text-sm text-muted-foreground">
+                                                    {formatRelativeDate(
+                                                        assignment.created_at,
+                                                    )}{" "}
+                                                    ·{" "}
+                                                    {formatTime(
+                                                        assignment.created_at,
                                                     )}
                                                 </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="truncate text-sm text-foreground">
-                                                        {`${assignment.assignment_order}. ${formatLabel(assignment.assignment_role)}`}
-                                                    </div>
-                                                    <div className="mt-1 text-sm text-muted-foreground">
-                                                        {formatRelativeDate(
-                                                            assignment.created_at,
-                                                        )}{" "}
-                                                        ·{" "}
-                                                        {formatTime(
-                                                            assignment.created_at,
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        ))}
-                                {(activeTab === "events" &&
-                                    !eventsLoading &&
-                                    orderedEvents.length === 0) ||
-                                (activeTab === "assignments" &&
-                                    !assignmentsLoading &&
-                                    orderedAssignments.length === 0) ? (
-                                    <p className="px-4 py-10 text-sm text-muted-foreground">
-                                        No activity yet.
-                                    </p>
-                                ) : null}
+                                            </div>
+                                        </button>
+                                    ))
+                                )}
                             </div>
-                            {(activeTab === "events" &&
-                                (eventsHasMore || eventsLoadingMore)) ||
-                            (activeTab === "assignments" &&
-                                (assignmentsHasMore ||
-                                    assignmentsLoadingMore)) ? (
+                            {showAssignments &&
+                            (assignmentsHasMore || assignmentsLoadingMore) ? (
                                 <div className="border-t border-border/50 px-4 py-3">
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            if (activeTab === "events") {
-                                                void loadMoreEvents();
-                                                return;
-                                            }
                                             void loadMoreAssignments();
                                         }}
-                                        disabled={
-                                            activeTab === "events"
-                                                ? eventsLoadingMore
-                                                : assignmentsLoadingMore
-                                        }
+                                        disabled={assignmentsLoadingMore}
                                         className="h-8 rounded-md border border-border/60 px-3 text-sm text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground disabled:opacity-50"
                                     >
-                                        {activeTab === "events"
-                                            ? eventsLoadingMore
-                                                ? "Loading..."
-                                                : "Load More Events"
-                                            : assignmentsLoadingMore
-                                              ? "Loading..."
-                                              : "Load More Assignments"}
+                                        {assignmentsLoadingMore
+                                            ? "Loading..."
+                                            : "Load More Assignments"}
                                     </button>
                                 </div>
                             ) : null}
@@ -673,141 +547,77 @@ export default function ThreadDetailPage() {
             />
 
             <Sheet
-                open={!!selectedActivity}
+                open={!!selectedAssignment}
                 onOpenChange={(open) => {
                     if (!open) {
-                        setSelectedEventId(null);
                         setSelectedAssignmentId(null);
                     }
                 }}
             >
                 <SheetContent className="w-full sm:max-w-[600px] bg-background border-l border-divider p-0 flex flex-col">
-                    {selectedActivity && (
+                    {selectedAssignment && (
                         <>
                             <SheetHeader className="border-b border-divider p-6">
                                 <SheetTitle className="text-base font-normal">
-                                    {selectedActivity.kind === "assignment"
-                                        ? `${selectedActivity.assignment.id.slice(-6).toUpperCase()} · ${formatLabel(selectedActivity.assignment.assignment_role)}`
-                                        : formatLabel(
-                                              selectedActivity.event.event_type,
-                                          )}
+                                    {`${selectedAssignment.id.slice(-6).toUpperCase()} · ${formatLabel(selectedAssignment.assignment_role)}`}
                                 </SheetTitle>
                                 <SheetDescription className="flex items-center gap-3 text-xs text-muted-foreground">
                                     <span>
-                                        {selectedActivity.kind === "assignment"
-                                            ? formatAssignmentStatus(
-                                                  selectedActivity.assignment,
-                                              )
-                                            : formatLabel(
-                                                  selectedActivity.event.status,
-                                              )}
+                                        {formatAssignmentStatus(selectedAssignment)}
                                     </span>
                                     <div className="size-1 rounded-full bg-divider" />
                                     <span>
-                                        {formatFullTimestamp(
-                                            selectedActivity.kind ===
-                                                "assignment"
-                                                ? selectedActivity.assignment
-                                                      .created_at
-                                                : selectedActivity.event
-                                                      .created_at,
-                                        )}
+                                        {formatFullTimestamp(selectedAssignment.created_at)}
                                     </span>
                                 </SheetDescription>
                             </SheetHeader>
                             <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                                {selectedActivity.kind === "assignment" && (
-                                    <div className="space-y-6">
-                                        {selectedActivity.assignment
-                                            .instructions && (
-                                            <div className="space-y-2">
-                                                <h4 className="text-sm font-medium text-foreground">
-                                                    Instructions
-                                                </h4>
-                                                <div
-                                                    className={cn(
-                                                        DOCUMENT_PROSE_CLASSNAME,
-                                                        "rounded border border-border/30 bg-secondary/20 p-4",
-                                                    )}
-                                                >
-                                                    <ReactMarkdown
-                                                        remarkPlugins={[
-                                                            remarkGfm,
-                                                        ]}
-                                                    >
-                                                        {
-                                                            selectedActivity
-                                                                .assignment
-                                                                .instructions
-                                                        }
-                                                    </ReactMarkdown>
-                                                </div>
+                                <div className="space-y-6">
+                                    {selectedAssignment.instructions && (
+                                        <div className="space-y-2">
+                                            <h4 className="text-sm font-medium text-foreground">
+                                                Instructions
+                                            </h4>
+                                            <div
+                                                className={cn(
+                                                    DOCUMENT_PROSE_CLASSNAME,
+                                                    "rounded border border-border/30 bg-secondary/20 p-4",
+                                                )}
+                                            >
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                    {selectedAssignment.instructions}
+                                                </ReactMarkdown>
                                             </div>
-                                        )}
-                                        {selectedActivity.assignment
-                                            .result_summary && (
-                                            <div className="space-y-2">
-                                                <h4 className="text-sm font-medium text-foreground">
-                                                    Result Summary
-                                                </h4>
-                                                <div
-                                                    className={cn(
-                                                        DOCUMENT_PROSE_CLASSNAME,
-                                                        "rounded border border-border/30 bg-secondary/20 p-4",
-                                                    )}
-                                                >
-                                                    <ReactMarkdown
-                                                        remarkPlugins={[
-                                                            remarkGfm,
-                                                        ]}
-                                                    >
-                                                        {
-                                                            selectedActivity
-                                                                .assignment
-                                                                .result_summary
-                                                        }
-                                                    </ReactMarkdown>
-                                                </div>
+                                        </div>
+                                    )}
+                                    {selectedAssignment.result_summary && (
+                                        <div className="space-y-2">
+                                            <h4 className="text-sm font-medium text-foreground">
+                                                Result Summary
+                                            </h4>
+                                            <div
+                                                className={cn(
+                                                    DOCUMENT_PROSE_CLASSNAME,
+                                                    "rounded border border-border/30 bg-secondary/20 p-4",
+                                                )}
+                                            >
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                    {selectedAssignment.result_summary}
+                                                </ReactMarkdown>
                                             </div>
-                                        )}
-                                        {selectedActivity.assignment
-                                            .result_payload && (
-                                            <div className="space-y-2">
-                                                <h4 className="text-sm font-medium text-foreground">
-                                                    Payload
-                                                </h4>
-                                                <div className="overflow-x-auto rounded border border-border/30 bg-secondary/20 p-4 text-sm">
-                                                    <JsonViewer
-                                                        data={
-                                                            selectedActivity
-                                                                .assignment
-                                                                .result_payload
-                                                        }
-                                                    />
-                                                </div>
+                                        </div>
+                                    )}
+                                    {selectedAssignment.result_payload && (
+                                        <div className="space-y-2">
+                                            <h4 className="text-sm font-medium text-foreground">
+                                                Payload
+                                            </h4>
+                                            <div className="overflow-x-auto rounded border border-border/30 bg-secondary/20 p-4 text-sm">
+                                                <JsonViewer data={selectedAssignment.result_payload} />
                                             </div>
-                                        )}
-                                    </div>
-                                )}
-                                {selectedActivity.kind === "event" && (
-                                    <div className="space-y-6">
-                                        {selectedActivity.event.payload && (
-                                            <div className="space-y-2">
-                                                <h4 className="text-sm font-medium text-foreground">
-                                                    Payload
-                                                </h4>
-                                                <div className="overflow-x-auto rounded border border-border/30 bg-secondary/20 p-4 text-sm">
-                                                    <JsonViewer
-                                                        data={
-                                                            selectedActivity
-                                                                .event.payload
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </>
                     )}

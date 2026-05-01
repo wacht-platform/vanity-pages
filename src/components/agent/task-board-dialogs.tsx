@@ -26,7 +26,6 @@ import { RichTextMarkdownInput } from "@/components/agent/rich-text-markdown-inp
 type TaskFormValues = {
     title: string;
     description: string;
-    priority: "urgent" | "high" | "neutral" | "low";
     scheduleKind: "none" | "once" | "interval";
     nextRunAt: string;
     intervalSeconds: string;
@@ -36,7 +35,6 @@ function defaultTaskValues(): TaskFormValues {
     return {
         title: "",
         description: "",
-        priority: "neutral",
         scheduleKind: "none",
         nextRunAt: "",
         intervalSeconds: "",
@@ -48,7 +46,6 @@ function valuesFromTask(task: ProjectTaskBoardItem): TaskFormValues {
     return {
         title: task.title || "",
         description: task.description || "",
-        priority: normalizePriority(task.priority),
         scheduleKind:
             schedule?.schedule_kind === "once" || schedule?.schedule_kind === "interval"
                 ? schedule.schedule_kind
@@ -56,17 +53,6 @@ function valuesFromTask(task: ProjectTaskBoardItem): TaskFormValues {
         nextRunAt: formatDateTimeLocal(schedule?.next_run_at),
         intervalSeconds: schedule?.interval_seconds ? String(schedule.interval_seconds) : "",
     };
-}
-
-function normalizePriority(value?: string): TaskFormValues["priority"] {
-    switch (value) {
-        case "urgent":
-        case "high":
-        case "low":
-            return value;
-        default:
-            return "neutral";
-    }
 }
 
 function normalizeNextRunAt(value: string, scheduleKind: TaskFormValues["scheduleKind"]) {
@@ -112,7 +98,6 @@ export function CreateTaskDialog({ onCreate, trigger }: CreateTaskDialogProps) {
             await onCreate({
                 title: values.title.trim(),
                 description: values.description.trim() || undefined,
-                priority: values.priority,
                 schedule_kind: values.scheduleKind === "none" ? undefined : values.scheduleKind,
                 next_run_at: normalizeNextRunAt(values.nextRunAt, values.scheduleKind),
                 interval_seconds:
@@ -188,7 +173,6 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
             await onUpdate({
                 title: values.title.trim(),
                 description: values.description.trim() || undefined,
-                priority: values.priority,
                 schedule_kind: values.scheduleKind === "none" ? undefined : values.scheduleKind,
                 next_run_at: normalizeNextRunAt(values.nextRunAt, values.scheduleKind),
                 interval_seconds:
@@ -304,33 +288,18 @@ function TaskForm({
                             <Input
                                 id="task-interval-seconds"
                                 type="number"
-                                min={1}
+                                min={600}
                                 value={values.intervalSeconds}
                                 onChange={(event) => setField("intervalSeconds", event.target.value)}
                                 placeholder="3600"
                             />
+                            <p className="text-xs text-muted-foreground">
+                                Minimum 600 seconds (10 minutes).
+                            </p>
                         </div>
                     ) : null}
                 </div>
             ) : null}
-
-            <div className="grid gap-2">
-                <Label className="font-normal" htmlFor="task-priority">Priority</Label>
-                <Select
-                    value={values.priority}
-                    onValueChange={(value) => setField("priority", value as TaskFormValues["priority"])}
-                >
-                    <SelectTrigger id="task-priority" className="w-full">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="neutral">Neutral</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
 
             <div className="grid gap-2">
                 <div className="flex items-center justify-between gap-3">

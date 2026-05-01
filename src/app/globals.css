@@ -234,4 +234,19 @@
     input[type="number"] {
         -moz-appearance: textfield;
     }
+
+    .rich-text-markdown-input .ProseMirror {
+        min-height: 1.5rem;
+        outline: none;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .rich-text-markdown-input .ProseMirror p.is-editor-empty:first-child::before {
+        color: color-mix(in oklch, var(--muted-foreground) 65%, transparent);
+        content: attr(data-placeholder);
+        float: left;
+        height: 0;
+        pointer-events: none;
+    }
 }

@@ -43,53 +43,6 @@ function formatRelativeDate(value?: string) {
     });
 }
 
-function getPriorityIcon(priority?: string | number) {
-    const p = String(priority);
-    const bars = (count: number) => (
-        <div className="flex gap-[1.5px] items-end h-2.5">
-            {[...Array(3)].map((_, i) => (
-                <div
-                    key={i}
-                    className={cn(
-                        "w-0.75 rounded-[0.5px]",
-                        i < count ? "bg-current" : "bg-foreground/10",
-                    )}
-                    style={{ height: `${(i + 1) * 2.5 + 2}px` }}
-                />
-            ))}
-        </div>
-    );
-
-    switch (p) {
-        case "urgent":
-        case "1":
-            return (
-                <div className="text-rose-500 flex items-center">{bars(3)}</div>
-            );
-        case "high":
-        case "2":
-            return (
-                <div className="text-amber-500 flex items-center">
-                    {bars(2)}
-                </div>
-            );
-        case "low":
-        case "4":
-        case "5":
-            return (
-                <div className="text-muted-foreground/60 flex items-center">
-                    {bars(1)}
-                </div>
-            );
-        default:
-            return (
-                <div className="text-muted-foreground/30 flex items-center">
-                    {bars(0)}
-                </div>
-            );
-    }
-}
-
 const TASK_COLUMNS = [
     {
         id: "intake",
@@ -534,7 +487,6 @@ function TaskCard({
                     </div>
                 </div>
                 <div className="w-4 flex justify-center">
-                    {getPriorityIcon(task.priority)}
                 </div>
             </div>
 
@@ -613,7 +565,6 @@ function ArchivedTaskCard({
                     </div>
                 </div>
                 <div className="w-4 flex justify-center">
-                    {getPriorityIcon(task.priority)}
                 </div>
             </div>
 

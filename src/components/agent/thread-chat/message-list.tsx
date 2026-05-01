@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import ReactMarkdown from "react-markdown";
 import { IconSparkles } from "@tabler/icons-react";
 
 import type { ConversationMessage, FileData } from "@wacht/types";
@@ -15,6 +16,10 @@ import {
     ThinkingDots,
 } from "./message-content";
 import {
+    threadChatMarkdownComponents,
+    threadChatRemarkPlugins,
+} from "./markdown";
+import {
     formatFileSize,
     formatTime,
     getDisplayContent,
@@ -25,6 +30,19 @@ import {
     messageDisplayKind,
     type ApprovalChoice,
 } from "./shared";
+
+function UserMessageMarkdown({ value }: { value: string }) {
+    return (
+        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-p:my-0 prose-p:text-sm prose-p:leading-relaxed prose-a:text-primary prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/30">
+            <ReactMarkdown
+                remarkPlugins={threadChatRemarkPlugins}
+                components={threadChatMarkdownComponents}
+            >
+                {value}
+            </ReactMarkdown>
+        </div>
+    );
+}
 
 export function ThreadMessageList({
     messages,
@@ -156,8 +174,10 @@ export function ThreadMessageList({
                                     className="mt-4 flex justify-end"
                                 >
                                     <div className="flex max-w-[80%] flex-col items-end gap-1">
-                                        <div className="rounded-md border border-border/40 bg-muted/40 px-3 py-2 text-sm leading-relaxed text-foreground">
-                                            {getDisplayContent(message.content)}
+                                        <div className="rounded-md border border-border/40 bg-muted/40 px-3 py-2">
+                                            <UserMessageMarkdown
+                                                value={getDisplayContent(message.content)}
+                                            />
                                         </div>
                                         <span className="text-xs text-muted-foreground/50">
                                             {formatTime(message.timestamp)}
@@ -269,8 +289,8 @@ export function ThreadMessageList({
                         <div className="mt-4 flex justify-end">
                             <div className="flex max-w-[80%] flex-col items-end gap-1">
                                 {pendingMessage ? (
-                                    <div className="rounded-md border border-border/30 bg-muted/20 px-3 py-2 text-sm leading-relaxed text-foreground/70">
-                                        {pendingMessage}
+                                    <div className="rounded-md border border-border/30 bg-muted/20 px-3 py-2 text-foreground/70">
+                                        <UserMessageMarkdown value={pendingMessage} />
                                     </div>
                                 ) : null}
                                 {pendingFiles && pendingFiles.length > 0 ? (
