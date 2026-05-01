@@ -139,9 +139,7 @@ export function ThreadMessageList({
                         const eventStyleMessage = isEventStyleMessage(
                             message.content,
                         );
-                        const noteMessage = isNoteMessage(
-                            message.content,
-                        );
+                        const noteMessage = isNoteMessage(message.content);
 
                         if (eventStyleMessage && !noteMessage) {
                             return (
@@ -173,10 +171,12 @@ export function ThreadMessageList({
                                     key={message.id}
                                     className="mt-4 flex justify-end"
                                 >
-                                    <div className="flex max-w-[80%] flex-col items-end gap-1">
+                                    <div className="min-w-0 flex-1">
                                         <div className="rounded-md border border-border/40 bg-muted/40 px-3 py-2">
                                             <UserMessageMarkdown
-                                                value={getDisplayContent(message.content)}
+                                                value={getDisplayContent(
+                                                    message.content,
+                                                )}
                                             />
                                         </div>
                                         <span className="text-xs text-muted-foreground/50">
@@ -287,10 +287,12 @@ export function ThreadMessageList({
                     {pendingMessage ||
                     (pendingFiles && pendingFiles.length > 0) ? (
                         <div className="mt-4 flex justify-end">
-                            <div className="flex max-w-[80%] flex-col items-end gap-1">
+                            <div className="min-w-0 flex-1">
                                 {pendingMessage ? (
                                     <div className="rounded-md border border-border/30 bg-muted/20 px-3 py-2 text-foreground/70">
-                                        <UserMessageMarkdown value={pendingMessage} />
+                                        <UserMessageMarkdown
+                                            value={pendingMessage}
+                                        />
                                     </div>
                                 ) : null}
                                 {pendingFiles && pendingFiles.length > 0 ? (
