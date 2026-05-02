@@ -6,16 +6,14 @@ import { IconFileText, IconFolderOpen } from "@tabler/icons-react";
 
 import type {
   AnswerSubmission,
+  ClarificationResponseContent,
   ConversationAttachment as ResponseAttachment,
   ConversationContent,
   ExecutionSummaryContent,
 } from "@wacht/types";
 
 import { ApprovalRequestCard, ApprovalResponseCard } from "./approval-cards";
-import {
-  ClarificationRequestCard,
-  ClarificationResponseCard,
-} from "./clarification-cards";
+import { ClarificationRequestCard } from "./clarification-cards";
 import { InlineEventRow } from "./event-row";
 import {
   threadChatMarkdownComponents,
@@ -108,6 +106,7 @@ export function StructuredConversationContent({
   activeClarificationRequestId,
   submittingClarificationRequestId,
   onSubmitClarificationAnswer,
+  clarificationResponse,
 }: {
   content: ConversationContent;
   messageId: string;
@@ -127,6 +126,7 @@ export function StructuredConversationContent({
     requestId: string,
     submission: AnswerSubmission,
   ) => Promise<void>;
+  clarificationResponse?: ClarificationResponseContent;
 }) {
   if (isNoteMessage(content)) {
     return (
@@ -172,10 +172,11 @@ export function StructuredConversationContent({
           onSubmit={(submission) =>
             onSubmitClarificationAnswer(messageId, submission)
           }
+          response={clarificationResponse}
         />
       );
     case "clarification_response":
-      return <ClarificationResponseCard content={content} />;
+      return null;
     default:
       return (
         <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 prose-p:text-sm prose-p:leading-relaxed prose-headings:font-semibold prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/30">

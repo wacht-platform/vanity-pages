@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import type {
     AnswerSubmission,
     AnswerValue,
@@ -18,14 +19,55 @@ export function ClarificationRequestCard({
     isActive,
     submitting,
     onSubmit,
+    response,
 }: {
     content: ClarificationRequestContent;
     isActive: boolean;
     submitting: boolean;
     onSubmit: (submission: AnswerSubmission) => Promise<void>;
+    response?: ClarificationResponseContent;
 }) {
     const [draft, setDraft] = React.useState<Record<string, AnswerValue | undefined>>({});
     const [error, setError] = React.useState<string | null>(null);
+    const [expanded, setExpanded] = React.useState(false);
+
+    if (response) {
+        const answersById = new Map(response.answers.map((a) => [a.question_id, a.value]));
+        return (
+            <div className="rounded-lg border border-border/50 bg-muted/20 p-3">
+                <button
+                    type="button"
+                    onClick={() => setExpanded((v) => !v)}
+                    className="flex w-full items-center gap-1.5 text-left text-xs text-muted-foreground hover:text-foreground"
+                >
+                    {expanded ? (
+                        <IconChevronDown size={12} />
+                    ) : (
+                        <IconChevronRight size={12} />
+                    )}
+                    <span>
+                        Answered {content.questions.length}{" "}
+                        {content.questions.length === 1 ? "question" : "questions"}
+                    </span>
+                </button>
+                <ul className="mt-2 space-y-2 text-sm">
+                    {content.questions.map((q) => {
+                        const a = answersById.get(q.id);
+                        return (
+                            <li key={q.id} className="space-y-0.5">
+                                {expanded ? (
+                                    <div className="text-xs text-muted-foreground">
+                                        {q.text}
+                                    </div>
+                                ) : null}
+                                <div>{a ? formatAnswerValue(a) : "—"}</div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+        );
+    }
 
     const setAnswer = (id: string, value: AnswerValue) => {
         setDraft((prev) => ({ ...prev, [id]: value }));
@@ -81,28 +123,6 @@ export function ClarificationRequestCard({
                     A newer message has been sent; this question is no longer active.
                 </div>
             )}
-        </div>
-    );
-}
-
-export function ClarificationResponseCard({
-    content,
-}: {
-    content: ClarificationResponseContent;
-}) {
-    return (
-        <div className="rounded-lg border border-border/40 bg-muted/30 p-3">
-            <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-                Your answers
-            </div>
-            <ul className="space-y-1 text-sm">
-                {content.answers.map((a) => (
-                    <li key={a.question_id} className="flex gap-2">
-                        <span className="text-muted-foreground">{a.question_id}:</span>
-                        <span>{formatAnswerValue(a.value)}</span>
-                    </li>
-                ))}
-            </ul>
         </div>
     );
 }

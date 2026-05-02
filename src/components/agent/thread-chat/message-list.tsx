@@ -4,7 +4,12 @@ import * as React from "react";
 import ReactMarkdown from "react-markdown";
 import { IconSparkles } from "@tabler/icons-react";
 
-import type { AnswerSubmission, ConversationMessage, FileData } from "@wacht/types";
+import type {
+    AnswerSubmission,
+    ClarificationResponseContent,
+    ConversationMessage,
+    FileData,
+} from "@wacht/types";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
@@ -91,6 +96,27 @@ export function ThreadMessageList({
     pendingFiles: File[] | null;
     isRunning: boolean;
 }) {
+    const clarificationResponseByRequestId = React.useMemo(() => {
+        const map = new Map<string, ClarificationResponseContent>();
+        for (const message of messages) {
+            if (
+                message.content.type === "clarification_response" &&
+                message.content.request_message_id
+            ) {
+                map.set(message.content.request_message_id, message.content);
+            }
+        }
+        return map;
+    }, [messages]);
+
+    const visibleMessages = React.useMemo(
+        () =>
+            messages.filter(
+                (m) => m.content.type !== "clarification_response",
+            ),
+        [messages],
+    );
+
     return (
         <div
             ref={scrollContainerRef}
@@ -139,7 +165,7 @@ export function ThreadMessageList({
                 ) : null}
 
                 <div className="space-y-2">
-                    {messages.map((message) => {
+                    {visibleMessages.map((message) => {
                         const messageFiles = getMessageFiles(message.content);
                         const responseAttachments = getResponseAttachments(
                             message.content,
@@ -149,6 +175,12 @@ export function ThreadMessageList({
                             message.content,
                         );
                         const noteMessage = isNoteMessage(message.content);
+                        const clarificationResponse =
+                            message.content.type === "clarification_request"
+                                ? clarificationResponseByRequestId.get(
+                                      String(message.id),
+                                  )
+                                : undefined;
 
                         if (eventStyleMessage && !noteMessage) {
                             return (
@@ -177,6 +209,9 @@ export function ThreadMessageList({
                                         }
                                         onSubmitClarificationAnswer={
                                             onSubmitClarificationAnswer
+                                        }
+                                        clarificationResponse={
+                                            clarificationResponse
                                         }
                                     />
                                 </div>
