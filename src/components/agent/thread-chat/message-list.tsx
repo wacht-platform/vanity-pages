@@ -63,6 +63,8 @@ export function ThreadMessageList({
     activeClarificationRequestId,
     submittingClarificationRequestId,
     onSubmitClarificationAnswer,
+    clarificationResponseByRequestId,
+    expiredClarificationRequestIds,
     resolveMessageFileUrl,
     onOpenAttachmentPath,
     pendingMessage,
@@ -90,25 +92,14 @@ export function ThreadMessageList({
         requestId: string,
         submission: AnswerSubmission,
     ) => Promise<void>;
+    clarificationResponseByRequestId: Map<string, ClarificationResponseContent>;
+    expiredClarificationRequestIds: Set<string>;
     resolveMessageFileUrl: (file: FileData | null | undefined) => string | null;
     onOpenAttachmentPath: (path: string) => void;
     pendingMessage: string | null;
     pendingFiles: File[] | null;
     isRunning: boolean;
 }) {
-    const clarificationResponseByRequestId = React.useMemo(() => {
-        const map = new Map<string, ClarificationResponseContent>();
-        for (const message of messages) {
-            if (
-                message.content.type === "clarification_response" &&
-                message.content.request_message_id
-            ) {
-                map.set(message.content.request_message_id, message.content);
-            }
-        }
-        return map;
-    }, [messages]);
-
     const visibleMessages = React.useMemo(
         () =>
             messages.filter(
@@ -181,6 +172,12 @@ export function ThreadMessageList({
                                       String(message.id),
                                   )
                                 : undefined;
+                        const clarificationExpired =
+                            message.content.type === "clarification_request" &&
+                            !clarificationResponse &&
+                            expiredClarificationRequestIds.has(
+                                String(message.id),
+                            );
 
                         if (eventStyleMessage && !noteMessage) {
                             return (
@@ -212,6 +209,9 @@ export function ThreadMessageList({
                                         }
                                         clarificationResponse={
                                             clarificationResponse
+                                        }
+                                        clarificationExpired={
+                                            clarificationExpired
                                         }
                                     />
                                 </div>

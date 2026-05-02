@@ -20,16 +20,48 @@ export function ClarificationRequestCard({
     submitting,
     onSubmit,
     response,
+    expired,
 }: {
     content: ClarificationRequestContent;
     isActive: boolean;
     submitting: boolean;
     onSubmit: (submission: AnswerSubmission) => Promise<void>;
     response?: ClarificationResponseContent;
+    expired?: boolean;
 }) {
     const [draft, setDraft] = React.useState<Record<string, AnswerValue | undefined>>({});
     const [error, setError] = React.useState<string | null>(null);
     const [expanded, setExpanded] = React.useState(false);
+
+    if (!response && expired) {
+        return (
+            <div className="rounded-lg border border-border/50 bg-muted/20 p-3">
+                <button
+                    type="button"
+                    onClick={() => setExpanded((v) => !v)}
+                    className="flex w-full items-center gap-1.5 text-left text-xs text-muted-foreground hover:text-foreground"
+                >
+                    {expanded ? (
+                        <IconChevronDown size={12} />
+                    ) : (
+                        <IconChevronRight size={12} />
+                    )}
+                    <span>
+                        Question expired ({content.questions.length}{" "}
+                        {content.questions.length === 1 ? "question" : "questions"})
+                        — superseded by a follow-up message
+                    </span>
+                </button>
+                {expanded ? (
+                    <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                        {content.questions.map((q) => (
+                            <li key={q.id}>{q.text}</li>
+                        ))}
+                    </ul>
+                ) : null}
+            </div>
+        );
+    }
 
     if (response) {
         const answersById = new Map(response.answers.map((a) => [a.question_id, a.value]));

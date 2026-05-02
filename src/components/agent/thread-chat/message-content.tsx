@@ -107,6 +107,7 @@ export function StructuredConversationContent({
   submittingClarificationRequestId,
   onSubmitClarificationAnswer,
   clarificationResponse,
+  clarificationExpired,
 }: {
   content: ConversationContent;
   messageId: string;
@@ -127,6 +128,7 @@ export function StructuredConversationContent({
     submission: AnswerSubmission,
   ) => Promise<void>;
   clarificationResponse?: ClarificationResponseContent;
+  clarificationExpired?: boolean;
 }) {
   if (isNoteMessage(content)) {
     return (
@@ -173,6 +175,7 @@ export function StructuredConversationContent({
             onSubmitClarificationAnswer(messageId, submission)
           }
           response={clarificationResponse}
+          expired={clarificationExpired}
         />
       );
     case "clarification_response":

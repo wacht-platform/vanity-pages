@@ -305,6 +305,8 @@ export default function SingleChatPage() {
     activeClarificationRequestId,
     submittingClarificationRequestId,
     submitClarificationAnswer,
+    clarificationResponseByRequestId,
+    expiredClarificationRequestIds,
   } = useThreadClarification({
     messages,
     pendingClarificationRequest,
@@ -565,6 +567,8 @@ export default function SingleChatPage() {
               activeClarificationRequestId={activeClarificationRequestId}
               submittingClarificationRequestId={submittingClarificationRequestId}
               onSubmitClarificationAnswer={submitClarificationAnswer}
+              clarificationResponseByRequestId={clarificationResponseByRequestId}
+              expiredClarificationRequestIds={expiredClarificationRequestIds}
               resolveMessageFileUrl={resolveMessageFileUrl}
               onOpenAttachmentPath={filesystemPane.openFilesystemPath}
               pendingMessage={displayedPendingMessage}
