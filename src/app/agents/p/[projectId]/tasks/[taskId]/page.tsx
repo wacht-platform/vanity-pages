@@ -451,10 +451,6 @@ export default function ProjectTaskDetailPage() {
                             <TaskCommentsPanel
                                 projectId={projectId}
                                 taskId={taskId}
-                                disabled={
-                                    item.status === "cancelled" ||
-                                    item.status === "completed"
-                                }
                             />
                         ) : (
                             <div className="flex min-h-0 flex-1">
