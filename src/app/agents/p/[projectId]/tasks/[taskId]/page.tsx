@@ -19,6 +19,7 @@ import { useActiveAgent } from "@/components/agent-provider";
 import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
 import { PendingQuestionCard } from "@/components/agent/pending-question-card";
 import { TaskWorkspaceExplorer } from "@/components/agent/task-workspace-explorer";
+import { TaskCommentsPanel } from "@/components/agent/task-comments-panel";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
@@ -27,7 +28,7 @@ import { cn } from "@/lib/utils";
 type TaskPaneSelection =
     | { kind: "assignment"; assignmentId: string };
 
-type TaskSurfaceTab = "assignments" | "files";
+type TaskSurfaceTab = "assignments" | "files" | "comments";
 
 const WORKSPACE_PATH_PATTERN = /\/(?:task|workspace)\/[A-Za-z0-9._/-]+/g;
 const WORKSPACE_PATH_CHECK_PATTERN = /^\/(?:task|workspace)\/[A-Za-z0-9._/-]+$/;
@@ -421,7 +422,7 @@ export default function ProjectTaskDetailPage() {
                     <div className="flex min-h-0 flex-1 flex-col">
                         <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 px-4">
                             <div className="flex rounded-md border border-border/50 p-0.5">
-                                {(["assignments", "files"] as const).map((tab) => (
+                                {(["assignments", "files", "comments"] as const).map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -445,6 +446,15 @@ export default function ProjectTaskDetailPage() {
                                 listDirectory={listWorkspaceDirectory}
                                 refetchRoot={refetchTaskWorkspace}
                                 requestedPath={requestedWorkspacePath}
+                            />
+                        ) : activeTab === "comments" ? (
+                            <TaskCommentsPanel
+                                projectId={projectId}
+                                taskId={taskId}
+                                disabled={
+                                    item.status === "cancelled" ||
+                                    item.status === "completed"
+                                }
                             />
                         ) : (
                             <div className="flex min-h-0 flex-1">
