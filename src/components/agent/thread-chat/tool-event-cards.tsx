@@ -520,12 +520,20 @@ function EditFileCard({ content }: { content: ToolResultContent }) {
   const input = asRecord(content.input);
   const output = toolOutputData(content);
   const path = asString(input?.path) || "file.txt";
-  const value = asString(input?.new_content) || "";
-  const replacedContent = asString(output?.replaced_content) || "";
-  const targetRange =
-    [asNumber(input?.start_line), asNumber(input?.end_line)].every((v) => v !== null)
-      ? `${input?.start_line}-${input?.end_line}`
-      : null;
+  const oldString = asString(input?.old_string) || "";
+  const newString = asString(input?.new_string) || "";
+  const replaceAll = input?.replace_all === true;
+  const replacements = asNumber(output?.replacements);
+  const totalLines = asNumber(output?.total_lines);
+  const meta = [
+    replacements !== null
+      ? `${replacements} ${replacements === 1 ? "replacement" : "replacements"}`
+      : null,
+    replaceAll ? "replace_all" : null,
+    totalLines !== null ? `${totalLines} lines` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <ToolInlineRow
       icon={<IconFileText className="h-4 w-4" />}
@@ -533,12 +541,10 @@ function EditFileCard({ content }: { content: ToolResultContent }) {
       subtitle={path}
       badge={<StatusBadge content={content} />}
     >
-      {!replacedContent && targetRange ? (
-        <div className="text-xs text-muted-foreground/65">
-          Replaced lines {targetRange}
-        </div>
+      {meta ? (
+        <div className="text-xs text-muted-foreground/65">{meta}</div>
       ) : null}
-      <DiffEditorPane before={replacedContent} after={value} />
+      <DiffEditorPane before={oldString} after={newString} />
     </ToolInlineRow>
   );
 }
