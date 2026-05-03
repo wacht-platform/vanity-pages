@@ -18,6 +18,7 @@ import {
 import { useActiveAgent } from "@/components/agent-provider";
 import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
 import { PendingQuestionCard } from "@/components/agent/pending-question-card";
+import { TaskApprovalCard } from "@/components/agent/task-approval-card";
 import { TaskWorkspaceExplorer } from "@/components/agent/task-workspace-explorer";
 import { TaskCommentsPanel } from "@/components/agent/task-comments-panel";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
@@ -236,6 +237,7 @@ export default function ProjectTaskDetailPage() {
         unarchiveItem,
         cancelItem,
         submitAnswer,
+        submitApproval,
         updateItem,
         loadMoreAssignments,
         taskWorkspace,
@@ -413,6 +415,12 @@ export default function ProjectTaskDetailPage() {
                                     onSubmit={async (submission) => {
                                         await submitAnswer(submission);
                                     }}
+                                />
+                            ) : null}
+                            {item.pending_approval ? (
+                                <TaskApprovalCard
+                                    pending={item.pending_approval}
+                                    onSubmit={async (approvals) => submitApproval(approvals)}
                                 />
                             ) : null}
                         </div>

@@ -579,15 +579,6 @@ function ProjectSection({
                         icon={<IconChecklist size={13} stroke={1.8} />}
                         label="Task Board"
                     />
-                    <NestedLink
-                        href={`/agents/p/${project.id}/review`}
-                        active={pathname.includes(
-                            `/agents/p/${project.id}/review`,
-                        )}
-                        icon={<ClipboardCheck size={13} strokeWidth={1.8} />}
-                        label="User Review"
-                    />
-
                     {threads.length > 0 ? (
                         <div className="space-y-0.5">
                             {threads.map((thread: AgentThread) => (
