@@ -91,7 +91,6 @@ export function RichTextMarkdownInput({
             StarterKit.configure({
                 heading: false,
                 blockquote: false,
-                codeBlock: false,
                 horizontalRule: false,
             }),
             Underline,

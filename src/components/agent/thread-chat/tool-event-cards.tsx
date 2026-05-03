@@ -28,6 +28,7 @@ import {
 } from "./event-row";
 import { LazyCodeFileViewer } from "./lazy-code-file-viewer";
 import { ToolDetailSection } from "./structured-value";
+import { JsonViewer } from "@/components/json-viewer";
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -461,6 +462,7 @@ function ThreadList({ threads }: { threads: unknown[] }) {
 }
 
 function UnknownToolCard({ content }: { content: ToolResultContent }) {
+  const output = toolOutputData(content);
   return (
     <ToolInlineRow
       icon={<IconTool className="h-4 w-4" />}
@@ -468,8 +470,27 @@ function UnknownToolCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
     >
       <ErrorNotice content={content} />
-      <ToolPayloadDetails content={content} />
+      <CollapsibleJsonSection label="Input" data={content.input} />
+      <CollapsibleJsonSection label="Output" data={output} />
     </ToolInlineRow>
+  );
+}
+
+function CollapsibleJsonSection({ label, data }: { label: string; data: unknown }) {
+  if (data === undefined || data === null) return null;
+  if (typeof data === "object" && data !== null && Object.keys(data as object).length === 0) {
+    return null;
+  }
+  return (
+    <details className="group rounded-md border border-border/50 bg-muted/20">
+      <summary className="flex cursor-pointer select-none items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground/80 hover:text-foreground">
+        <span className="inline-block transition-transform group-open:rotate-90">▸</span>
+        <span>{label}</span>
+      </summary>
+      <div className="border-t border-border/40 px-2.5 py-2">
+        <JsonViewer data={data} />
+      </div>
+    </details>
   );
 }
 
