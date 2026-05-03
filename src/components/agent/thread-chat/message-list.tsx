@@ -235,7 +235,7 @@ export function ThreadMessageList({
                                                 User
                                             </span>
                                         </div>
-                                        <div className="w-full text-right">
+                                        <div className="w-full">
                                             <UserMessageMarkdown
                                                 value={getDisplayContent(
                                                     message.content,
@@ -371,7 +371,7 @@ export function ThreadMessageList({
                                     </span>
                                 </div>
                                 {pendingMessage ? (
-                                    <div className="w-full text-right text-foreground/70">
+                                    <div className="w-full text-foreground/70">
                                         <UserMessageMarkdown
                                             value={pendingMessage}
                                         />
