@@ -222,10 +222,10 @@ export function ThreadMessageList({
                             return (
                                 <div
                                     key={message.id}
-                                    className="mt-4 flex"
+                                    className="my-6 flex justify-end"
                                 >
-                                    <div className="min-w-0 flex-1">
-                                        <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
+                                    <div className="flex min-w-0 max-w-2xl flex-col items-end gap-1.5">
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                             <span className="inline-flex items-center gap-1.5">
                                                 <IconUser
                                                     size={12}
@@ -235,16 +235,18 @@ export function ThreadMessageList({
                                                 User
                                             </span>
                                         </div>
-                                        <UserMessageMarkdown
-                                            value={getDisplayContent(
-                                                message.content,
-                                            )}
-                                        />
+                                        <div className="w-full text-right">
+                                            <UserMessageMarkdown
+                                                value={getDisplayContent(
+                                                    message.content,
+                                                )}
+                                            />
+                                        </div>
                                         <div className="text-xs text-muted-foreground/50">
                                             {formatTime(message.timestamp)}
                                         </div>
                                         {messageFiles.length > 0 ? (
-                                            <div className="mt-2 flex flex-wrap gap-2">
+                                            <div className="flex flex-wrap justify-end gap-2">
                                                 {messageFiles.map(
                                                     (file, index) => {
                                                         const fileUrl =
@@ -356,9 +358,9 @@ export function ThreadMessageList({
 
                     {pendingMessage ||
                     (pendingFiles && pendingFiles.length > 0) ? (
-                        <div className="mt-4 flex">
-                            <div className="min-w-0 flex-1">
-                                <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground/60">
+                        <div className="my-6 flex justify-end">
+                            <div className="flex min-w-0 max-w-2xl flex-col items-end gap-1.5">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
                                     <span className="inline-flex items-center gap-1.5">
                                         <IconUser
                                             size={12}
@@ -369,14 +371,14 @@ export function ThreadMessageList({
                                     </span>
                                 </div>
                                 {pendingMessage ? (
-                                    <div className="text-foreground/70">
+                                    <div className="w-full text-right text-foreground/70">
                                         <UserMessageMarkdown
                                             value={pendingMessage}
                                         />
                                     </div>
                                 ) : null}
                                 {pendingFiles && pendingFiles.length > 0 ? (
-                                    <div className="mt-2 flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap justify-end gap-2">
                                         {pendingFiles.map((file, index) => (
                                             <div
                                                 key={`${file.name}-${file.size}-${index}`}
