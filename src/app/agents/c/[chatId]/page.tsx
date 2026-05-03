@@ -490,8 +490,13 @@ export default function SingleChatPage() {
   const showHandoffPendingMessage =
     hasNewThreadRunHandoff &&
     !hasUserMessage(messages, newThreadRunHandoff.message);
-  const displayedPendingMessage =
-    pendingMessage ?? (showHandoffPendingMessage ? newThreadRunHandoff.message : null);
+  const showInflightPendingMessage =
+    pendingMessage !== null && !hasUserMessage(messages, pendingMessage);
+  const displayedPendingMessage = showInflightPendingMessage
+    ? pendingMessage
+    : showHandoffPendingMessage
+      ? newThreadRunHandoff.message
+      : null;
   const threadStatusKind = getThreadStatusKind(thread?.status, showRunFeedback);
   const threadStatusMeta = getThreadStatusMeta(threadStatusKind);
 
