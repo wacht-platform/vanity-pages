@@ -102,9 +102,7 @@ export function ThreadMessageList({
 }) {
     const visibleMessages = React.useMemo(
         () =>
-            messages.filter(
-                (m) => m.content.type !== "clarification_response",
-            ),
+            messages.filter((m) => m.content.type !== "clarification_response"),
         [messages],
     );
 
@@ -232,9 +230,9 @@ export function ThreadMessageList({
                                                 )}
                                             />
                                         </div>
-                                        <span className="text-xs text-muted-foreground/50">
+                                        <div className="text-xs text-muted-foreground/50 flex justify-end">
                                             {formatTime(message.timestamp)}
-                                        </span>
+                                        </div>
                                         {messageFiles.length > 0 ? (
                                             <div className="flex w-full flex-wrap justify-end gap-2">
                                                 {messageFiles.map(

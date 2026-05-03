@@ -5,7 +5,15 @@ import { useProjectTaskBoardItemComments } from "@wacht/nextjs";
 import type { ProjectTaskBoardItemComment } from "@wacht/types";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { IconMessageCircle2, IconPaperclip, IconSend, IconX } from "@tabler/icons-react";
+import {
+    IconCheck,
+    IconChevronDown,
+    IconChevronRight,
+    IconMessageCircle2,
+    IconPaperclip,
+    IconSend,
+    IconX,
+} from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -118,51 +126,9 @@ export function TaskCommentsPanel({
                         </div>
                     ) : null}
                     <div className="space-y-2">
-                        {comments.map((comment: ProjectTaskBoardItemComment) => {
-                            const metadata =
-                                (comment.metadata as CommentMetadata | undefined) ??
-                                undefined;
-                            const attachments = metadata?.attachments ?? [];
-                            return (
-                                <div
-                                    key={comment.id}
-                                    className="rounded-md border border-border/40 bg-background px-3 py-2.5 transition-colors hover:bg-muted/20"
-                                >
-                                    <div
-                                        className="mb-1 text-xs text-muted-foreground/70"
-                                        title={formatAbsolute(comment.created_at)}
-                                    >
-                                        {formatRelative(comment.created_at)}
-                                    </div>
-                                    {comment.body ? (
-                                        <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-                                            {comment.body}
-                                        </div>
-                                    ) : null}
-                                    {attachments.length > 0 ? (
-                                        <div className="mt-2 flex flex-wrap gap-1.5">
-                                            {attachments.map((a, i) => (
-                                                <div
-                                                    key={`${a.path ?? a.name ?? i}-${i}`}
-                                                    className="inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-muted/30 px-2 py-0.5 text-xs text-foreground/80"
-                                                >
-                                                    <IconPaperclip
-                                                        size={11}
-                                                        stroke={1.5}
-                                                    />
-                                                    <span className="max-w-52 truncate">
-                                                        {a.original_name ??
-                                                            a.name ??
-                                                            a.path ??
-                                                            "attachment"}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : null}
-                                </div>
-                            );
-                        })}
+                        {comments.map((comment: ProjectTaskBoardItemComment) => (
+                            <CommentRow key={comment.id} comment={comment} />
+                        ))}
                     </div>
                 </div>
             </div>
@@ -247,6 +213,120 @@ export function TaskCommentsPanel({
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function CommentRow({ comment }: { comment: ProjectTaskBoardItemComment }) {
+    const metadata =
+        (comment.metadata as CommentMetadata | undefined) ?? undefined;
+    const attachments = metadata?.attachments ?? [];
+    const resolved = !!comment.resolved_at;
+    const [expanded, setExpanded] = React.useState(!resolved);
+
+    if (resolved) {
+        return (
+            <div className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 transition-colors hover:bg-muted/20">
+                <button
+                    type="button"
+                    onClick={() => setExpanded((v) => !v)}
+                    className="flex w-full items-start gap-2 text-left"
+                >
+                    {expanded ? (
+                        <IconChevronDown
+                            size={12}
+                            className="mt-1 shrink-0 text-muted-foreground/70"
+                        />
+                    ) : (
+                        <IconChevronRight
+                            size={12}
+                            className="mt-1 shrink-0 text-muted-foreground/70"
+                        />
+                    )}
+                    <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80">
+                            <IconCheck
+                                size={11}
+                                stroke={2}
+                                className="text-emerald-600 dark:text-emerald-400"
+                            />
+                            <span className="font-medium">Resolved</span>
+                            <span
+                                className="text-muted-foreground/60"
+                                title={formatAbsolute(comment.created_at)}
+                            >
+                                · {formatRelative(comment.created_at)}
+                            </span>
+                        </div>
+                        {comment.resolution_summary ? (
+                            <div className="mt-1 text-sm text-foreground/80">
+                                {comment.resolution_summary}
+                            </div>
+                        ) : null}
+                    </div>
+                </button>
+                {expanded ? (
+                    <div className="mt-2 border-t border-border/30 pt-2 pl-5">
+                        {comment.body ? (
+                            <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/70">
+                                {comment.body}
+                            </div>
+                        ) : null}
+                        {attachments.length > 0 ? (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                                {attachments.map((a, i) => (
+                                    <div
+                                        key={`${a.path ?? a.name ?? i}-${i}`}
+                                        className="inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-muted/30 px-2 py-0.5 text-xs text-foreground/70"
+                                    >
+                                        <IconPaperclip size={11} stroke={1.5} />
+                                        <span className="max-w-52 truncate">
+                                            {a.original_name ??
+                                                a.name ??
+                                                a.path ??
+                                                "attachment"}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : null}
+                    </div>
+                ) : null}
+            </div>
+        );
+    }
+
+    return (
+        <div className="rounded-md border border-border/40 bg-background px-3 py-2.5 transition-colors hover:bg-muted/20">
+            <div
+                className="mb-1 text-xs text-muted-foreground/70"
+                title={formatAbsolute(comment.created_at)}
+            >
+                {formatRelative(comment.created_at)}
+            </div>
+            {comment.body ? (
+                <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                    {comment.body}
+                </div>
+            ) : null}
+            {attachments.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                    {attachments.map((a, i) => (
+                        <div
+                            key={`${a.path ?? a.name ?? i}-${i}`}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-muted/30 px-2 py-0.5 text-xs text-foreground/80"
+                        >
+                            <IconPaperclip size={11} stroke={1.5} />
+                            <span className="max-w-52 truncate">
+                                {a.original_name ??
+                                    a.name ??
+                                    a.path ??
+                                    "attachment"}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            ) : null}
         </div>
     );
 }
