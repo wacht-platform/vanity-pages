@@ -154,7 +154,7 @@ function ToolInlineRow({
   title: string;
   subtitle?: React.ReactNode;
   badge?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="space-y-2.5 py-1">
