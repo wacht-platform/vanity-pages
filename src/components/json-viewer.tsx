@@ -107,7 +107,7 @@ export function JsonViewer({ data, level = 0 }: JsonViewerProps) {
     }
 
     return (
-        <div className="text-xs font-mono leading-relaxed">
+        <div className="text-xs font-mono leading-relaxed min-w-0 break-all whitespace-pre-wrap">
             {typeof data === "object" && data !== null ? (
                 Array.isArray(data) ? (
                     <div>
