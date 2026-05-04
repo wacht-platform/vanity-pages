@@ -787,50 +787,22 @@ function TaskGraphCard({ content }: { content: ToolResultContent }) {
 }
 
 function SearchToolsCard({ content }: { content: ToolResultContent }) {
-  const input = asRecord(content.input);
-  const output = toolOutputData(content);
-  const results = asArray(output?.results);
   return (
     <ToolInlineRow
       icon={<IconSearch className="h-4 w-4" />}
       title="Search Tools"
       badge={<StatusBadge content={content} />}
-    >
-      <MetaList
-        items={[
-          { label: "Queries", value: asArray(input?.queries).length },
-          { label: "Matches", value: results.length },
-        ]}
-      />
-      {asArray(input?.queries).length > 0 ? (
-        <div className="text-sm leading-6 text-foreground/78">
-          {(asArray(input?.queries).filter((item): item is string => typeof item === "string")).join(", ")}
-        </div>
-      ) : null}
-      <SearchResultsList results={results} />
-    </ToolInlineRow>
+    />
   );
 }
 
 function LoadToolsCard({ content }: { content: ToolResultContent }) {
-  const output = toolOutputData(content);
-  const input = asRecord(content.input);
-  const toolNames =
-    asArray(output?.loaded_tool_names).length > 0
-      ? asArray(output?.loaded_tool_names)
-      : asArray(input?.tool_names);
   return (
     <ToolInlineRow
       icon={<IconTool className="h-4 w-4" />}
       title="Load Tools"
       badge={<StatusBadge content={content} />}
-    >
-      {toolNames.length > 0 ? (
-        <div className="text-sm leading-6 text-foreground/78">
-          {toolNames.filter((item): item is string => typeof item === "string").join(", ")}
-        </div>
-      ) : null}
-    </ToolInlineRow>
+    />
   );
 }
 
