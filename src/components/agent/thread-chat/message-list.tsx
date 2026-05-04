@@ -224,7 +224,7 @@ export function ThreadMessageList({
                                     key={message.id}
                                     className="my-6 flex justify-end"
                                 >
-                                    <div className="flex min-w-0 max-w-2xl flex-col items-end gap-1.5">
+                                    <div className="flex min-w-0 flex-col items-end gap-1.5">
                                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                             <span className="inline-flex items-center gap-1.5">
                                                 <IconUser
@@ -235,7 +235,7 @@ export function ThreadMessageList({
                                                 User
                                             </span>
                                         </div>
-                                        <div className="w-full">
+                                        <div className="w-fit">
                                             <UserMessageMarkdown
                                                 value={getDisplayContent(
                                                     message.content,
@@ -359,7 +359,7 @@ export function ThreadMessageList({
                     {pendingMessage ||
                     (pendingFiles && pendingFiles.length > 0) ? (
                         <div className="my-6 flex justify-end">
-                            <div className="flex min-w-0 max-w-2xl flex-col items-end gap-1.5">
+                            <div className="flex min-w-0 flex-col items-end gap-1.5">
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
                                     <span className="inline-flex items-center gap-1.5">
                                         <IconUser
