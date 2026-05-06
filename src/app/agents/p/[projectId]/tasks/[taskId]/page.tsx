@@ -12,11 +12,7 @@ import type {
 } from "@wacht/types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import {
-    IconArchive,
-    IconChecklist,
-    IconRoute,
-} from "@tabler/icons-react";
+import { IconArchive, IconChecklist, IconRoute } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
 import { PendingQuestionCard } from "@/components/agent/pending-question-card";
@@ -28,8 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
 import { cn } from "@/lib/utils";
 
-type TaskPaneSelection =
-    | { kind: "assignment"; assignmentId: string };
+type TaskPaneSelection = { kind: "assignment"; assignmentId: string };
 
 type TaskSurfaceTab = "assignments" | "files" | "comments";
 
@@ -60,7 +55,9 @@ function formatTime(value?: string) {
         hour: "numeric",
         minute: "2-digit",
         hour12: true,
-    }).format(new Date(value)).toLowerCase();
+    })
+        .format(new Date(value))
+        .toLowerCase();
 }
 
 function timestampValue(value?: string) {
@@ -83,7 +80,14 @@ function getStatusIndicator(status?: string) {
         needs_clarification: "bg-violet-500",
         waiting_for_children: "bg-sky-500",
     };
-    return <div className={cn("size-1.5 rounded-full shrink-0", colors[status || ""] || "bg-muted-foreground/40")} />;
+    return (
+        <div
+            className={cn(
+                "size-1.5 rounded-full shrink-0",
+                colors[status || ""] || "bg-muted-foreground/40",
+            )}
+        />
+    );
 }
 
 function formatLabel(value?: string) {
@@ -108,11 +112,16 @@ function normalizeWorkspacePath(value: unknown) {
 }
 
 function isWorkspacePath(value: unknown): value is string {
-    return typeof value === "string" && WORKSPACE_PATH_CHECK_PATTERN.test(value);
+    return (
+        typeof value === "string" && WORKSPACE_PATH_CHECK_PATTERN.test(value)
+    );
 }
 
 function splitWorkspacePathSuffix(value: string) {
-    const trimmedPath = value.replace(WORKSPACE_TRAILING_PUNCTUATION_PATTERN, "");
+    const trimmedPath = value.replace(
+        WORKSPACE_TRAILING_PUNCTUATION_PATTERN,
+        "",
+    );
     return {
         path: trimmedPath,
         trailing: value.slice(trimmedPath.length),
@@ -177,7 +186,12 @@ function splitTextIntoWorkspaceLinkNodes(value: string): MarkdownNode[] {
 
 function transformWorkspaceLinks(node: MarkdownNode) {
     if (!node.children || node.children.length === 0) return;
-    if (node.type === "link" || node.type === "linkReference" || node.type === "definition") return;
+    if (
+        node.type === "link" ||
+        node.type === "linkReference" ||
+        node.type === "definition"
+    )
+        return;
 
     const nextChildren: MarkdownNode[] = [];
     for (const child of node.children) {
@@ -225,13 +239,11 @@ export default function ProjectTaskDetailPage() {
     const projectId = params?.projectId;
     const taskId = params?.taskId;
     const { hasSession } = useActiveAgent();
-    const {
-        projects,
-        loading: projectsLoading,
-    } = useActorProjects({
+    const { projects, loading: projectsLoading } = useActorProjects({
         enabled: hasSession,
     });
-    const project = projects.find((item: ActorProject) => item.id === projectId) || null;
+    const project =
+        projects.find((item: ActorProject) => item.id === projectId) || null;
     const {
         item,
         assignments,
@@ -252,7 +264,9 @@ export default function ProjectTaskDetailPage() {
         getTaskWorkspaceFile,
         listTaskWorkspaceDirectory,
         refetchTaskWorkspace,
-    } = useProjectTaskBoardItem(projectId, taskId, !!taskId, { includeArchived: true });
+    } = useProjectTaskBoardItem(projectId, taskId, !!taskId, {
+        includeArchived: true,
+    });
 
     const workspaceEntries = React.useMemo<ProjectTaskWorkspaceFileEntry[]>(
         () => taskWorkspace?.files || [],
@@ -269,16 +283,25 @@ export default function ProjectTaskDetailPage() {
     const orderedAssignments = React.useMemo<ProjectTaskBoardItemAssignment[]>(
         () =>
             [...assignments].sort(
-                (a: ProjectTaskBoardItemAssignment, b: ProjectTaskBoardItemAssignment) =>
-                    timestampValue(a.created_at) - timestampValue(b.created_at) ||
+                (
+                    a: ProjectTaskBoardItemAssignment,
+                    b: ProjectTaskBoardItemAssignment,
+                ) =>
+                    timestampValue(a.created_at) -
+                        timestampValue(b.created_at) ||
                     a.id.localeCompare(b.id),
             ),
         [assignments],
     );
 
-    const [activeTab, setActiveTab] = React.useState<TaskSurfaceTab>("assignments");
-    const [selection, setSelection] = React.useState<TaskPaneSelection | null>(null);
-    const [requestedWorkspacePath, setRequestedWorkspacePath] = React.useState<string | null>(null);
+    const [activeTab, setActiveTab] =
+        React.useState<TaskSurfaceTab>("assignments");
+    const [selection, setSelection] = React.useState<TaskPaneSelection | null>(
+        null,
+    );
+    const [requestedWorkspacePath, setRequestedWorkspacePath] = React.useState<
+        string | null
+    >(null);
 
     const selectedAssignment =
         selection?.kind === "assignment"
@@ -295,37 +318,63 @@ export default function ProjectTaskDetailPage() {
         setRequestedWorkspacePath(normalizedPath);
     }, []);
 
-    const handleWorkspaceLinkClickCapture = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
-        const target = event.target;
-        if (!(target instanceof Element)) return;
-        const anchor = target.closest("a[href]");
-        if (!(anchor instanceof HTMLAnchorElement)) return;
-        const workspaceHref = resolveWorkspaceHref(anchor.getAttribute("href"));
-        if (!workspaceHref) return;
-        event.preventDefault();
-        event.stopPropagation();
-        openWorkspacePath(workspaceHref);
-    }, [openWorkspacePath]);
-
-    const markdownComponents = React.useMemo(() => ({
-        a: (props: React.ComponentPropsWithoutRef<"a"> & { node?: unknown }) => {
-            const { href, children, ...rest } = props;
-            const workspaceHref = resolveWorkspaceHref(href);
-            if (workspaceHref) {
-                return (
-                    <button type="button" className="text-foreground underline decoration-divider underline-offset-4 hover:decoration-foreground/40" onClick={() => openWorkspacePath(workspaceHref)}>
-                        {children}
-                    </button>
-                );
-            }
-            return <a {...rest} href={href} target="_blank" rel="noreferrer" className="text-foreground underline decoration-divider underline-offset-4 hover:decoration-foreground/40">{children}</a>;
+    const handleWorkspaceLinkClickCapture = React.useCallback(
+        (event: React.MouseEvent<HTMLElement>) => {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            const anchor = target.closest("a[href]");
+            if (!(anchor instanceof HTMLAnchorElement)) return;
+            const workspaceHref = resolveWorkspaceHref(
+                anchor.getAttribute("href"),
+            );
+            if (!workspaceHref) return;
+            event.preventDefault();
+            event.stopPropagation();
+            openWorkspacePath(workspaceHref);
         },
-    }), [openWorkspacePath]);
+        [openWorkspacePath],
+    );
+
+    const markdownComponents = React.useMemo(
+        () => ({
+            a: (
+                props: React.ComponentPropsWithoutRef<"a"> & { node?: unknown },
+            ) => {
+                const { href, children, ...rest } = props;
+                const workspaceHref = resolveWorkspaceHref(href);
+                if (workspaceHref) {
+                    return (
+                        <button
+                            type="button"
+                            className="text-foreground underline decoration-divider underline-offset-4 hover:decoration-foreground/40"
+                            onClick={() => openWorkspacePath(workspaceHref)}
+                        >
+                            {children}
+                        </button>
+                    );
+                }
+                return (
+                    <a
+                        {...rest}
+                        href={href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-foreground underline decoration-divider underline-offset-4 hover:decoration-foreground/40"
+                    >
+                        {children}
+                    </a>
+                );
+            },
+        }),
+        [openWorkspacePath],
+    );
 
     React.useEffect(() => {
-        if (activeTab === "assignments" &&
+        if (
+            activeTab === "assignments" &&
             selection?.kind !== "assignment" &&
-            orderedAssignments.length > 0) {
+            orderedAssignments.length > 0
+        ) {
             setSelection({
                 kind: "assignment",
                 assignmentId: orderedAssignments[0].id,
@@ -333,71 +382,99 @@ export default function ProjectTaskDetailPage() {
         }
     }, [activeTab, selection, orderedAssignments]);
 
-    if (!hasSession) return <PageState title="No session" description="Open via a valid agent session link." />;
+    if (!hasSession)
+        return (
+            <PageState
+                title="No session"
+                description="Open via a valid agent session link."
+            />
+        );
 
-    if (projectsLoading || loading) return (
-        <div className="h-full flex flex-col space-y-4 bg-background p-8">
-            <Skeleton className="h-12 rounded" />
-            <Skeleton className="h-40 rounded" />
-            <div className="grid grid-cols-2 gap-4 flex-1">
-                <Skeleton className="rounded" />
-                <Skeleton className="rounded" />
+    if (projectsLoading || loading)
+        return (
+            <div className="h-full flex flex-col space-y-4 bg-background p-8">
+                <Skeleton className="h-12 rounded" />
+                <Skeleton className="h-40 rounded" />
+                <div className="grid grid-cols-2 gap-4 flex-1">
+                    <Skeleton className="rounded" />
+                    <Skeleton className="rounded" />
+                </div>
             </div>
-        </div>
-    );
+        );
 
-    if (error || !item) return <PageState title="Task not found" description="The requested task could not be loaded." />;
+    if (error || !item)
+        return (
+            <PageState
+                title="Task not found"
+                description="The requested task could not be loaded."
+            />
+        );
 
     return (
         <div className="flex h-full flex-col overflow-hidden bg-background text-foreground">
             <AgentNavbar
-                left={(
+                left={
                     <div className="flex items-center gap-2">
-                        <IconChecklist size={13} stroke={2} className="text-muted-foreground" />
-                        <span className="text-sm font-normal">{project?.name || "Tasks"}</span>
+                        <IconChecklist
+                            size={13}
+                            stroke={2}
+                            className="text-muted-foreground"
+                        />
+                        <span className="text-sm font-normal">
+                            {project?.name || "Tasks"}
+                        </span>
                         <span className="text-sm text-muted-foreground">·</span>
                         <span className="text-sm font-normal">
                             {item.task_key || `TSK-${item.id.substring(0, 4)}`}
                         </span>
                     </div>
-                )}
-
-                right={(
+                }
+                right={
                     <>
-                    <div className="flex items-center gap-2 rounded-md border border-border/40 px-2 py-1">
-                        {getStatusIndicator(item.status)}
-                        <span className="text-sm text-muted-foreground">{item.status?.replace(/_/g, " ")}</span>
-                    </div>
-                    <EditTaskDialog
-                        task={item}
-                        onUpdate={async (request, files) => {
-                            await updateItem(request, files);
-                        }}
-                    />
-                    {item.status !== "cancelled" && item.status !== "completed" ? (
-                        <button
-                            onClick={async () => {
-                                if (
-                                    !window.confirm(
-                                        "Cancel this task? Any in-flight executor will be preempted.",
-                                    )
-                                ) return;
-                                await cancelItem();
+                        <div className="flex items-center gap-2 rounded-md border border-border/40 px-2 py-1">
+                            {getStatusIndicator(item.status)}
+                            <span className="text-sm text-muted-foreground">
+                                {item.status?.replace(/_/g, " ")}
+                            </span>
+                        </div>
+                        <EditTaskDialog
+                            task={item}
+                            onUpdate={async (request, files) => {
+                                await updateItem(request, files);
                             }}
+                        />
+                        {item.status !== "cancelled" &&
+                        item.status !== "completed" ? (
+                            <button
+                                onClick={async () => {
+                                    if (
+                                        !window.confirm(
+                                            "Cancel this task? Any in-flight executor will be preempted.",
+                                        )
+                                    )
+                                        return;
+                                    await cancelItem();
+                                }}
+                                className="flex h-8 items-center gap-1.5 rounded-md border border-border/40 px-3 text-sm transition-colors hover:bg-accent/50"
+                            >
+                                <span>Cancel</span>
+                            </button>
+                        ) : null}
+                        <button
+                            onClick={async () =>
+                                item.archived_at
+                                    ? await unarchiveItem()
+                                    : await archiveItem()
+                            }
                             className="flex h-8 items-center gap-1.5 rounded-md border border-border/40 px-3 text-sm transition-colors hover:bg-accent/50"
                         >
-                            <span>Cancel</span>
+                            <IconArchive size={13} stroke={1.5} />
+                            <span>
+                                {item.archived_at ? "Unarchive" : "Archive"}
+                            </span>
                         </button>
-                    ) : null}
-                    <button
-                        onClick={async () => item.archived_at ? await unarchiveItem() : await archiveItem()}
-                        className="flex h-8 items-center gap-1.5 rounded-md border border-border/40 px-3 text-sm transition-colors hover:bg-accent/50"
-                    >
-                        <IconArchive size={13} stroke={1.5} />
-                        <span>{item.archived_at ? "Unarchive" : "Archive"}</span>
-                    </button>
                     </>
-                )}
+                }
             />
 
             <div className="flex-1 overflow-y-auto">
@@ -405,17 +482,31 @@ export default function ProjectTaskDetailPage() {
                     {/* Task Title Section */}
                     <div className="border-b border-border/50 px-4 py-4 md:px-5">
                         <div className="max-w-4xl space-y-3">
-                            <h1 className="text-base font-normal leading-tight">{item.title}</h1>
+                            <h1 className="text-base font-normal leading-tight">
+                                {item.title}
+                            </h1>
                             {item.description ? (
-                                <div className={DOCUMENT_PROSE_CLASSNAME} onClickCapture={handleWorkspaceLinkClickCapture}>
-                                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkWorkspaceLinks]} components={markdownComponents}>
+                                <div
+                                    className={DOCUMENT_PROSE_CLASSNAME}
+                                    onClickCapture={
+                                        handleWorkspaceLinkClickCapture
+                                    }
+                                >
+                                    <ReactMarkdown
+                                        remarkPlugins={[
+                                            remarkGfm,
+                                            remarkWorkspaceLinks,
+                                        ]}
+                                        components={markdownComponents}
+                                    >
                                         {item.description}
                                     </ReactMarkdown>
                                 </div>
                             ) : (
-                                <p className="text-sm italic text-muted-foreground">No description provided.</p>
+                                <p className="text-sm italic text-muted-foreground">
+                                    No description provided.
+                                </p>
                             )}
-                            <ScheduleAndMountsPanel item={item} />
                             {item.pending_question ? (
                                 <PendingQuestionCard
                                     pending={item.pending_question}
@@ -427,7 +518,9 @@ export default function ProjectTaskDetailPage() {
                             {item.pending_approval ? (
                                 <TaskApprovalCard
                                     pending={item.pending_approval}
-                                    onSubmit={async (approvals) => submitApproval(approvals)}
+                                    onSubmit={async (approvals) =>
+                                        submitApproval(approvals)
+                                    }
                                 />
                             ) : null}
                         </div>
@@ -437,13 +530,21 @@ export default function ProjectTaskDetailPage() {
                     <div className="flex min-h-0 flex-1 flex-col">
                         <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 px-4">
                             <div className="flex rounded-md border border-border/50 p-0.5">
-                                {(["assignments", "files", "comments"] as const).map((tab) => (
+                                {(
+                                    [
+                                        "assignments",
+                                        "files",
+                                        "comments",
+                                    ] as const
+                                ).map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
                                         className={cn(
                                             "rounded px-3 py-1 text-sm font-normal capitalize transition-all",
-                                            activeTab === tab ? "border border-border bg-background text-foreground" : "text-muted-foreground hover:text-foreground"
+                                            activeTab === tab
+                                                ? "border border-border bg-background text-foreground"
+                                                : "text-muted-foreground hover:text-foreground",
                                         )}
                                     >
                                         {tab}
@@ -453,10 +554,14 @@ export default function ProjectTaskDetailPage() {
                         </div>
 
                         {activeTab === "files" ? (
-                        <TaskWorkspaceExplorer
+                            <TaskWorkspaceExplorer
                                 rootEntries={workspaceEntries}
                                 rootLoading={taskWorkspaceLoading}
-                                rootError={taskWorkspaceError ? String(taskWorkspaceError) : null}
+                                rootError={
+                                    taskWorkspaceError
+                                        ? String(taskWorkspaceError)
+                                        : null
+                                }
                                 getFile={getWorkspaceFile}
                                 listDirectory={listWorkspaceDirectory}
                                 refetchRoot={refetchTaskWorkspace}
@@ -472,50 +577,65 @@ export default function ProjectTaskDetailPage() {
                                 <div className="flex w-[300px] flex-col border-r border-border/50">
                                     <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-hide">
                                         <div className="space-y-px">
-                                            {orderedAssignments.map((assignment) => (
-                                                <button
-                                                    key={assignment.id}
-                                                    onClick={() =>
-                                                        setSelection({
-                                                            kind: "assignment",
-                                                            assignmentId: assignment.id,
-                                                        })
-                                                    }
-                                                    className={cn(
-                                                        "group flex w-full items-center gap-3 rounded px-3 py-1.5 text-left transition-all",
-                                                        selection?.kind === "assignment" &&
-                                                            selection.assignmentId === assignment.id
-                                                            ? "bg-accent/40"
-                                                            : "hover:bg-accent/20",
-                                                    )}
-                                                >
-                                                    <IconRoute
-                                                        size={14}
+                                            {orderedAssignments.map(
+                                                (assignment) => (
+                                                    <button
+                                                        key={assignment.id}
+                                                        onClick={() =>
+                                                            setSelection({
+                                                                kind: "assignment",
+                                                                assignmentId:
+                                                                    assignment.id,
+                                                            })
+                                                        }
                                                         className={cn(
-                                                            "shrink-0",
-                                                            selection?.kind === "assignment" &&
-                                                                selection.assignmentId === assignment.id
-                                                                ? "text-foreground"
-                                                                : "text-muted-foreground/60",
+                                                            "group flex w-full items-center gap-3 rounded px-3 py-1.5 text-left transition-all",
+                                                            selection?.kind ===
+                                                                "assignment" &&
+                                                                selection.assignmentId ===
+                                                                    assignment.id
+                                                                ? "bg-accent/40"
+                                                                : "hover:bg-accent/20",
                                                         )}
-                                                    />
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="truncate text-sm font-normal">
-                                                            {formatLabel(assignment.assignment_role)}
+                                                    >
+                                                        <IconRoute
+                                                            size={14}
+                                                            className={cn(
+                                                                "shrink-0",
+                                                                selection?.kind ===
+                                                                    "assignment" &&
+                                                                    selection.assignmentId ===
+                                                                        assignment.id
+                                                                    ? "text-foreground"
+                                                                    : "text-muted-foreground/60",
+                                                            )}
+                                                        />
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="truncate text-sm font-normal">
+                                                                {formatLabel(
+                                                                    assignment.assignment_role,
+                                                                )}
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground/60">
+                                                                {formatAssignmentStatus(
+                                                                    assignment,
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground/60">
-                                                            {formatAssignmentStatus(assignment)}
-                                                        </div>
-                                                    </div>
-                                                </button>
-                                            ))}
+                                                    </button>
+                                                ),
+                                            )}
                                         </div>
                                         {assignmentsHasMore ? (
                                             <div className="px-3 pt-3">
                                                 <button
                                                     type="button"
-                                                    onClick={() => void loadMoreAssignments()}
-                                                    disabled={assignmentsLoadingMore}
+                                                    onClick={() =>
+                                                        void loadMoreAssignments()
+                                                    }
+                                                    disabled={
+                                                        assignmentsLoadingMore
+                                                    }
                                                     className="w-full rounded-md border border-border/50 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/20 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                                                 >
                                                     {assignmentsLoadingMore
@@ -531,37 +651,67 @@ export default function ProjectTaskDetailPage() {
                                     <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 px-4 md:px-5">
                                         <div className="max-w-md truncate text-sm font-normal text-muted-foreground">
                                             {selection?.kind === "assignment"
-                                                ? formatLabel(selectedAssignment?.assignment_role)
+                                                ? formatLabel(
+                                                      selectedAssignment?.assignment_role,
+                                                  )
                                                 : ""}
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 overflow-y-auto px-4 py-4 md:px-5" onClickCapture={handleWorkspaceLinkClickCapture}>
-                                        {selection?.kind === "assignment" && selectedAssignment ? (
+                                    <div
+                                        className="flex-1 overflow-y-auto px-4 py-4 md:px-5"
+                                        onClickCapture={
+                                            handleWorkspaceLinkClickCapture
+                                        }
+                                    >
+                                        {selection?.kind === "assignment" &&
+                                        selectedAssignment ? (
                                             <div className="max-w-2xl space-y-6">
                                                 <div className="space-y-2">
                                                     <h2 className="text-base font-normal">
-                                                        {formatLabel(selectedAssignment.assignment_role)}
+                                                        {formatLabel(
+                                                            selectedAssignment.assignment_role,
+                                                        )}
                                                     </h2>
                                                     <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                                        <span>{formatAssignmentStatus(selectedAssignment)}</span>
+                                                        <span>
+                                                            {formatAssignmentStatus(
+                                                                selectedAssignment,
+                                                            )}
+                                                        </span>
                                                         <span>·</span>
-                                                        <span>{new Date(selectedAssignment.updated_at).toLocaleString()}</span>
+                                                        <span>
+                                                            {new Date(
+                                                                selectedAssignment.updated_at,
+                                                            ).toLocaleString()}
+                                                        </span>
                                                     </div>
                                                 </div>
 
                                                 {selectedAssignment.instructions ? (
-                                                    <div className={DOCUMENT_PROSE_CLASSNAME}>
+                                                    <div
+                                                        className={
+                                                            DOCUMENT_PROSE_CLASSNAME
+                                                        }
+                                                    >
                                                         <ReactMarkdown
-                                                            remarkPlugins={[remarkGfm, remarkWorkspaceLinks]}
-                                                            components={markdownComponents}
+                                                            remarkPlugins={[
+                                                                remarkGfm,
+                                                                remarkWorkspaceLinks,
+                                                            ]}
+                                                            components={
+                                                                markdownComponents
+                                                            }
                                                         >
-                                                            {selectedAssignment.instructions}
+                                                            {
+                                                                selectedAssignment.instructions
+                                                            }
                                                         </ReactMarkdown>
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm italic text-muted-foreground">
-                                                        No instructions recorded.
+                                                        No instructions
+                                                        recorded.
                                                     </p>
                                                 )}
 
@@ -572,7 +722,9 @@ export default function ProjectTaskDetailPage() {
                                                                 Result
                                                             </div>
                                                             <div className="text-foreground/90">
-                                                                {selectedAssignment.result_summary}
+                                                                {
+                                                                    selectedAssignment.result_summary
+                                                                }
                                                             </div>
                                                         </div>
                                                     ) : null}
@@ -585,12 +737,15 @@ export default function ProjectTaskDetailPage() {
                                                                 type="button"
                                                                 onClick={() =>
                                                                     openWorkspacePath(
-                                                                        selectedAssignment.handoff_file_path ?? null,
+                                                                        selectedAssignment.handoff_file_path ??
+                                                                            null,
                                                                     )
                                                                 }
                                                                 className="text-foreground underline decoration-divider underline-offset-4 hover:decoration-foreground/40"
                                                             >
-                                                                {selectedAssignment.handoff_file_path}
+                                                                {
+                                                                    selectedAssignment.handoff_file_path
+                                                                }
                                                             </button>
                                                         </div>
                                                     ) : null}
@@ -598,7 +753,11 @@ export default function ProjectTaskDetailPage() {
                                                         <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
                                                             Thread
                                                         </div>
-                                                        <div>{selectedAssignment.thread_id}</div>
+                                                        <div>
+                                                            {
+                                                                selectedAssignment.thread_id
+                                                            }
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -610,64 +769,6 @@ export default function ProjectTaskDetailPage() {
                     </div>
                 </div>
             </div>
-        </div>
-    );
-}
-
-function ScheduleAndMountsPanel({ item }: { item: ProjectTaskBoardItem }) {
-    const schedule = item.schedule;
-    const mounts = item.mounts ?? [];
-    if (!schedule && mounts.length === 0) return null;
-
-    return (
-        <div className="rounded-md border border-border/50 bg-muted/20 p-3 text-sm">
-            {schedule ? (
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                    <span className="rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
-                        {formatScheduleBadge(schedule)}
-                    </span>
-                    <span>
-                        <span className="text-muted-foreground/70">Next:</span>{" "}
-                        <span className="text-foreground">
-                            {formatScheduleTimestamp(schedule.next_run_at)}
-                        </span>
-                    </span>
-                    {schedule.last_fired_at ? (
-                        <span>
-                            <span className="text-muted-foreground/70">Last fired:</span>{" "}
-                            <span className="text-foreground">
-                                {formatScheduleTimestamp(schedule.last_fired_at)}
-                            </span>
-                        </span>
-                    ) : null}
-                    <span>
-                        <span className="text-muted-foreground/70">Overlap:</span>{" "}
-                        <span className="text-foreground">{schedule.overlap_policy}</span>
-                    </span>
-                </div>
-            ) : null}
-            {mounts.length > 0 ? (
-                <div className={schedule ? "mt-3 border-t border-border/40 pt-3" : ""}>
-                    <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
-                        Mounts
-                    </div>
-                    <ul className="mt-2 space-y-1.5">
-                        {mounts.map((mount) => (
-                            <li key={mount.mount_path} className="flex items-baseline gap-2 text-xs">
-                                <code className="rounded bg-background px-1.5 py-0.5 font-mono text-[11px] text-foreground">
-                                    {mount.mount_path}
-                                </code>
-                                <span className="rounded bg-background/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
-                                    {mount.mode}
-                                </span>
-                                {mount.description ? (
-                                    <span className="text-muted-foreground">{mount.description}</span>
-                                ) : null}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            ) : null}
         </div>
     );
 }
