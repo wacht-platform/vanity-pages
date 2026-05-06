@@ -6,7 +6,11 @@ import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useActorProjects, useProjectTasks } from "@wacht/nextjs";
-import type { ActorProject, ProjectTaskBoardItem } from "@wacht/types";
+import type {
+    ActorProject,
+    ProjectTaskBoardItem,
+    ProjectTaskSchedule,
+} from "@wacht/types";
 import { IconPlus, IconChecklist } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { CreateTaskDialog } from "@/components/agent/task-board-dialogs";
@@ -30,7 +34,19 @@ function formatRelativeDate(value?: string) {
     const date = new Date(value);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const future = diff < 0;
+    const absDiff = Math.abs(diff);
+    const minutes = Math.floor(absDiff / (1000 * 60));
+    const hours = Math.floor(absDiff / (1000 * 60 * 60));
+    const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+
+    if (future) {
+        if (minutes < 1) return "in <1m";
+        if (minutes < 60) return `in ${minutes}m`;
+        if (hours < 24) return `in ${hours}h`;
+        if (days < 7) return `in ${days}d`;
+        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
 
     if (days === 0) return "Today";
     if (days === 1) return "Yesterday";
@@ -43,6 +59,27 @@ function formatRelativeDate(value?: string) {
     });
 }
 
+function formatInterval(seconds?: number) {
+    if (!seconds || seconds <= 0) return "";
+    const days = Math.floor(seconds / 86_400);
+    const hours = Math.floor((seconds % 86_400) / 3_600);
+    const minutes = Math.floor((seconds % 3_600) / 60);
+    const parts: string[] = [];
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0 && parts.length === 0) parts.push(`${minutes}m`);
+    return parts.join(" ");
+}
+
+function formatScheduleBadge(schedule: ProjectTaskSchedule) {
+    if (schedule.schedule_kind === "interval") {
+        const interval = formatInterval(schedule.interval_seconds);
+        return interval ? `Recurring · every ${interval}` : "Recurring";
+    }
+    if (schedule.schedule_kind === "once") return "One-off · scheduled";
+    return "Scheduled";
+}
+
 const TASK_COLUMNS = [
     {
         id: "intake",
@@ -52,12 +89,12 @@ const TASK_COLUMNS = [
     {
         id: "active",
         title: "Active",
-        statuses: ["claimed", "in_progress", "running"],
+        statuses: ["claimed", "in_progress"],
     },
     {
-        id: "review",
-        title: "Review",
-        statuses: ["awaiting_review"],
+        id: "waiting",
+        title: "Waiting",
+        statuses: ["needs_clarification", "waiting_for_children"],
     },
     {
         id: "blocked",
@@ -70,9 +107,9 @@ const TASK_COLUMNS = [
         statuses: ["completed"],
     },
     {
-        id: "failed",
-        title: "Failed",
-        statuses: ["failed"],
+        id: "closed",
+        title: "Closed",
+        statuses: ["rejected", "cancelled", "failed"],
     },
 ] as const;
 
@@ -497,6 +534,17 @@ function TaskCard({
                             {task.description}
                         </ReactMarkdown>
                     </div>
+                </div>
+            ) : null}
+
+            {task.schedule ? (
+                <div className="mb-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
+                        {formatScheduleBadge(task.schedule)}
+                    </span>
+                    <span>
+                        next {formatRelativeDate(task.schedule.next_run_at)}
+                    </span>
                 </div>
             ) : null}
 

@@ -6,6 +6,8 @@ import { useActorProjects, useProjectTaskBoardItem } from "@wacht/nextjs";
 import type {
     ActorProject,
     ProjectTaskBoardItemAssignment,
+    ProjectTaskBoardItem,
+    ProjectTaskSchedule,
     ProjectTaskWorkspaceFileEntry,
 } from "@wacht/types";
 import ReactMarkdown from "react-markdown";
@@ -73,9 +75,13 @@ function getStatusIndicator(status?: string) {
         failed: "bg-rose-500",
         blocked: "bg-rose-500",
         rejected: "bg-rose-500",
-        running: "bg-blue-500 animate-pulse",
-        in_progress: "bg-blue-500",
+        cancelled: "bg-muted-foreground/60",
+        in_progress: "bg-blue-500 animate-pulse",
+        claimed: "bg-blue-500",
         available: "bg-amber-500",
+        pending: "bg-amber-500",
+        needs_clarification: "bg-violet-500",
+        waiting_for_children: "bg-sky-500",
     };
     return <div className={cn("size-1.5 rounded-full shrink-0", colors[status || ""] || "bg-muted-foreground/40")} />;
 }
@@ -409,6 +415,7 @@ export default function ProjectTaskDetailPage() {
                             ) : (
                                 <p className="text-sm italic text-muted-foreground">No description provided.</p>
                             )}
+                            <ScheduleAndMountsPanel item={item} />
                             {item.pending_question ? (
                                 <PendingQuestionCard
                                     pending={item.pending_question}
@@ -605,4 +612,94 @@ export default function ProjectTaskDetailPage() {
             </div>
         </div>
     );
+}
+
+function ScheduleAndMountsPanel({ item }: { item: ProjectTaskBoardItem }) {
+    const schedule = item.schedule;
+    const mounts = item.mounts ?? [];
+    if (!schedule && mounts.length === 0) return null;
+
+    return (
+        <div className="rounded-md border border-border/50 bg-muted/20 p-3 text-sm">
+            {schedule ? (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                    <span className="rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
+                        {formatScheduleBadge(schedule)}
+                    </span>
+                    <span>
+                        <span className="text-muted-foreground/70">Next:</span>{" "}
+                        <span className="text-foreground">
+                            {formatScheduleTimestamp(schedule.next_run_at)}
+                        </span>
+                    </span>
+                    {schedule.last_fired_at ? (
+                        <span>
+                            <span className="text-muted-foreground/70">Last fired:</span>{" "}
+                            <span className="text-foreground">
+                                {formatScheduleTimestamp(schedule.last_fired_at)}
+                            </span>
+                        </span>
+                    ) : null}
+                    <span>
+                        <span className="text-muted-foreground/70">Overlap:</span>{" "}
+                        <span className="text-foreground">{schedule.overlap_policy}</span>
+                    </span>
+                </div>
+            ) : null}
+            {mounts.length > 0 ? (
+                <div className={schedule ? "mt-3 border-t border-border/40 pt-3" : ""}>
+                    <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                        Mounts
+                    </div>
+                    <ul className="mt-2 space-y-1.5">
+                        {mounts.map((mount) => (
+                            <li key={mount.mount_path} className="flex items-baseline gap-2 text-xs">
+                                <code className="rounded bg-background px-1.5 py-0.5 font-mono text-[11px] text-foreground">
+                                    {mount.mount_path}
+                                </code>
+                                <span className="rounded bg-background/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+                                    {mount.mode}
+                                </span>
+                                {mount.description ? (
+                                    <span className="text-muted-foreground">{mount.description}</span>
+                                ) : null}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+function formatInterval(seconds?: number) {
+    if (!seconds || seconds <= 0) return "";
+    const days = Math.floor(seconds / 86_400);
+    const hours = Math.floor((seconds % 86_400) / 3_600);
+    const minutes = Math.floor((seconds % 3_600) / 60);
+    const parts: string[] = [];
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0 && parts.length === 0) parts.push(`${minutes}m`);
+    return parts.join(" ");
+}
+
+function formatScheduleBadge(schedule: ProjectTaskSchedule) {
+    if (schedule.schedule_kind === "interval") {
+        const interval = formatInterval(schedule.interval_seconds);
+        return interval ? `Recurring · every ${interval}` : "Recurring";
+    }
+    if (schedule.schedule_kind === "once") return "One-off · scheduled";
+    return "Scheduled";
+}
+
+function formatScheduleTimestamp(value?: string) {
+    if (!value) return "—";
+    const date = new Date(value);
+    return date.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
 }
