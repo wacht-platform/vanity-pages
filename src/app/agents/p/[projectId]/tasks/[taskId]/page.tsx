@@ -574,7 +574,7 @@ export default function ProjectTaskDetailPage() {
                             />
                         ) : (
                             <div className="flex min-h-0 flex-1">
-                                <div className="flex w-[300px] flex-col border-r border-border/50">
+                                <div className="flex w-75 flex-col border-r border-border/50">
                                     <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-hide">
                                         <div className="space-y-px">
                                             {orderedAssignments.map(
@@ -771,36 +771,4 @@ export default function ProjectTaskDetailPage() {
             </div>
         </div>
     );
-}
-
-function formatInterval(seconds?: number) {
-    if (!seconds || seconds <= 0) return "";
-    const days = Math.floor(seconds / 86_400);
-    const hours = Math.floor((seconds % 86_400) / 3_600);
-    const minutes = Math.floor((seconds % 3_600) / 60);
-    const parts: string[] = [];
-    if (days > 0) parts.push(`${days}d`);
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0 && parts.length === 0) parts.push(`${minutes}m`);
-    return parts.join(" ");
-}
-
-function formatScheduleBadge(schedule: ProjectTaskSchedule) {
-    if (schedule.schedule_kind === "interval") {
-        const interval = formatInterval(schedule.interval_seconds);
-        return interval ? `Recurring · every ${interval}` : "Recurring";
-    }
-    if (schedule.schedule_kind === "once") return "One-off · scheduled";
-    return "Scheduled";
-}
-
-function formatScheduleTimestamp(value?: string) {
-    if (!value) return "—";
-    const date = new Date(value);
-    return date.toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
 }
