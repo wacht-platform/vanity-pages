@@ -429,7 +429,7 @@ export function FilePreviewPane({
           </div>
           <TabsContent value="preview" className="h-full min-h-0 overflow-y-auto">
             <div className="px-4 py-3">
-              <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:font-normal prose-p:text-sm prose-p:leading-6 prose-li:text-sm prose-pre:border prose-pre:border-border prose-pre:bg-accent/10 prose-code:text-sm prose-code:before:content-none prose-code:after:content-none">
+              <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:font-normal prose-p:whitespace-pre-wrap prose-p:text-sm prose-p:leading-6 prose-li:text-sm prose-pre:border prose-pre:border-border prose-pre:bg-accent/10 prose-code:text-sm prose-code:before:content-none prose-code:after:content-none">
                 <ReactMarkdown
                   remarkPlugins={threadChatRemarkPluginsWithMath}
                   rehypePlugins={threadChatRehypePluginsWithMath}
@@ -472,7 +472,7 @@ export function FilePreviewPane({
         </div>
         <TabsContent value="preview" className="h-full min-h-0 overflow-y-auto">
           <div className="px-4 py-3">
-            <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:font-normal prose-p:text-sm prose-p:leading-6 prose-li:text-sm prose-pre:border prose-pre:border-border prose-pre:bg-accent/10 prose-code:text-sm prose-code:before:content-none prose-code:after:content-none">
+            <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:font-normal prose-p:whitespace-pre-wrap prose-p:text-sm prose-p:leading-6 prose-li:text-sm prose-pre:border prose-pre:border-border prose-pre:bg-accent/10 prose-code:text-sm prose-code:before:content-none prose-code:after:content-none">
               <ReactMarkdown
                 remarkPlugins={threadChatRemarkPluginsWithMath}
                 rehypePlugins={threadChatRehypePluginsWithMath}

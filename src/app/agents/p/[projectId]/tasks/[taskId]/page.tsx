@@ -34,7 +34,7 @@ const WORKSPACE_TRAILING_PUNCTUATION_PATTERN = /[.,;:!?)\]]+$/;
 
 const DOCUMENT_PROSE_CLASSNAME =
     "prose prose-sm prose-invert max-w-none text-sm leading-6 text-muted-foreground font-normal " +
-    "prose-p:text-muted-foreground prose-li:text-muted-foreground prose-ul:my-1 prose-li:my-0 " +
+    "prose-p:whitespace-pre-wrap prose-p:text-muted-foreground prose-li:text-muted-foreground prose-ul:my-1 prose-li:my-0 " +
     "prose-strong:text-foreground prose-a:text-foreground prose-code:text-foreground prose-code:bg-accent/30 prose-code:px-1 prose-code:py-0.5 prose-code:rounded-sm prose-code:font-normal " +
     "prose-pre:bg-accent/20 prose-pre:border prose-pre:border-divider/50 prose-pre:rounded-md " +
     "[&_h1]:text-base [&_h1]:font-medium [&_h1]:text-foreground [&_h1]:mt-6 [&_h1]:mb-3 " +
@@ -721,10 +721,24 @@ export default function ProjectTaskDetailPage() {
                                                             <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
                                                                 Result
                                                             </div>
-                                                            <div className="text-foreground/90">
-                                                                {
-                                                                    selectedAssignment.result_summary
+                                                            <div
+                                                                className={
+                                                                    DOCUMENT_PROSE_CLASSNAME
                                                                 }
+                                                            >
+                                                                <ReactMarkdown
+                                                                    remarkPlugins={[
+                                                                        remarkGfm,
+                                                                        remarkWorkspaceLinks,
+                                                                    ]}
+                                                                    components={
+                                                                        markdownComponents
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        selectedAssignment.result_summary
+                                                                    }
+                                                                </ReactMarkdown>
                                                             </div>
                                                         </div>
                                                     ) : null}
