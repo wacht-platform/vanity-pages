@@ -45,7 +45,7 @@ export function AgentMessageAttachments({
 
     return (
         <div className="mt-3 space-y-2">
-            <p className="text-xs text-muted-foreground/55">Attachments</p>
+            <p className="text-xs text-muted-foreground">Attachments</p>
             <div className="flex flex-wrap gap-2">
                 {attachments.map((attachment, index) => {
                     const isFolder = attachment.type === "folder";
@@ -65,7 +65,7 @@ export function AgentMessageAttachments({
                                 <IconFileText className="h-3.5 w-3.5 shrink-0 text-primary/70" />
                             )}
                             <span className="max-w-56 truncate">{label}</span>
-                            <span className="text-xs text-muted-foreground/55">
+                            <span className="text-xs text-muted-foreground">
                                 {attachment.type}
                             </span>
                         </button>
@@ -173,7 +173,7 @@ export function StructuredConversationContent({
             return null;
         default:
             return (
-                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 prose-p:text-sm prose-p:leading-relaxed prose-headings:font-semibold prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/30">
+                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 prose-p:text-sm prose-p:leading-relaxed prose-headings:font-semibold prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/60">
                     <ReactMarkdown
                         remarkPlugins={threadChatRemarkPlugins}
                         rehypePlugins={threadChatRehypePlugins}

@@ -35,7 +35,7 @@ export function ClarificationRequestCard({
 
     if (!response && expired) {
         return (
-            <div className="rounded-lg border border-border/50 bg-muted/20 p-3">
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
@@ -66,7 +66,7 @@ export function ClarificationRequestCard({
     if (response) {
         const answersById = new Map(response.answers.map((a) => [a.question_id, a.value]));
         return (
-            <div className="rounded-lg border border-border/50 bg-muted/20 p-3">
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}

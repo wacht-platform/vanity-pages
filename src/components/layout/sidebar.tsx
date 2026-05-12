@@ -30,6 +30,7 @@ import { SidebarCommand } from "@/components/layout/sidebar-command";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSidebarProjectGroups } from "@/hooks/use-sidebar-project-groups";
 import { cn } from "@/lib/utils";
+import { VanityThemeToggle } from "@/components/layout/vanity-shell";
 
 function initials(name: string) {
     return name
@@ -219,15 +220,18 @@ function ExpandedSidebar({
                 <div className="min-w-0">
                     <div className="text-sm text-foreground">Agents</div>
                 </div>
-                <button
-                    type="button"
-                    onClick={onCollapse}
-                    className={shellButtonClass}
-                    aria-label="Collapse sidebar"
-                    title="Collapse sidebar"
-                >
-                    <IconLayoutSidebarLeftCollapse size={15} stroke={1.8} />
-                </button>
+                <div className="flex items-center gap-0.5">
+                    <VanityThemeToggle />
+                    <button
+                        type="button"
+                        onClick={onCollapse}
+                        className={shellButtonClass}
+                        aria-label="Collapse sidebar"
+                        title="Collapse sidebar"
+                    >
+                        <IconLayoutSidebarLeftCollapse size={15} stroke={1.8} />
+                    </button>
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-2 py-2.5">

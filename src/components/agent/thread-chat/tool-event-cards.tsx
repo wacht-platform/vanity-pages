@@ -108,13 +108,13 @@ function MetaList({
   if (visible.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm leading-6 text-muted-foreground/78">
+    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm leading-6 text-muted-foreground">
       {visible.map((item) => (
         <div key={item.label} className="flex items-baseline gap-1.5">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground/55">
+          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
             {item.label}
           </span>
-          <span className="text-foreground/82">{item.value}</span>
+          <span className="text-foreground">{item.value}</span>
         </div>
       ))}
     </div>
@@ -126,19 +126,8 @@ function ErrorNotice({ content }: { content: ToolResultContent }) {
   if (!message) return null;
 
   return (
-    <div className="rounded-xl border border-rose-500/20 bg-rose-500/8 px-3 py-2 text-sm leading-6 text-rose-700 dark:text-rose-300">
+    <div className="rounded-lg border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-sm leading-6 text-rose-700 dark:text-rose-300">
       {message}
-    </div>
-  );
-}
-
-function ToolPayloadDetails({ content }: { content: ToolResultContent }) {
-  const output = toolOutputData(content);
-
-  return (
-    <div className="space-y-3">
-      <ToolDetailSection label="Input" data={content.input} />
-      <ToolDetailSection label="Output" data={output} />
     </div>
   );
 }
@@ -157,18 +146,18 @@ function ToolInlineRow({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2.5 py-1">
+    <div className="space-y-2 py-1">
       <div className="flex items-center gap-2">
-        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary/8 text-primary/70">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
           {icon}
         </div>
-        <span className="text-sm font-medium text-foreground/85">{title}</span>
+        <span className="text-sm font-medium text-foreground">{title}</span>
         {badge}
       </div>
       {subtitle ? (
-        <div className="pl-7 text-sm leading-6 text-muted-foreground/78">{subtitle}</div>
+        <div className="pl-7 text-sm leading-6 text-muted-foreground">{subtitle}</div>
       ) : null}
-      <div className="pl-7 space-y-3">{children}</div>
+      {children ? <div className="pl-7 space-y-2">{children}</div> : null}
     </div>
   );
 }
@@ -183,25 +172,25 @@ function CommandBlock({
   stderr?: string | null;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-900/70 bg-zinc-950 text-zinc-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-      <div className="flex items-center gap-1.5 border-b border-zinc-800 px-3 py-2">
-        <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-        <span className="ml-2 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-muted/40">
+      <div className="flex items-center gap-1.5 border-b border-border/60 bg-muted/60 px-3 py-2">
+        <span className="h-2 w-2 rounded-full bg-rose-400/80" />
+        <span className="h-2 w-2 rounded-full bg-amber-400/80" />
+        <span className="h-2 w-2 rounded-full bg-emerald-400/80" />
+        <span className="ml-2 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
           Shell
         </span>
       </div>
-      <div className="space-y-3 px-4 py-4 font-mono text-[12px] leading-6">
-        <div className="flex gap-2 text-emerald-300">
-          <span className="select-none text-emerald-500">$</span>
-          <span className="break-all text-zinc-100">{command}</span>
+      <div className="space-y-2 px-4 py-3 font-mono text-[12px] leading-6">
+        <div className="flex gap-2">
+          <span className="select-none text-emerald-600 dark:text-emerald-400">$</span>
+          <span className="break-all text-foreground">{command}</span>
         </div>
         {stdout ? (
-          <pre className="whitespace-pre-wrap break-words text-zinc-300">{stdout}</pre>
+          <pre className="whitespace-pre-wrap break-words text-foreground">{stdout}</pre>
         ) : null}
         {stderr ? (
-          <pre className="whitespace-pre-wrap break-words text-rose-300">{stderr}</pre>
+          <pre className="whitespace-pre-wrap break-words text-rose-600 dark:text-rose-300">{stderr}</pre>
         ) : null}
       </div>
     </div>
@@ -324,17 +313,17 @@ function DiffEditorPane({
   after: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border/45 bg-zinc-950 text-zinc-100">
-      <div className="border-b border-zinc-800 px-3 py-2 text-xs font-medium uppercase tracking-wide text-zinc-400">
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-muted/40">
+      <div className="border-b border-border/60 bg-muted/60 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
         Diff
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] border-collapse font-mono text-[12px] leading-6">
           <thead>
-            <tr className="border-b border-zinc-800 text-zinc-500">
+            <tr className="border-b border-border/60 text-muted-foreground">
               <th className="w-12 px-2 py-2 text-right font-medium">Old</th>
               <th className="w-6 px-1 py-2 text-center font-medium" />
-              <th className="border-r border-zinc-800 px-3 py-2 text-left font-medium">
+              <th className="border-r border-border/60 px-3 py-2 text-left font-medium">
                 Overwritten
               </th>
               <th className="w-12 px-2 py-2 text-right font-medium">New</th>
@@ -346,30 +335,30 @@ function DiffEditorPane({
             {buildLineDiffRows(before, after).map((row, index) => {
               const leftCellTone =
                 row.kind === "delete"
-                  ? "border-l-2 border-rose-400/50 text-rose-100"
-                  : "border-l-2 border-transparent";
+                  ? "border-l-2 border-rose-500/60 bg-rose-500/8 text-rose-700 dark:text-rose-300"
+                  : "border-l-2 border-transparent text-foreground";
               const rightCellTone =
                 row.kind === "insert"
-                  ? "border-l-2 border-emerald-400/50 text-emerald-100"
-                  : "border-l-2 border-transparent";
+                  ? "border-l-2 border-emerald-500/60 bg-emerald-500/8 text-emerald-700 dark:text-emerald-300"
+                  : "border-l-2 border-transparent text-foreground";
               const leftMarker = row.kind === "delete" ? "-" : "";
               const rightMarker = row.kind === "insert" ? "+" : "";
 
               return (
-                <tr key={`diff-${index}`} className="border-b border-zinc-900/80 align-top bg-zinc-950">
-                  <td className="select-none px-2 py-1 text-right text-zinc-500">
+                <tr key={`diff-${index}`} className="border-b border-border/60 align-top">
+                  <td className="select-none px-2 py-1 text-right text-muted-foreground">
                     {row.leftLineNumber ?? ""}
                   </td>
-                  <td className={`select-none px-1 py-1 text-center ${row.kind === "delete" ? "text-rose-300" : "text-zinc-700"}`}>
+                  <td className={`select-none px-1 py-1 text-center ${row.kind === "delete" ? "text-rose-600 dark:text-rose-300" : "text-muted-foreground/70"}`}>
                     {leftMarker}
                   </td>
-                  <td className={`border-r border-zinc-800 px-3 py-1 whitespace-pre-wrap break-words ${leftCellTone}`}>
+                  <td className={`border-r border-border/60 px-3 py-1 whitespace-pre-wrap break-words ${leftCellTone}`}>
                     {row.leftText || " "}
                   </td>
-                  <td className="select-none px-2 py-1 text-right text-zinc-500">
+                  <td className="select-none px-2 py-1 text-right text-muted-foreground">
                     {row.rightLineNumber ?? ""}
                   </td>
-                  <td className={`select-none px-1 py-1 text-center ${row.kind === "insert" ? "text-emerald-300" : "text-zinc-700"}`}>
+                  <td className={`select-none px-1 py-1 text-center ${row.kind === "insert" ? "text-emerald-600 dark:text-emerald-300" : "text-muted-foreground/70"}`}>
                     {rightMarker}
                   </td>
                   <td className={`px-3 py-1 whitespace-pre-wrap break-words ${rightCellTone}`}>
@@ -396,23 +385,23 @@ function SearchResultsList({ results }: { results: unknown[] }) {
       {normalized.slice(0, 6).map((item, index) => (
         <div
           key={`${asString(item.url) || asString(item.path) || "item"}-${index}`}
-          className="border-l-2 border-border/45 pl-3"
+          className="border-l-2 border-border/60 pl-3"
         >
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <div className="text-sm font-medium text-foreground/88">
+            <div className="text-sm font-medium text-foreground">
               {asString(item.title) ||
                 asString(item.document_title) ||
                 asString(item.path) ||
                 `Result ${index + 1}`}
             </div>
             {asString(item.url) ? (
-              <div className="min-w-0 break-all text-xs text-muted-foreground/70">
+              <div className="min-w-0 break-all text-xs text-muted-foreground">
                 {item.url as string}
               </div>
             ) : null}
           </div>
           {asString(item.excerpt) || asString(item.sample_text) ? (
-            <div className="mt-2 text-sm leading-6 text-foreground/78">
+            <div className="mt-2 text-sm leading-6 text-foreground">
               {asString(item.excerpt) || asString(item.sample_text)}
             </div>
           ) : null}
@@ -433,25 +422,25 @@ function ThreadList({ threads }: { threads: unknown[] }) {
       {normalized.slice(0, 6).map((thread, index) => (
         <div
           key={`${asString(thread.thread_id) || "thread"}-${index}`}
-          className="border-l-2 border-border/45 pl-3"
+          className="border-l-2 border-border/60 pl-3"
         >
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-foreground/88">
+            <span className="text-sm font-medium text-foreground">
               {asString(thread.title) || "Untitled thread"}
             </span>
             {asString(thread.thread_purpose) ? (
-              <span className="rounded-full bg-accent/70 px-2 py-0.5 text-[11px] text-foreground/70">
+              <span className="rounded-full bg-accent/70 px-2 py-0.5 text-[11px] text-foreground">
                 {thread.thread_purpose as string}
               </span>
             ) : null}
             {asString(thread.status) ? (
-              <span className="rounded-full bg-accent/70 px-2 py-0.5 text-[11px] text-foreground/70">
+              <span className="rounded-full bg-accent/70 px-2 py-0.5 text-[11px] text-foreground">
                 {thread.status as string}
               </span>
             ) : null}
           </div>
           {asString(thread.responsibility) ? (
-            <div className="mt-2 text-sm leading-6 text-foreground/78">
+            <div className="mt-2 text-sm leading-6 text-foreground">
               {thread.responsibility as string}
             </div>
           ) : null}
@@ -482,12 +471,12 @@ function CollapsibleJsonSection({ label, data }: { label: string; data: unknown 
     return null;
   }
   return (
-    <details className="group rounded-md border border-border/50 bg-muted/20">
-      <summary className="flex cursor-pointer select-none items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground/80 hover:text-foreground">
+    <details className="group rounded-md border border-border/60 bg-muted/20">
+      <summary className="flex cursor-pointer select-none items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
         <span className="inline-block transition-transform group-open:rotate-90">▸</span>
         <span>{label}</span>
       </summary>
-      <div className="border-t border-border/40 px-2.5 py-2">
+      <div className="border-t border-border/60 px-2.5 py-2">
         <JsonViewer data={data} />
       </div>
     </details>
@@ -510,7 +499,7 @@ function ReadFileCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
     >
       {requestedRange ? (
-        <div className="text-xs text-muted-foreground/65">Lines {requestedRange}</div>
+        <div className="text-xs text-muted-foreground">Lines {requestedRange}</div>
       ) : null}
       <LazyCodeFileViewer
         path={asString(input?.path) || "file.txt"}
@@ -563,7 +552,7 @@ function EditFileCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
     >
       {meta ? (
-        <div className="text-xs text-muted-foreground/65">{meta}</div>
+        <div className="text-xs text-muted-foreground">{meta}</div>
       ) : null}
       <DiffEditorPane before={oldString} after={newString} />
     </ToolInlineRow>
@@ -597,7 +586,7 @@ function ReadImageCard({ content }: { content: ToolResultContent }) {
       title={asString(input?.path) || "Read image"}
       meta={<StatusBadge content={content} />}
     >
-      <div className="text-sm leading-6 text-foreground/78">
+      <div className="text-sm leading-6 text-foreground">
         {[asString(output?.mime_type), asNumber(output?.size_bytes) !== null ? `${output?.size_bytes} bytes` : null]
           .filter(Boolean)
           .join(" · ")}
@@ -615,7 +604,7 @@ function SleepCard({ content }: { content: ToolResultContent }) {
       title="Sleep"
       meta={<StatusBadge content={content} />}
     >
-      <div className="text-sm leading-6 text-foreground/78">
+      <div className="text-sm leading-6 text-foreground">
         {[
           asNumber(output?.slept_ms) !== null
             ? `Paused for ${output?.slept_ms} ms`
@@ -639,7 +628,7 @@ function SnapshotCard({ content }: { content: ToolResultContent }) {
       title="Snapshot Execution State"
       meta={<StatusBadge content={content} />}
     >
-      <div className="text-sm leading-6 text-foreground/78">
+      <div className="text-sm leading-6 text-foreground">
         {asString(input?.reason) || "Checkpoint saved for the current run."}
       </div>
     </InlineEventRow>
@@ -660,7 +649,7 @@ function WebSearchCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
     >
       {queries.length > 0 ? (
-        <div className="text-sm leading-6 text-foreground/78">
+        <div className="text-sm leading-6 text-foreground">
           {queries.join(", ")}
         </div>
       ) : null}
@@ -683,7 +672,7 @@ function UrlContentCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
     >
       {urls.length > 0 ? (
-        <div className="space-y-1 text-sm leading-6 text-foreground/78">
+        <div className="space-y-1 text-sm leading-6 text-foreground">
           {urls.slice(0, 4).map((url) => (
             <div key={url} className="break-all">
               {url}
@@ -707,12 +696,12 @@ function KnowledgeSearchCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
     >
       {asString(hints?.search_summary) ? (
-        <div className="border-l-2 border-border/45 pl-3 text-sm leading-6 text-foreground/78">
+        <div className="border-l-2 border-border/60 pl-3 text-sm leading-6 text-foreground">
           {hints?.search_summary as string}
         </div>
       ) : null}
       {!asString(hints?.search_summary) && asString(hints?.search_conclusion) ? (
-        <div className="text-sm leading-6 text-foreground/78">
+        <div className="text-sm leading-6 text-foreground">
           {formatLabel(asString(hints?.search_conclusion) || "")}
         </div>
       ) : null}
@@ -757,7 +746,7 @@ function TaskGraphCard({ content }: { content: ToolResultContent }) {
       title={titleMap[content.tool_name] || "Task graph"}
       meta={<StatusBadge content={content} />}
     >
-      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground/75">
+      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
         {asString(output?.graph_id) || asString(graph?.id) || asString(output?.created_graph_id) ? (
           <span>Graph {asString(output?.graph_id) || asString(graph?.id) || asString(output?.created_graph_id)}</span>
         ) : null}
@@ -772,12 +761,12 @@ function TaskGraphCard({ content }: { content: ToolResultContent }) {
         ) : null}
       </div>
       {asString(input?.title) || asString(node?.title) ? (
-        <div className="text-sm text-foreground/82">
+        <div className="text-sm text-foreground">
           {asString(input?.title) || asString(node?.title)}
         </div>
       ) : null}
       {asString(input?.description) || asString(input?.reason) ? (
-        <div className="text-sm leading-6 text-muted-foreground/80">
+        <div className="text-sm leading-6 text-muted-foreground">
           {asString(input?.description) || asString(input?.reason)}
         </div>
       ) : null}
@@ -823,7 +812,7 @@ function LoadMemoryCard({ content }: { content: ToolResultContent }) {
             const record = asRecord(item);
             if (!record) return null;
             return (
-              <div key={`memory-${index}`} className="text-sm leading-6 text-foreground/78">
+              <div key={`memory-${index}`} className="text-sm leading-6 text-foreground">
                 {asString(record.content) || asString(record.summary) || asString(record.text) || `Memory ${index + 1}`}
               </div>
             );
@@ -843,7 +832,7 @@ function SaveMemoryCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
     >
       {asString(input?.content) ? (
-        <div className="text-sm leading-6 text-foreground/78">{input?.content as string}</div>
+        <div className="text-sm leading-6 text-foreground">{input?.content as string}</div>
       ) : null}
     </ToolInlineRow>
   );
@@ -861,7 +850,7 @@ function UpdateMemoryCard({ content }: { content: ToolResultContent }) {
     >
       <ErrorNotice content={content} />
       {asString(input?.content) ? (
-        <div className="text-sm leading-6 text-foreground/78">{input?.content as string}</div>
+        <div className="text-sm leading-6 text-foreground">{input?.content as string}</div>
       ) : null}
       <MetaList
         items={[
@@ -909,7 +898,7 @@ function ProjectTaskMutationCard({ content }: { content: ToolResultContent }) {
         ]}
       />
       {asString(input?.description) ? (
-        <div className="text-sm leading-6 text-foreground/78">{input?.description as string}</div>
+        <div className="text-sm leading-6 text-foreground">{input?.description as string}</div>
       ) : null}
       <ToolDetailSection label="Schedule" data={input?.schedule} />
       <ToolDetailSection label="Assignments" data={input?.assignments} />
@@ -956,7 +945,7 @@ function AbortTaskCard({ content }: { content: ToolResultContent }) {
       defaultOpen
     >
       <ErrorNotice content={content} />
-      <div className="text-sm leading-6 text-foreground/78">
+      <div className="text-sm leading-6 text-foreground">
         {asString(input?.reason) || asString(input?.reasoning) || "Task aborted."}
       </div>
       <MetaList items={[{ label: "Outcome", value: asString(input?.outcome) }]} />
@@ -975,12 +964,12 @@ function DecisionReasonRow({
       icon={meta.icon}
       title={meta.label}
       meta={
-        <span className="rounded-full bg-accent/40 px-2 py-0.5 text-[11px] text-foreground/70">
+        <span className="rounded-full bg-accent/40 px-2 py-0.5 text-[11px] text-foreground">
           {Math.round(content.confidence * 100)}%
         </span>
       }
     >
-      <div className="text-sm leading-6 text-foreground/82">
+      <div className="text-sm leading-6 text-foreground">
         {content.reasoning}
       </div>
     </InlineEventRow>

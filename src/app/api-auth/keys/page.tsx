@@ -131,7 +131,7 @@ export default function ApiAuthKeysPage() {
 
 	if (loading || keysLoading) {
 		return (
-			<div className="w-full px-4 py-2 md:px-6 md:py-3">
+			<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
 				<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
 					<Skeleton className="h-6 w-20" />
 					<div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export default function ApiAuthKeysPage() {
 						{Array.from({ length: 7 }).map((_, idx) => (
 							<div
 								key={idx}
-								className="flex items-center justify-between gap-4 px-4 py-2 border border-border/30 rounded-xl bg-background"
+								className="flex items-center justify-between gap-4 px-4 py-2 border border-border/60 rounded-xl bg-background"
 							>
 								<div className="flex-1 min-w-0 flex items-center gap-4">
 									<div className="flex items-center gap-3 min-w-0">
@@ -179,7 +179,7 @@ export default function ApiAuthKeysPage() {
 	}
 
 	return (
-		<div className="w-full px-4 py-2 md:px-6 md:py-3">
+		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
 			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
 				<h1 className="text-lg font-normal text-foreground">API Keys</h1>
 				<div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ export default function ApiAuthKeysPage() {
 								<div
 									className={cn(
 										"flex-1 flex items-center justify-between gap-4 overflow-hidden rounded-lg border px-4 py-2 transition-all duration-300",
-										"border-border/40 bg-card hover:border-border/60 hover:bg-accent/60",
+										"border-border/60 bg-card hover:border-border/60 hover:bg-accent/60",
 									)}
 								>
 									<div className="flex-1 min-w-0 flex items-center gap-4">
@@ -223,13 +223,13 @@ export default function ApiAuthKeysPage() {
 											<span className="text-sm font-normal text-foreground truncate max-w-[200px] md:max-w-[400px]">
 												{key.name}
 											</span>
-											<code className="rounded border border-border/50 bg-secondary/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+											<code className="rounded border border-border/60 bg-secondary/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
 												{key.key_prefix}...{key.key_suffix}
 											</code>
 										</div>
 
 										<div className="hidden md:flex items-center gap-4 shrink-0">
-											<div className="flex items-center gap-1.5 text-xs text-muted-foreground/50 font-normal whitespace-nowrap">
+											<div className="flex items-center gap-1.5 text-xs text-muted-foreground font-normal whitespace-nowrap">
 												<span>Created {format(new Date(key.created_at), "MMM d, yyyy")}</span>
 											</div>
 										</div>
@@ -248,7 +248,7 @@ export default function ApiAuthKeysPage() {
 													"text-[10px] uppercase tracking-wider",
 													key.is_active
 														? "text-emerald-600/70"
-														: "text-muted-foreground/50",
+														: "text-muted-foreground",
 												)}
 											>
 												{key.is_active ? "Active" : "Revoked"}
@@ -259,7 +259,7 @@ export default function ApiAuthKeysPage() {
 											<Button
 												variant="ghost"
 												size="sm"
-												className="h-7 text-muted-foreground/30 hover:text-foreground hover:bg-transparent px-2"
+												className="h-7 text-muted-foreground/60 hover:text-foreground hover:bg-transparent px-2"
 												onClick={() => openKeyAction(key.id, key.name, "rotate")}
 												disabled={!key.is_active || rotatingKeyId !== null}
 											>
@@ -268,7 +268,7 @@ export default function ApiAuthKeysPage() {
 											<Button
 												variant="ghost"
 												size="sm"
-												className="h-7 text-muted-foreground/30 hover:text-red-500 hover:bg-transparent px-2"
+												className="h-7 text-muted-foreground/60 hover:text-red-500 hover:bg-transparent px-2"
 												onClick={() => openKeyAction(key.id, key.name, "revoke")}
 												disabled={!key.is_active || isRevoking}
 											>
@@ -342,7 +342,7 @@ export default function ApiAuthKeysPage() {
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex items-center gap-2 mt-2">
-						<code className="flex-1 break-all rounded border border-border/50 bg-card px-3 py-2 font-mono text-xs text-foreground">
+						<code className="flex-1 break-all rounded border border-border/60 bg-card px-3 py-2 font-mono text-xs text-foreground">
 							{secretValue}
 						</code>
 						<Button

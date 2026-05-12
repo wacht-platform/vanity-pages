@@ -140,7 +140,7 @@ export function InlineEventRow({
         </div>
         <span className="text-sm font-medium text-foreground/80">{title}</span>
         {meta}
-        <div className="ml-auto flex h-4 w-4 items-center justify-center rounded text-muted-foreground/40 transition-transform duration-150 group-open/event:rotate-90">
+        <div className="ml-auto flex h-4 w-4 items-center justify-center rounded text-muted-foreground/70 transition-transform duration-150 group-open/event:rotate-90">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path
               d="M3 2l4 3-4 3"

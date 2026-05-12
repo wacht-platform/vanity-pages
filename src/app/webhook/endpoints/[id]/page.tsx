@@ -210,10 +210,10 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 	}
 
 	const getStatusColor = (statusCode: number) => {
-		if (statusCode >= 200 && statusCode < 300) return "bg-green-500"
-		if (statusCode >= 400 && statusCode < 500) return "bg-orange-500"
-		if (statusCode >= 500) return "bg-red-500"
-		return "bg-slate-500"
+		if (statusCode >= 200 && statusCode < 300) return "bg-emerald-500"
+		if (statusCode >= 400 && statusCode < 500) return "bg-amber-500"
+		if (statusCode >= 500) return "bg-rose-500"
+		return "bg-muted-foreground"
 	}
 
 
@@ -440,8 +440,8 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 
 	if (!endpoint && !loading) {
 		return (
-			<div className="flex flex-col h-full min-h-screen">
-				<div className="h-14 border-b border-border/50 px-6 flex items-center sticky top-0 bg-background/95 backdrop-blur z-10">
+			<div className="flex flex-col">
+				<div className="sticky top-14 z-30 flex h-12 items-center border-b border-border/60 bg-background/85 px-4 backdrop-blur md:px-6">
 					<Link href="/webhook/endpoints">
 						<Button variant="ghost" size="sm" className="h-8 gap-2" asChild>
 							<span className="flex items-center gap-2">
@@ -459,16 +459,15 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 	}
 
 	return (
-		<div className="flex flex-col h-full min-h-screen">
-			{/* Top Bar */}
-			<div className="h-14 border-b border-border/50 px-4 md:px-6 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10">
+		<div className="flex flex-col">
+			<div className="sticky top-14 z-30 flex h-12 items-center justify-between border-b border-border/60 bg-background/85 px-4 backdrop-blur md:px-6">
 				<div className="flex items-center gap-2 text-sm text-muted-foreground">
 					<span className="text-foreground font-medium text-xs md:text-sm max-w-[150px] sm:max-w-[300px] truncate">{endpoint?.url}</span>
 				</div>
 				<div className="flex items-center gap-2">
 					<Popover>
 						<PopoverTrigger asChild>
-							<Button variant="outline" size="sm" className="h-8 w-8 p-0 border-border/40" aria-label="Endpoint actions">
+							<Button variant="outline" size="sm" className="h-8 w-8 p-0 border-border/60" aria-label="Endpoint actions">
 								<MoreHorizontal className="w-3.5 h-3.5" />
 							</Button>
 						</PopoverTrigger>
@@ -485,7 +484,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 								<Button
 									variant="ghost"
 									size="sm"
-									className="h-8 w-full justify-start text-xs text-red-500 hover:text-red-400 hover:bg-red-500/10"
+									className="h-8 w-full justify-start text-xs text-red-500 hover:text-red-400 hover:bg-rose-500/10"
 									onClick={() => setDeleteDialogOpen(true)}
 								>
 									Delete
@@ -501,8 +500,8 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 				</div>
 			</div>
 
-			<div className="px-4 py-2 md:px-6 md:py-3 space-y-4 md:space-y-6">
-				<div className="rounded-lg border border-border/50 bg-card p-4 shadow-sm">
+			<div className="mx-auto w-full max-w-7xl space-y-4 px-4 py-6 md:space-y-6 md:px-6 md:py-8">
+				<div className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
 					<div className="flex flex-col gap-4">
 						<div className="flex flex-wrap items-center gap-x-4 gap-y-2">
 							<h2 className="text-base md:text-lg font-medium text-foreground break-all">{endpoint?.url}</h2>
@@ -510,8 +509,8 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 								<div className={cn(
 									"flex items-center shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider font-normal",
 									endpoint?.is_active
-										? "bg-green-500/5 text-green-600 border-green-500/20"
-										: "bg-secondary/60 text-muted-foreground border-border/50"
+										? "bg-emerald-500/5 text-green-600 border-green-500/20"
+										: "bg-secondary/60 text-muted-foreground border-border/60"
 								)}>
 									{endpoint?.is_active ? "Active" : "Inactive"}
 								</div>
@@ -551,7 +550,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 
 						<div className="flex flex-wrap gap-1.5 pt-1">
 							{endpoint?.subscribed_events.map((event: string) => (
-								<Badge key={event} variant="secondary" className="h-auto border-border/20 bg-secondary/60 px-2 py-0.5 text-xs font-normal text-muted-foreground">
+								<Badge key={event} variant="secondary" className="h-auto border-border/60 bg-secondary/60 px-2 py-0.5 text-xs font-normal text-muted-foreground">
 									{event}
 								</Badge>
 							))}
@@ -570,8 +569,8 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 				<EndpointTrafficChart loading={timeseriesLoading} data={chartData} />
 
 				{/* Response Time Percentiles */}
-				<div className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
-					<div className="border-b border-border/40 bg-secondary/40 px-4 py-3">
+				<div className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
+					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3">
 						<h3 className="text-sm font-normal text-foreground">Response Time Percentiles</h3>
 					</div>
 					<div className="p-4 md:p-6">
@@ -604,7 +603,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 						<h3 className="text-sm font-normal text-foreground">Recent Deliveries</h3>
 						<div className="flex items-center gap-2">
 							<WebhookLogControls
-								controlClassName="h-8 w-8 p-0 border-border/40"
+								controlClassName="h-8 w-8 p-0 border-border/60"
 								filterStatus={status}
 								onFilterStatusChange={setStatus}
 								filterEventName={eventName}
@@ -639,20 +638,20 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 									<div key={group} className="relative">
 										<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
 										<div className="flex items-center gap-4 mb-4">
-											<div className="w-4 h-4 rounded-full border-2 border-border/40 bg-card z-10" />
+											<div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
 											<div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
 											<div className="h-px flex-1 bg-border/30" />
 										</div>
 										<div className="space-y-2">
 											{[1, 2, 3].map(i => (
-												<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/40 bg-card" />
+												<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/60 bg-card" />
 											))}
 										</div>
 									</div>
 								))}
 							</div>
 						) : !groupedDeliveries || groupedDeliveries.length === 0 ? (
-							<div className="rounded-lg border border-dashed border-border/50 bg-secondary/30 py-16 text-center">
+							<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-16 text-center">
 								<p className="text-sm font-normal text-muted-foreground">No deliveries found for this endpoint.</p>
 							</div>
 						) : (
@@ -680,7 +679,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 															"relative overflow-hidden rounded-lg border transition-all duration-300",
 															isExpanded
 																? "border-primary/20 bg-primary/[0.01]"
-																: "border-border/40 bg-card hover:border-border/60 hover:bg-accent/60"
+																: "border-border/60 bg-card hover:border-border/60 hover:bg-accent/60"
 														)}>
 															<div
 																onClick={() => handleRowExpand(delivery.id)}
@@ -695,18 +694,18 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 																		<span className={cn("text-[10px] uppercase px-2 py-0.5 rounded-full border tracking-wide", webhookStatusBadgeClass(deliveryStatus))}>
 																			{webhookStatusLabel(deliveryStatus)}
 																		</span>
-																		<span className="hidden md:inline text-muted-foreground/30 text-xs">|</span>
-																		<span className="hidden md:inline text-xs text-muted-foreground/50 font-normal">
+																		<span className="hidden md:inline text-muted-foreground/60 text-xs">|</span>
+																		<span className="hidden md:inline text-xs text-muted-foreground font-normal">
 																				{new Date(delivery.created_at || delivery.timestamp || "").toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
 																		</span>
 																	</div>
 																</div>
-																<div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/20">
+																<div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/60">
 																	<div className="flex items-center gap-4">
 																		<span className="text-xs font-normal tabular-nums text-foreground/80">
 																			{delivery.response_status || delivery.http_status_code || "---"}
 																		</span>
-																		<span className="text-muted-foreground/30 text-xs">•</span>
+																		<span className="text-muted-foreground/60 text-xs">•</span>
 																		<span className="text-xs text-foreground/80 font-normal tabular-nums">
 																			{delivery.response_time_ms ? `${delivery.response_time_ms}ms` : "---"}
 																		</span>
@@ -741,7 +740,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 																		</Button>
 																		<div className={cn(
 																			"p-1 rounded-lg transition-colors",
-																			isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground/30 group-hover/item:text-muted-foreground"
+																			isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground/60 group-hover/item:text-muted-foreground"
 																		)}>
 																			{isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
 																		</div>
@@ -752,12 +751,12 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 																<div className="border-t border-border/10 px-4 py-4 animate-in slide-in-from-top-2 duration-300">
 																	{isLoadingExpandedDetails ? (
 																		<div className="flex items-center justify-center py-12">
-																			<Loader2 className="w-5 h-5 animate-spin text-muted-foreground/20" />
+																			<Loader2 className="w-5 h-5 animate-spin text-muted-foreground/60" />
 																		</div>
 																	) : detailsList && detailsList.length > 0 ? (
 																		<div className="space-y-4">
 																			{delivery.filtered_reason && (
-																				<div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-3 text-xs text-yellow-500">
+																				<div className="rounded-xl border border-yellow-500/20 bg-amber-500/5 p-3 text-xs text-yellow-500">
 																					Filtered reason: {delivery.filtered_reason}
 																				</div>
 																			)}
@@ -774,7 +773,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 																		</div>
 																	) : (
 																		<div className="text-center py-10">
-																			<p className="text-xs text-muted-foreground/30 font-normal italic">Could not load delivery details</p>
+																			<p className="text-xs text-muted-foreground/60 font-normal italic">Could not load delivery details</p>
 																		</div>
 																	)}
 																</div>
@@ -833,7 +832,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 						<div className="space-y-2">
 							<Label className="text-xs uppercase font-normal text-muted-foreground">Select Event Type</Label>
 							<Select value={selectedTestEvent} onValueChange={setSelectedTestEvent}>
-								<SelectTrigger className="h-10 w-full border-border/50 bg-card text-sm">
+								<SelectTrigger className="h-10 w-full border-border/60 bg-card text-sm">
 									<SelectValue placeholder="Choose an event to test..." />
 								</SelectTrigger>
 								<SelectContent>
@@ -852,25 +851,25 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 							const examplePayload = eventData?.example_payload
 
 							return (
-								<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border/40 bg-card">
+								<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border/60 bg-card">
 									<div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border/30 h-full overflow-hidden">
 										{/* Schema Column */}
 										<div className="flex flex-col min-h-0 h-full">
-											<div className="border-b border-border/30 bg-secondary/40 px-4 py-2">
+											<div className="border-b border-border/60 bg-secondary/40 px-4 py-2">
 												<span className="text-xs font-normal text-muted-foreground/60">Expected Schema</span>
 											</div>
 											<div className="flex-1 overflow-y-auto custom-scrollbar p-4">
 												{schemaProps ? (
 													<SchemaViewer schema={schemaProps as Record<string, unknown>} />
 												) : (
-													<p className="text-xs text-muted-foreground/40 italic">No schema defined for this event.</p>
+													<p className="text-xs text-muted-foreground/70 italic">No schema defined for this event.</p>
 												)}
 											</div>
 										</div>
 
 										{/* Example JSON Column */}
 										<div className="flex h-full min-h-0 flex-col bg-secondary/20">
-											<div className="flex items-center justify-between border-b border-border/30 bg-secondary/40 px-4 py-2">
+											<div className="flex items-center justify-between border-b border-border/60 bg-secondary/40 px-4 py-2">
 												<div>
 													<span className="text-xs font-normal text-muted-foreground/60">Expected Schema</span>
 												</div>
@@ -887,7 +886,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 												{examplePayload ? (
 													<JsonViewer data={examplePayload} />
 												) : (
-													<p className="text-xs text-muted-foreground/40 italic">No example payload provided.</p>
+													<p className="text-xs text-muted-foreground/70 italic">No example payload provided.</p>
 												)}
 											</div>
 										</div>
@@ -895,14 +894,14 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 								</div>
 							)
 						})() : (
-							<div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-border/50 p-8 text-center">
-								<Send className="w-8 h-8 text-muted-foreground/20 mb-3" />
+							<div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 p-8 text-center">
+								<Send className="w-8 h-8 text-muted-foreground/60 mb-3" />
 								<p className="text-xs text-muted-foreground">Select an event type above to view its schema and test payload.</p>
 							</div>
 						)}
 					</div>
 
-					<div className="flex justify-end gap-3 border-t border-border/20 bg-secondary/30 p-6">
+					<div className="flex justify-end gap-3 border-t border-border/60 bg-secondary/30 p-6">
 						<Button
 							variant="ghost"
 							size="sm"

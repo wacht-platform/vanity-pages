@@ -158,7 +158,7 @@ export default function ApiAuthLandingPage() {
 
 	if (loading) {
 		return (
-			<div className="w-full px-4 py-2 md:px-6 md:py-3">
+			<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
 				<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
 					<div className="flex items-center gap-2">
 						<Skeleton className="h-6 w-24" />
@@ -167,11 +167,11 @@ export default function ApiAuthLandingPage() {
 				</div>
 
 				<div className="space-y-6">
-					<section className="border border-border/30 rounded-xl overflow-hidden">
-						<div className="px-4 py-3 border-b border-border/20">
+					<section className="border border-border/60 rounded-xl overflow-hidden">
+						<div className="px-4 py-3 border-b border-border/60">
 							<Skeleton className="h-3 w-36" />
 						</div>
-						<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/20">
+						<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
 							{Array.from({ length: 4 }).map((_, idx) => (
 								<div key={idx} className="p-4 space-y-2">
 									<Skeleton className="h-3 w-20" />
@@ -181,8 +181,8 @@ export default function ApiAuthLandingPage() {
 						</div>
 					</section>
 
-					<section className="border border-border/30 rounded-xl overflow-hidden">
-						<div className="px-4 py-3 border-b border-border/20 flex items-center justify-between">
+					<section className="border border-border/60 rounded-xl overflow-hidden">
+						<div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
 							<Skeleton className="h-4 w-24" />
 							<Skeleton className="h-3 w-10" />
 						</div>
@@ -213,7 +213,7 @@ export default function ApiAuthLandingPage() {
 							{Array.from({ length: 3 }).map((_, idx) => (
 								<div
 									key={idx}
-									className="flex items-center justify-between gap-3 rounded-xl border border-border/30 px-3 py-2"
+									className="flex items-center justify-between gap-3 rounded-xl border border-border/60 px-3 py-2"
 								>
 									<div className="space-y-1">
 										<Skeleton className="h-4 w-44" />
@@ -236,7 +236,7 @@ export default function ApiAuthLandingPage() {
 	}
 
 	return (
-		<div className="w-full px-4 py-2 md:px-6 md:py-3">
+		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
 			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
 				<div className="flex items-center gap-2">
 					<h1 className="text-lg font-normal text-foreground">Overview</h1>
@@ -255,11 +255,11 @@ export default function ApiAuthLandingPage() {
 			</div>
 
 			<div className="space-y-6">
-				<section className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
-					<div className="border-b border-border/40 bg-secondary/40 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
+				<section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
+					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
 						Operations Snapshot
 					</div>
-					<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/20">
+					<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
 						<Metric label="Total Requests" value={analyticsLoading ? "-" : formatNumber(analytics?.total_requests)} />
 						<Metric label="Allowed" value={analyticsLoading ? "-" : formatNumber(analytics?.allowed_requests)} />
 						<Metric label="Blocked" value={analyticsLoading ? "-" : formatNumber(analytics?.blocked_requests)} />
@@ -267,18 +267,18 @@ export default function ApiAuthLandingPage() {
 					</div>
 				</section>
 
-				<section className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
-					<div className="border-b border-border/40 bg-secondary/40 px-4 py-3 flex items-center justify-between">
+				<section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
+					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3 flex items-center justify-between">
 						<h2 className="text-sm font-normal text-foreground">Traffic Volume</h2>
 						<span className="text-xs text-muted-foreground">Daily</span>
 					</div>
 					<div className="px-4 pt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
 						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-emerald-600" />
+							<span className="w-2 h-2 rounded-full bg-emerald-500" />
 							Allowed
 						</span>
 						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-red-500" />
+							<span className="w-2 h-2 rounded-full bg-rose-500" />
 							Blocked
 						</span>
 					</div>
@@ -297,7 +297,7 @@ export default function ApiAuthLandingPage() {
 						) : (
 							<ResponsiveContainer width="100%" height="100%">
 								<BarChart data={chartData} barCategoryGap="18%" margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
-									<CartesianGrid strokeDasharray="3 3" className="stroke-border/20" vertical={false} />
+									<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
 									<XAxis
 										dataKey="time"
 										axisLine={false}
@@ -392,7 +392,7 @@ export default function ApiAuthLandingPage() {
 												"relative border transition-all duration-300 rounded-xl overflow-hidden",
 												isExpanded
 													? "border-primary/20 bg-primary/[0.01]"
-													: "border-border/30 bg-background hover:border-primary/10"
+													: "border-border/60 bg-background hover:border-primary/10"
 											)}
 										>
 											<button
@@ -400,7 +400,7 @@ export default function ApiAuthLandingPage() {
 												className="w-full text-left px-4 py-2 flex items-center gap-3"
 											>
 												<div className="flex-1 min-w-0 flex items-center gap-3">
-													<Activity className="w-4 h-4 text-muted-foreground/50" />
+													<Activity className="w-4 h-4 text-muted-foreground" />
 													<span className="text-xs font-normal text-foreground">
 														{getRateLimitDescription(limit)}
 													</span>
@@ -410,7 +410,7 @@ export default function ApiAuthLandingPage() {
 												</div>
 												<div className={cn(
 													"p-1 rounded-lg transition-colors",
-													isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground/50 group-hover/item:text-muted-foreground"
+													isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground group-hover/item:text-muted-foreground"
 												)}>
 													{isExpanded ? (
 														<ChevronDown className="w-3.5 h-3.5" />

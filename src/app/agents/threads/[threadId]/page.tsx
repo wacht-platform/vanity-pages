@@ -272,7 +272,7 @@ export default function ThreadDetailPage() {
                 }
                 right={
                     <>
-                        <div className="flex items-center gap-2 rounded-md border border-border/40 px-2 py-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 rounded-md border border-border/60 px-2 py-1 text-sm text-muted-foreground">
                             {getStatusIndicator(thread.status)}
                             <span>
                                 {thread.status?.replace(/_/g, " ") || "Active"}
@@ -281,7 +281,7 @@ export default function ThreadDetailPage() {
                         {thread.thread_purpose === "conversation" && (
                             <Link
                                 href={`/agents/c/${thread.id}`}
-                                className="flex h-8 items-center gap-1.5 rounded-md border border-border/40 px-3 text-sm transition-colors hover:bg-accent/50"
+                                className="flex h-8 items-center gap-1.5 rounded-md border border-border/60 px-3 text-sm transition-colors hover:bg-accent/50"
                             >
                                 <IconMessageCircle size={13} stroke={1.5} />
                                 <span>Chat</span>
@@ -303,7 +303,7 @@ export default function ThreadDetailPage() {
                                         ? await unarchiveThread()
                                         : await archiveThread()
                                 }
-                                className="flex h-8 items-center gap-1.5 rounded-md border border-border/40 px-3 text-sm transition-colors hover:bg-accent/50"
+                                className="flex h-8 items-center gap-1.5 rounded-md border border-border/60 px-3 text-sm transition-colors hover:bg-accent/50"
                             >
                                 <IconArchive size={13} stroke={1.5} />
                                 <span>
@@ -319,7 +319,7 @@ export default function ThreadDetailPage() {
 
             <div className="flex-1 overflow-y-auto">
                 <main className="flex h-full w-full flex-col gap-6 px-4 py-4 md:px-5">
-                    <section className="border-b border-border/50 pb-4">
+                    <section className="border-b border-border/60 pb-4">
                         <div className="min-w-0 space-y-2">
                             <h1 className="truncate text-base font-normal text-foreground">
                                 {threadTitle}
@@ -352,8 +352,8 @@ export default function ThreadDetailPage() {
                     </section>
 
                     <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-                        <section className="min-w-0 overflow-hidden rounded-lg border border-border/50">
-                            <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
+                        <section className="min-w-0 overflow-hidden rounded-lg border border-border/60">
+                            <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
                                 <h2 className="text-sm font-normal">
                                     Assignments
                                 </h2>
@@ -392,7 +392,7 @@ export default function ThreadDetailPage() {
                                                     assignment.id,
                                                 );
                                             }}
-                                            className="flex w-full items-start gap-3 border-b border-border/50 px-4 py-2.5 text-left transition-colors hover:bg-accent/20"
+                                            className="flex w-full items-start gap-3 border-b border-border/60 px-4 py-2.5 text-left transition-colors hover:bg-accent/20"
                                         >
                                             <div className="mt-1">
                                                 {getStatusIndicator(
@@ -420,7 +420,7 @@ export default function ThreadDetailPage() {
                             </div>
                             {showAssignments &&
                             (assignmentsHasMore || assignmentsLoadingMore) ? (
-                                <div className="border-t border-border/50 px-4 py-3">
+                                <div className="border-t border-border/60 px-4 py-3">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -452,7 +452,7 @@ export default function ThreadDetailPage() {
                                 </section>
                             ) : null}
 
-                            <section className="rounded-lg border border-border/50 p-4">
+                            <section className="rounded-lg border border-border/60 p-4">
                                 <div className="mb-3 flex items-center justify-between">
                                     <h3 className="text-sm font-normal">
                                         Task Graph
@@ -466,7 +466,7 @@ export default function ThreadDetailPage() {
                                 </div>
                                 {latestGraph?.summary ? (
                                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                                        <div className="rounded-md border border-border/40 px-3 py-3">
+                                        <div className="rounded-md border border-border/60 px-3 py-3">
                                             <div className="text-sm text-muted-foreground">
                                                 Progress
                                             </div>
@@ -478,7 +478,7 @@ export default function ThreadDetailPage() {
                                                 %
                                             </div>
                                         </div>
-                                        <div className="rounded-md border border-border/40 px-3 py-3">
+                                        <div className="rounded-md border border-border/60 px-3 py-3">
                                             <div className="text-sm text-muted-foreground">
                                                 Failed nodes
                                             </div>
@@ -497,14 +497,14 @@ export default function ThreadDetailPage() {
                                 )}
                                 <button
                                     onClick={() => setShowTaskGraph(true)}
-                                    className="mt-3 flex h-8 w-full items-center justify-center gap-2 rounded-md border border-border/50 text-sm text-foreground transition-colors hover:bg-accent/40"
+                                    className="mt-3 flex h-8 w-full items-center justify-center gap-2 rounded-md border border-border/60 text-sm text-foreground transition-colors hover:bg-accent/40"
                                 >
                                     <IconBinaryTree size={14} />
                                     <span>Open Graph Visualizer</span>
                                 </button>
                             </section>
 
-                            <section className="rounded-lg border border-border/50 p-4">
+                            <section className="rounded-lg border border-border/60 p-4">
                                 <h3 className="mb-3 text-sm font-normal">
                                     System Instructions
                                 </h3>
@@ -581,7 +581,7 @@ export default function ThreadDetailPage() {
                                             <div
                                                 className={cn(
                                                     DOCUMENT_PROSE_CLASSNAME,
-                                                    "rounded border border-border/30 bg-secondary/20 p-4",
+                                                    "rounded border border-border/60 bg-secondary/20 p-4",
                                                 )}
                                             >
                                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -598,7 +598,7 @@ export default function ThreadDetailPage() {
                                             <div
                                                 className={cn(
                                                     DOCUMENT_PROSE_CLASSNAME,
-                                                    "rounded border border-border/30 bg-secondary/20 p-4",
+                                                    "rounded border border-border/60 bg-secondary/20 p-4",
                                                 )}
                                             >
                                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -612,7 +612,7 @@ export default function ThreadDetailPage() {
                                             <h4 className="text-sm font-medium text-foreground">
                                                 Payload
                                             </h4>
-                                            <div className="overflow-x-auto rounded border border-border/30 bg-secondary/20 p-4 text-sm">
+                                            <div className="overflow-x-auto rounded border border-border/60 bg-secondary/20 p-4 text-sm">
                                                 <JsonViewer data={selectedAssignment.result_payload} />
                                             </div>
                                         </div>

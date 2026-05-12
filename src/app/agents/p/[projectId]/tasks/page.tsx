@@ -20,14 +20,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const TASK_CARD_MARKDOWN_CLASSNAME =
-    "max-w-none text-sm leading-5 text-muted-foreground " +
+    "line-clamp-3 max-w-none text-sm leading-5 text-muted-foreground " +
     "[&_p]:m-0 [&_p]:text-sm [&_p]:leading-5 [&_p]:text-muted-foreground " +
     "[&_ul]:my-0 [&_ul]:pl-4 [&_ol]:my-0 [&_ol]:pl-4 " +
     "[&_li]:my-0.5 [&_li]:text-sm [&_li]:leading-5 " +
     "[&_strong]:font-normal [&_strong]:text-foreground " +
     "[&_em]:italic [&_em]:text-muted-foreground " +
     "[&_code]:rounded-sm [&_code]:bg-accent/30 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.8125rem] [&_code]:text-foreground " +
-    "[&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:border [&_pre]:border-border/50 [&_pre]:bg-accent/20 [&_pre]:p-3 [&_pre]:text-[0.8125rem] [&_pre]:leading-5";
+    "[&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:border [&_pre]:border-border/60 [&_pre]:bg-accent/20 [&_pre]:p-3 [&_pre]:text-[0.8125rem] [&_pre]:leading-5";
 
 function formatRelativeDate(value?: string) {
     if (!value) return "";
@@ -124,7 +124,7 @@ function TaskBoardLoading() {
 
     return (
         <div className="flex flex-col">
-            <div className="border-b border-border/50">
+            <div className="border-b border-border/60">
                 <div className="flex w-full flex-col gap-3 px-4 py-4 md:px-5">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
@@ -307,7 +307,7 @@ export default function ProjectTasksPage() {
                     <TaskBoardLoading />
                 ) : (
                     <div className="flex flex-col">
-                        <div className="border-b border-border/50">
+                        <div className="border-b border-border/60">
                             <div className="flex w-full flex-col gap-3 px-4 py-4 md:px-5">
                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -528,7 +528,7 @@ function TaskCard({
             </div>
 
             {task.description ? (
-                <div className="mb-3 max-h-28 overflow-hidden">
+                <div className="mb-3">
                     <div className={TASK_CARD_MARKDOWN_CLASSNAME}>
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {task.description}
@@ -617,7 +617,7 @@ function ArchivedTaskCard({
             </div>
 
             {task.description ? (
-                <div className="mb-3 max-h-28 overflow-hidden">
+                <div className="mb-3">
                     <div className={TASK_CARD_MARKDOWN_CLASSNAME}>
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {task.description}

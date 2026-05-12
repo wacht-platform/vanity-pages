@@ -22,15 +22,15 @@ export function webhookStatusLabel(status: NormalizedWebhookStatus): string {
 }
 
 export function webhookStatusBadgeClass(status: NormalizedWebhookStatus): string {
-	if (status === "success") return "bg-green-500/10 text-green-500 border-green-500/20"
-	if (status === "failed") return "bg-red-500/10 text-red-500 border-red-500/20"
-	if (status === "filtered") return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-	return "bg-muted text-muted-foreground border-border/40"
+	if (status === "success") return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+	if (status === "failed") return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25"
+	if (status === "filtered") return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25"
+	return "bg-muted text-muted-foreground border-border/60"
 }
 
 export function webhookStatusDotClass(status: NormalizedWebhookStatus): string {
-	if (status === "success") return "bg-green-500"
-	if (status === "failed") return "bg-orange-500"
-	if (status === "filtered") return "bg-yellow-500"
-	return "bg-slate-500"
+	if (status === "success") return "bg-emerald-500"
+	if (status === "failed") return "bg-rose-500"
+	if (status === "filtered") return "bg-amber-500"
+	return "bg-muted-foreground"
 }

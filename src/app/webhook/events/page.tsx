@@ -48,23 +48,23 @@ export default function WebhookEventsPage() {
 
     if (loading) {
         return (
-            <div className="w-full px-4 py-2 md:px-6 md:py-3 space-y-10">
+            <div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8 space-y-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                     <div className="h-8 w-48 bg-muted/20 animate-pulse rounded-md" />
-                    <div className="h-10 w-full md:w-80 animate-pulse rounded-lg border border-border/50 bg-card" />
+                    <div className="h-10 w-full md:w-80 animate-pulse rounded-lg border border-border/60 bg-card" />
                 </div>
                 <div className="space-y-8">
                     {[1, 2].map(group => (
                         <div key={group} className="relative">
                             <div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-4 h-4 rounded-full border-2 border-border/40 bg-card z-10" />
+                                <div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
                                 <div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
                                 <div className="h-px flex-1 bg-border/30" />
                             </div>
                             <div className="space-y-2">
                                 {[1, 2, 3].map(i => (
-                                    <div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/40 bg-card" />
+                                    <div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/60 bg-card" />
                                 ))}
                             </div>
                         </div>
@@ -75,7 +75,7 @@ export default function WebhookEventsPage() {
     }
 
     return (
-        <div className="w-full px-4 py-2 md:px-6 md:py-3 mx-auto">
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
             {/* Header & Filter */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
                 <div>
@@ -83,12 +83,12 @@ export default function WebhookEventsPage() {
                 </div>
 
                 <div className="relative w-full md:w-80 group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary/50 transition-colors" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 group-focus-within:text-primary/50 transition-colors" />
                     <Input
                         placeholder="Search event names, categories..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 h-8 rounded-lg border-border/50 bg-card text-xs font-normal transition-all focus-visible:ring-primary/20"
+                        className="pl-10 h-8 rounded-lg border-border/60 bg-card text-xs font-normal transition-all focus-visible:ring-primary/20"
                     />
                 </div>
             </div>
@@ -96,7 +96,7 @@ export default function WebhookEventsPage() {
             {groupedEvents.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-12 text-center">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-                        <Search className="w-6 h-6 text-muted-foreground/30" />
+                        <Search className="w-6 h-6 text-muted-foreground/60" />
                     </div>
                     <p className="text-sm font-normal text-muted-foreground">No events found matching your search</p>
                 </div>
@@ -136,7 +136,7 @@ export default function WebhookEventsPage() {
                                                     "relative overflow-hidden rounded-lg border transition-all duration-300",
                                                     isExpanded
                                                         ? "border-primary/20 bg-primary/[0.01]"
-                                                        : "border-border/40 bg-card hover:border-border/60 hover:bg-accent/60"
+                                                        : "border-border/60 bg-card hover:border-border/60 hover:bg-accent/60"
                                                 )}
                                             >
                                                 <button
@@ -154,7 +154,7 @@ export default function WebhookEventsPage() {
                                                         )}
                                                         {event.description && (
                                                             <>
-                                                                <span className="text-muted-foreground/30 text-xs">|</span>
+                                                                <span className="text-muted-foreground/60 text-xs">|</span>
                                                                 <span className="text-xs font-normal text-muted-foreground truncate max-w-[400px]">
                                                                     {event.description}
                                                                 </span>
@@ -163,7 +163,7 @@ export default function WebhookEventsPage() {
                                                     </div>
                                                     <div className={cn(
                                                         "p-1 rounded-lg transition-colors",
-                                                        isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground/50 group-hover/item:text-muted-foreground"
+                                                        isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground group-hover/item:text-muted-foreground"
                                                     )}>
                                                         {isExpanded ? (
                                                             <ChevronDown className="w-3.5 h-3.5" />
@@ -181,7 +181,7 @@ export default function WebhookEventsPage() {
                                                             <div className="py-6 px-4">
                                                                 <div className="flex items-center justify-between mb-4">
                                                                     <h4 className="text-xs uppercase font-normal text-muted-foreground/80">Properties</h4>
-                                                                    <Badge variant="outline" className="text-xs font-normal border-border/40 opacity-50">JSON Schema</Badge>
+                                                                    <Badge variant="outline" className="text-xs font-normal border-border/60 opacity-50">JSON Schema</Badge>
                                                                 </div>
                                                                 <div className="min-h-[100px]">
                                                                     {schemaProps && Object.keys(schemaProps).length > 0 ? (
@@ -190,7 +190,7 @@ export default function WebhookEventsPage() {
                                                                         </div>
                                                                     ) : (
                                                                         <div className="py-8 text-center">
-                                                                            <p className="text-xs text-muted-foreground/30 italic font-normal">No schema properties defined</p>
+                                                                            <p className="text-xs text-muted-foreground/60 italic font-normal">No schema properties defined</p>
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -219,7 +219,7 @@ export default function WebhookEventsPage() {
                                                                         </div>
                                                                     ) : (
                                                                         <div className="py-8 text-center">
-                                                                            <p className="text-xs text-muted-foreground/20 italic font-normal">No example payload provided</p>
+                                                                            <p className="text-xs text-muted-foreground/60 italic font-normal">No example payload provided</p>
                                                                         </div>
                                                                     )}
                                                                 </div>

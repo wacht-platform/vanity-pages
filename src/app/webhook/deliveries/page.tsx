@@ -95,10 +95,10 @@ export default function WebhookLogsPage() {
 
 
 	const getStatusColor = (statusCode: number) => {
-		if (statusCode >= 200 && statusCode < 300) return "bg-green-500"
-		if (statusCode >= 400 && statusCode < 500) return "bg-orange-500"
-		if (statusCode >= 500) return "bg-red-500"
-		return "bg-slate-500"
+		if (statusCode >= 200 && statusCode < 300) return "bg-emerald-500"
+		if (statusCode >= 400 && statusCode < 500) return "bg-amber-500"
+		if (statusCode >= 500) return "bg-rose-500"
+		return "bg-muted-foreground"
 	}
 
 	const handleRowExpand = async (deliveryId: string) => {
@@ -344,7 +344,7 @@ export default function WebhookLogsPage() {
 	}
 
 	return (
-		<div className="w-full px-4 py-2 md:px-6 md:py-3 mx-auto">
+		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
 			<div className="flex items-center justify-between gap-4 mb-6">
 				<div>
 					<h1 className="text-lg font-normal text-foreground">Webhook Logs</h1>
@@ -361,7 +361,7 @@ export default function WebhookLogsPage() {
 						</Button>
 					) : (
 						<WebhookLogControls
-							controlClassName="h-9 w-9 p-0 border-border/40"
+							controlClassName="h-9 w-9 p-0 border-border/60"
 							filterStatus={status}
 							onFilterStatusChange={setStatus}
 							filterEventName={eventName}
@@ -403,20 +403,20 @@ export default function WebhookLogsPage() {
 						<div key={group} className="relative">
 							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
 							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-border/40 bg-card z-10" />
+								<div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
 								<div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
 								<div className="h-px flex-1 bg-border/30" />
 							</div>
 							<div className="space-y-2">
 								{[1, 2, 3].map(i => (
-									<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/40 bg-card" />
+									<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/60 bg-card" />
 								))}
 							</div>
 						</div>
 					))}
 				</div>
 			) : !groupedDeliveries || groupedDeliveries.length === 0 ? (
-				<div className="rounded-lg border border-dashed border-border/50 bg-secondary/30 py-16 text-center">
+				<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-16 text-center">
 					<p className="text-sm font-normal text-muted-foreground">No delivery logs found matching your criteria.</p>
 				</div>
 			) : (
@@ -455,7 +455,7 @@ export default function WebhookLogsPage() {
 													"relative overflow-hidden rounded-lg border transition-all duration-300",
 													isExpanded
 														? "border-primary/20 bg-primary/[0.01]"
-														: "border-border/40 bg-card hover:border-border/60 hover:bg-accent/60"
+														: "border-border/60 bg-card hover:border-border/60 hover:bg-accent/60"
 												)}
 											>
 												{/* Main Row */}
@@ -487,8 +487,8 @@ export default function WebhookLogsPage() {
 															<span className={cn("text-[10px] uppercase px-2 py-0.5 rounded-full border tracking-wide", webhookStatusBadgeClass(deliveryStatus))}>
 																{webhookStatusLabel(deliveryStatus)}
 															</span>
-																<span className="hidden md:inline text-muted-foreground/30 text-xs">|</span>
-																<span className="hidden md:inline text-xs text-muted-foreground/50 font-normal">
+																<span className="hidden md:inline text-muted-foreground/60 text-xs">|</span>
+																<span className="hidden md:inline text-xs text-muted-foreground font-normal">
 																	{new Date(delivery.created_at ?? "").toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
 																</span>
 														</div>
@@ -500,7 +500,7 @@ export default function WebhookLogsPage() {
 															<span className="text-xs font-normal tabular-nums text-foreground/80">
 																{delivery.response_status || delivery.http_status_code || "---"}
 															</span>
-															<span className="text-muted-foreground/30 text-xs">•</span>
+															<span className="text-muted-foreground/60 text-xs">•</span>
 															<span className="text-xs text-foreground/80 font-normal tabular-nums">
 																{delivery.response_time_ms ? `${delivery.response_time_ms}ms` : "---"}
 															</span>
@@ -525,7 +525,7 @@ export default function WebhookLogsPage() {
 															</Button>
 															<div className={cn(
 																"p-1 rounded-lg transition-colors",
-																isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground/30 group-hover/item:text-muted-foreground"
+																isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground/60 group-hover/item:text-muted-foreground"
 															)}>
 																{isExpanded ? (
 																	<ChevronDown className="w-3.5 h-3.5" />
@@ -542,12 +542,12 @@ export default function WebhookLogsPage() {
 													<div className="border-t border-border/10 px-4 py-4 animate-in slide-in-from-top-2 duration-300">
 														{isLoadingDetails ? (
 															<div className="flex items-center justify-center py-12">
-																<Loader2 className="w-5 h-5 animate-spin text-muted-foreground/20" />
+																<Loader2 className="w-5 h-5 animate-spin text-muted-foreground/60" />
 															</div>
 														) : detailsList && detailsList.length > 0 ? (
 															<div className="space-y-4">
 																{delivery.filtered_reason && (
-																	<div className="rounded-lg border border-yellow-500/20 bg-yellow-500/8 p-3 text-xs text-yellow-600 dark:text-yellow-400">
+																	<div className="rounded-lg border border-yellow-500/20 bg-amber-500/8 p-3 text-xs text-yellow-600 dark:text-yellow-400">
 																		Filtered reason: {delivery.filtered_reason}
 																	</div>
 																)}
@@ -564,7 +564,7 @@ export default function WebhookLogsPage() {
 															</div>
 														) : (
 															<div className="text-center py-10">
-																<p className="text-xs text-muted-foreground/30 font-normal italic">Could not load delivery details</p>
+																<p className="text-xs text-muted-foreground/60 font-normal italic">Could not load delivery details</p>
 															</div>
 														)}
 													</div>
@@ -580,7 +580,7 @@ export default function WebhookLogsPage() {
 			)}
 
 			{/* Pagination */}
-			<div className="flex items-center justify-between mt-12 pt-6 border-t border-border/30">
+			<div className="flex items-center justify-between mt-12 pt-6 border-t border-border/60">
 				<div className="text-xs text-muted-foreground font-normal tracking-tight">
 					Page {page}
 				</div>
@@ -590,7 +590,7 @@ export default function WebhookLogsPage() {
 						size="sm"
 						onClick={() => setPage(Math.max(1, page - 1))}
 						disabled={page === 1 || loading}
-						className="h-8 rounded-lg border-border/40 px-3 text-xs font-normal transition-all hover:bg-accent"
+						className="h-8 rounded-lg border-border/60 px-3 text-xs font-normal transition-all hover:bg-accent"
 					>
 						<ChevronLeft className="w-3.5 h-3.5 mr-1 opacity-50" />
 						Previous
@@ -600,7 +600,7 @@ export default function WebhookLogsPage() {
 						size="sm"
 						onClick={() => setPage(page + 1)}
 						disabled={!has_more || loading}
-						className="h-8 rounded-lg border-border/40 px-3 text-xs font-normal transition-all hover:bg-accent"
+						className="h-8 rounded-lg border-border/60 px-3 text-xs font-normal transition-all hover:bg-accent"
 					>
 						Next
 						<ChevronRight className="w-3.5 h-3.5 ml-1 opacity-50" />

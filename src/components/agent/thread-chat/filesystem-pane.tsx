@@ -267,7 +267,7 @@ export function ThreadFilesystemPane({
     <div
       className={cn(
         "relative shrink-0 overflow-hidden bg-background transition-[width] duration-200 ease-out",
-        showFilesystem ? "border-l border-border/50" : "border-l border-transparent",
+        showFilesystem ? "border-l border-border/60" : "border-l border-transparent",
       )}
       style={{ width: `${activeFilesystemPaneWidth}px` }}
     >

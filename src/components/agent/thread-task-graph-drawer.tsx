@@ -201,7 +201,7 @@ function TaskStageNode({ data, selected }: NodeProps<Node<TaskNodeData>>) {
               "w-[220px] h-[56px] flex items-center px-3 gap-3 rounded-md bg-card border transition-all duration-200 shadow-sm text-left",
               selected
                 ? "border-border ring-1 ring-border/40 shadow-md bg-accent/20"
-                : "border-border/50 hover:border-border hover:shadow-md",
+                : "border-border/60 hover:border-border hover:shadow-md",
             )}
           >
             <div
@@ -213,7 +213,7 @@ function TaskStageNode({ data, selected }: NodeProps<Node<TaskNodeData>>) {
                     ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
                     : isFailed
                       ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                      : "bg-muted/50 text-muted-foreground border-border/30",
+                      : "bg-muted/50 text-muted-foreground border-border/60",
               )}
             >
               {graphStepIcon(data.status)}

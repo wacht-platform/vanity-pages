@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { WebhookAppProvider, useWebhookApp } from "@/components/webhook-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { Globe } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Webhook } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
+import { VanityShell } from "@/components/layout/vanity-shell";
 
 function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 	const { hasSession, loading, sessionError } = useWebhookApp();
@@ -25,14 +24,12 @@ function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 		return (
 			<div className="min-h-screen bg-background">
 				{loading ? (
-					<div className="px-4 py-3 md:px-6 md:py-4 space-y-6">
-						<div className="h-16 flex items-center">
-							<div className="flex items-center gap-2">
-								<Skeleton className="h-9 w-24 rounded-md" />
-								<Skeleton className="h-9 w-24 rounded-md" />
-								<Skeleton className="h-9 w-24 rounded-md" />
-								<Skeleton className="h-9 w-24 rounded-md" />
-							</div>
+					<div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 md:px-6 md:py-8">
+						<div className="flex items-center gap-2">
+							<Skeleton className="h-9 w-24 rounded-md" />
+							<Skeleton className="h-9 w-24 rounded-md" />
+							<Skeleton className="h-9 w-24 rounded-md" />
+							<Skeleton className="h-9 w-24 rounded-md" />
 						</div>
 						<div className="space-y-4">
 							<Skeleton className="h-10 w-56 rounded-lg" />
@@ -44,10 +41,10 @@ function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 					<PageState
 						title="Access required"
 						description="You do not have access to this resource."
-						icon={<Globe className="h-5 w-5" />}
+						icon={<Webhook className="h-5 w-5" />}
 					/>
 				)}
-				</div>
+			</div>
 		);
 	}
 
@@ -58,24 +55,20 @@ function WebhookLayoutContent({ children }: { children: React.ReactNode }) {
 	else if (pathname?.startsWith("/webhook/notifications")) activeTab = "notifications";
 
 	return (
-		<div className="min-h-screen bg-background flex flex-col">
-			<div className="flex h-16 items-center px-4 md:px-6 justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-				<div className="flex items-center gap-8">
-					<Tabs value={activeTab}>
-						<TabsList>
-							{navItems.map((item) => (
-								<TabsTrigger key={item.value} value={item.value}>
-									<Link href={item.href}>{item.label}</Link>
-								</TabsTrigger>
-							))}
-						</TabsList>
-					</Tabs>
-				</div>
-			</div>
-
-			<main className="flex-1">{children}</main>
+		<>
+			<VanityShell
+				brand={{
+					icon: <Webhook className="h-4 w-4" />,
+					title: "Webhooks",
+					subtitle: "Endpoints & deliveries",
+				}}
+				navItems={navItems}
+				activeNavValue={activeTab}
+			>
+				{children}
+			</VanityShell>
 			<Toaster position="bottom-right" richColors closeButton />
-		</div>
+		</>
 	);
 }
 

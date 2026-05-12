@@ -145,7 +145,7 @@ function StructuredObjectValue({
   }
 
   return (
-    <div className={cn("space-y-2", depth > 0 && "border-l border-border/20 pl-3")}>
+    <div className={cn("space-y-2", depth > 0 && "border-l border-border/60 pl-3")}>
       {entries.map(([key, item]) => {
         const normalized = coerceStructuredValue(item);
         const isInline =

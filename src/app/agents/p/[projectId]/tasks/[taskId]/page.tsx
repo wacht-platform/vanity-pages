@@ -431,7 +431,7 @@ export default function ProjectTaskDetailPage() {
                 }
                 right={
                     <>
-                        <div className="flex items-center gap-2 rounded-md border border-border/40 px-2 py-1">
+                        <div className="flex items-center gap-2 rounded-md border border-border/60 px-2 py-1">
                             {getStatusIndicator(item.status)}
                             <span className="text-sm text-muted-foreground">
                                 {item.status?.replace(/_/g, " ")}
@@ -455,7 +455,7 @@ export default function ProjectTaskDetailPage() {
                                         return;
                                     await cancelItem();
                                 }}
-                                className="flex h-8 items-center gap-1.5 rounded-md border border-border/40 px-3 text-sm transition-colors hover:bg-accent/50"
+                                className="flex h-8 items-center gap-1.5 rounded-md border border-border/60 px-3 text-sm transition-colors hover:bg-accent/50"
                             >
                                 <span>Cancel</span>
                             </button>
@@ -466,7 +466,7 @@ export default function ProjectTaskDetailPage() {
                                     ? await unarchiveItem()
                                     : await archiveItem()
                             }
-                            className="flex h-8 items-center gap-1.5 rounded-md border border-border/40 px-3 text-sm transition-colors hover:bg-accent/50"
+                            className="flex h-8 items-center gap-1.5 rounded-md border border-border/60 px-3 text-sm transition-colors hover:bg-accent/50"
                         >
                             <IconArchive size={13} stroke={1.5} />
                             <span>
@@ -480,7 +480,7 @@ export default function ProjectTaskDetailPage() {
             <div className="flex-1 overflow-y-auto">
                 <div className="flex h-full w-full flex-col">
                     {/* Task Title Section */}
-                    <div className="border-b border-border/50 px-4 py-4 md:px-5">
+                    <div className="border-b border-border/60 px-4 py-4 md:px-5">
                         <div className="max-w-4xl space-y-3">
                             <h1 className="text-base font-normal leading-tight">
                                 {item.title}
@@ -528,8 +528,8 @@ export default function ProjectTaskDetailPage() {
 
                     {/* Agentic Workspace */}
                     <div className="flex min-h-0 flex-1 flex-col">
-                        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 px-4">
-                            <div className="flex rounded-md border border-border/50 p-0.5">
+                        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 px-4">
+                            <div className="flex rounded-md border border-border/60 p-0.5">
                                 {(
                                     [
                                         "assignments",
@@ -574,7 +574,7 @@ export default function ProjectTaskDetailPage() {
                             />
                         ) : (
                             <div className="flex min-h-0 flex-1">
-                                <div className="flex w-75 flex-col border-r border-border/50">
+                                <div className="flex w-75 flex-col border-r border-border/60">
                                     <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-hide">
                                         <div className="space-y-px">
                                             {orderedAssignments.map(
@@ -636,7 +636,7 @@ export default function ProjectTaskDetailPage() {
                                                     disabled={
                                                         assignmentsLoadingMore
                                                     }
-                                                    className="w-full rounded-md border border-border/50 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/20 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                                                    className="w-full rounded-md border border-border/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/20 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                                                 >
                                                     {assignmentsLoadingMore
                                                         ? "Loading..."
@@ -648,7 +648,7 @@ export default function ProjectTaskDetailPage() {
                                 </div>
 
                                 <div className="flex min-w-0 flex-1 flex-col bg-background">
-                                    <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/50 px-4 md:px-5">
+                                    <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 px-4 md:px-5">
                                         <div className="max-w-md truncate text-sm font-normal text-muted-foreground">
                                             {selection?.kind === "assignment"
                                                 ? formatLabel(

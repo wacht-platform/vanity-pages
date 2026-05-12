@@ -67,7 +67,7 @@ export default function WebhookEndpointsPage() {
 
 	return (
 		<>
-			<div className="px-4 py-2 md:px-6 md:py-3">
+			<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
 				<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
 					<div>
 						<h1 className="text-lg font-normal text-foreground">Endpoints</h1>
@@ -130,18 +130,18 @@ export default function WebhookEndpointsPage() {
 							<div className="space-y-2">
 								{[1, 2, 3].map(i => (
 									<div key={i} className="flex items-center gap-4">
-										<div className="w-4 h-4 rounded-full border-2 border-border/40 bg-card z-10" />
-										<div className="h-10 flex-1 animate-pulse rounded-lg border border-border/40 bg-card" />
+										<div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
+										<div className="h-10 flex-1 animate-pulse rounded-lg border border-border/60 bg-card" />
 									</div>
 								))}
 							</div>
 						) : !Array.isArray(endpoints) || endpoints.length === 0 ? (
 							<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-12 text-center">
 								<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-									<Globe className="w-6 h-6 text-muted-foreground/30" />
+									<Globe className="w-6 h-6 text-muted-foreground" />
 								</div>
 								<p className="text-sm font-normal text-muted-foreground">No endpoints configured</p>
-								<p className="text-xs text-muted-foreground/50 mt-1">Create your first endpoint to start receiving webhooks.</p>
+								<p className="text-xs text-muted-foreground mt-1">Create your first endpoint to start receiving webhooks.</p>
 							</div>
 						) : (
 							endpoints.map((endpoint) => (
@@ -151,8 +151,8 @@ export default function WebhookEndpointsPage() {
 								>
 									<div
 										className={cn(
-											"flex-1 cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-lg border px-4 py-2 transition-all duration-300",
-											"border-border/40 bg-card hover:border-border/60 hover:bg-accent/60"
+											"flex cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl border px-4 py-3 transition-colors",
+											"border-border/60 bg-card hover:border-border bg-card/60 hover:bg-accent/40"
 										)}
 										onClick={() => router.push(`/webhook/endpoints/${endpoint.id}`)}
 									>
@@ -163,8 +163,8 @@ export default function WebhookEndpointsPage() {
 												</h3>
 												{endpoint.description && (
 													<>
-														<span className="text-muted-foreground/30 text-[10px]">•</span>
-														<span className="text-xs text-muted-foreground/50 truncate max-w-[150px] md:max-w-[300px] font-normal">
+														<span className="text-muted-foreground text-[10px]">•</span>
+														<span className="text-xs text-muted-foreground truncate max-w-[150px] md:max-w-[300px] font-normal">
 															{endpoint.description}
 														</span>
 													</>
@@ -172,15 +172,15 @@ export default function WebhookEndpointsPage() {
 											</div>
 
 											<div className="hidden md:flex items-center gap-4 shrink-0">
-												<span className="text-muted-foreground/20 text-[10px]">•</span>
-												<div className="flex items-center gap-1.5 text-xs text-muted-foreground/60 font-normal whitespace-nowrap">
-													<Zap className="w-3.5 h-3.5 text-muted-foreground/40" />
+												<span className="text-muted-foreground text-[10px]">•</span>
+												<div className="flex items-center gap-1.5 text-xs text-muted-foreground font-normal whitespace-nowrap">
+													<Zap className="w-3.5 h-3.5 text-muted-foreground/70" />
 													<span>{endpoint.subscribed_events.length} events</span>
 												</div>
 												{endpoint.rate_limit_config && (
 													<>
-														<span className="text-muted-foreground/20 text-[10px]">•</span>
-														<span className="text-xs text-muted-foreground/40 tabular-nums font-normal whitespace-nowrap">
+														<span className="text-muted-foreground text-[10px]">•</span>
+														<span className="text-xs text-muted-foreground/70 tabular-nums font-normal whitespace-nowrap">
 															{endpoint.rate_limit_config.max_requests} req / {endpoint.rate_limit_config.duration_ms === 1000 ? 'sec' : endpoint.rate_limit_config.duration_ms === 60000 ? 'min' : 'hr'}
 														</span>
 													</>
@@ -188,13 +188,13 @@ export default function WebhookEndpointsPage() {
 											</div>
 										</div>
 
-										<div className="flex items-center justify-end gap-6 shrink-0 font-normal">
-											<div className="flex items-center gap-2">
+										<div className="flex shrink-0 items-center justify-end gap-4">
+											<div className="flex items-center gap-1.5">
 												<div className={cn(
-													"w-1 h-1 rounded-full",
-													endpoint.is_active ? "bg-green-500" : "bg-muted-foreground/50"
+													"h-1.5 w-1.5 rounded-full",
+													endpoint.is_active ? "bg-emerald-500" : "bg-muted-foreground/40"
 												)} />
-												<span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-normal">
+												<span className="text-[11px] uppercase tracking-wider text-muted-foreground">
 													{endpoint.is_active ? "Active" : "Inactive"}
 												</span>
 											</div>
@@ -205,7 +205,7 @@ export default function WebhookEndpointsPage() {
 														<Button
 															variant="ghost"
 															size="sm"
-															className="h-7 w-7 p-0 text-muted-foreground/20 hover:text-foreground hover:bg-transparent"
+															className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
 															onClick={(e) => e.stopPropagation()}
 														>
 															<MoreHorizontal className="w-4 h-4" />
@@ -221,7 +221,7 @@ export default function WebhookEndpointsPage() {
 														</DropdownMenuItem>
 													</DropdownMenuContent>
 												</DropdownMenu>
-												<ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20 group-hover/item:text-muted-foreground transition-colors" />
+												<ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover/item:text-muted-foreground transition-colors" />
 											</div>
 										</div>
 									</div>

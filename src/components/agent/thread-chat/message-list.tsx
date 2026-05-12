@@ -39,7 +39,7 @@ import {
 
 function UserMessageMarkdown({ value }: { value: string }) {
     return (
-        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-p:my-0 prose-p:text-sm prose-p:leading-relaxed prose-a:text-primary prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/30 prose-pre:bg-muted/40 prose-pre:p-0">
+        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-p:my-0 prose-p:text-sm prose-p:leading-relaxed prose-a:text-primary prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border/60 prose-pre:bg-muted/40 prose-pre:p-0">
             <ReactMarkdown
                 remarkPlugins={threadChatRemarkPlugins}
                 rehypePlugins={threadChatRehypePlugins}
@@ -47,6 +47,14 @@ function UserMessageMarkdown({ value }: { value: string }) {
             >
                 {value}
             </ReactMarkdown>
+        </div>
+    );
+}
+
+function UserMessageBubble({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="w-fit max-w-full rounded-2xl rounded-tr-md bg-primary/8 px-4 py-2.5 text-foreground ring-1 ring-inset ring-border/40">
+            {children}
         </div>
     );
 }
@@ -222,28 +230,25 @@ export function ThreadMessageList({
                             return (
                                 <div
                                     key={message.id}
-                                    className="my-6 flex justify-end"
+                                    className="mt-5 flex justify-end"
                                 >
-                                    <div className="flex min-w-0 flex-col items-end gap-1.5">
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            <span className="inline-flex items-center gap-1.5">
-                                                <IconUser
-                                                    size={12}
-                                                    stroke={1.8}
-                                                    className="text-muted-foreground/70"
-                                                />
-                                                User
-                                            </span>
-                                        </div>
-                                        <div className="w-fit max-w-full">
+                                    <div className="flex min-w-0 max-w-[85%] flex-col items-end gap-1.5">
+                                        <UserMessageBubble>
                                             <UserMessageMarkdown
                                                 value={getDisplayContent(
                                                     message.content,
                                                 )}
                                             />
-                                        </div>
-                                        <div className="text-xs text-muted-foreground/50">
-                                            {formatTime(message.timestamp)}
+                                        </UserMessageBubble>
+                                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                            <IconUser
+                                                size={11}
+                                                stroke={1.8}
+                                                className="text-muted-foreground"
+                                            />
+                                            <span>You</span>
+                                            <span className="text-muted-foreground/50">·</span>
+                                            <span>{formatTime(message.timestamp)}</span>
                                         </div>
                                         {messageFiles.length > 0 ? (
                                             <div className="flex flex-wrap justify-end gap-2">
@@ -278,14 +283,14 @@ export function ThreadMessageList({
                                                                 download={
                                                                     file.filename
                                                                 }
-                                                                className="group inline-flex items-center gap-2 rounded-md border border-border/30 bg-background px-2 py-1.5 text-xs text-foreground transition-colors hover:bg-accent"
+                                                                className="group inline-flex items-center gap-2 rounded-md border border-border/60 bg-background px-2 py-1.5 text-xs text-foreground transition-colors hover:bg-accent"
                                                             >
                                                                 {content}
                                                             </a>
                                                         ) : (
                                                             <span
                                                                 key={`${file.filename}-${index}`}
-                                                                className="group inline-flex items-center gap-2 rounded-md border border-border/30 bg-background px-2 py-1.5 text-xs text-foreground/60 opacity-60"
+                                                                className="group inline-flex items-center gap-2 rounded-md border border-border/60 bg-background px-2 py-1.5 text-xs text-foreground/60 opacity-60"
                                                             >
                                                                 {content}
                                                             </span>
@@ -302,18 +307,14 @@ export function ThreadMessageList({
                         return (
                             <div
                                 key={message.id}
-                                className="mt-4 flex items-start gap-3"
+                                className="mt-5 flex items-start gap-3"
                             >
+                                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                    <IconSparkles size={14} stroke={1.8} />
+                                </div>
                                 <div className="min-w-0 flex-1">
-                                    <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
-                                        <span className="inline-flex items-center gap-1.5">
-                                            <IconSparkles
-                                                size={12}
-                                                stroke={1.8}
-                                                className="text-muted-foreground/70"
-                                            />
-                                            Agent
-                                        </span>
+                                    <div className="mb-1 text-[11px] font-medium text-muted-foreground">
+                                        Agent
                                     </div>
                                     <StructuredConversationContent
                                         content={message.content}
@@ -358,25 +359,23 @@ export function ThreadMessageList({
 
                     {pendingMessage ||
                     (pendingFiles && pendingFiles.length > 0) ? (
-                        <div className="my-6 flex justify-end">
-                            <div className="flex min-w-0 flex-col items-end gap-1.5">
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <IconUser
-                                            size={12}
-                                            stroke={1.8}
-                                            className="text-muted-foreground/60"
-                                        />
-                                        User
-                                    </span>
-                                </div>
+                        <div className="mt-5 flex justify-end opacity-70">
+                            <div className="flex min-w-0 max-w-[85%] flex-col items-end gap-1.5">
                                 {pendingMessage ? (
-                                    <div className="w-fit max-w-full">
+                                    <UserMessageBubble>
                                         <UserMessageMarkdown
                                             value={pendingMessage}
                                         />
-                                    </div>
+                                    </UserMessageBubble>
                                 ) : null}
+                                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                    <IconUser
+                                        size={11}
+                                        stroke={1.8}
+                                        className="text-muted-foreground"
+                                    />
+                                    <span>Sending…</span>
+                                </div>
                                 {pendingFiles && pendingFiles.length > 0 ? (
                                     <div className="flex flex-wrap justify-end gap-2">
                                         {pendingFiles.map((file, index) => (

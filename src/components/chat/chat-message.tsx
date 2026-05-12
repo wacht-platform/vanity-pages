@@ -13,7 +13,7 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
     return (
         <div
             className={cn(
-                "group w-full text-gray-800 dark:text-gray-100",
+                "group w-full text-foreground",
                 isUser ? "" : "bg-transparent",
             )}
         >
@@ -27,12 +27,10 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
                                 </AvatarFallback>
                             </Avatar>
                         ) : (
-                            <Avatar className="h-7 w-7 rounded-sm">
-                                <div className="w-full h-full bg-orange-500 rounded-sm flex items-center justify-center">
-                                    <span className="text-xs font-normal text-white">
-                                        AI
-                                    </span>
-                                </div>
+                            <Avatar className="h-7 w-7 rounded-md">
+                                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                    AI
+                                </AvatarFallback>
                             </Avatar>
                         )}
                     </div>

@@ -151,7 +151,7 @@ export default function WebhookPage() {
 
 	if (appLoading) {
 		return (
-			<div className="w-full px-4 py-2 md:px-6 md:py-3 space-y-6">
+			<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8 space-y-6">
 				<div className="flex items-center justify-between">
 					<Skeleton className="h-6 w-32" />
 					<Skeleton className="h-9 w-[240px]" />
@@ -164,7 +164,7 @@ export default function WebhookPage() {
 	}
 
 	return (
-		<div className="w-full px-4 py-2 md:px-6 md:py-3">
+		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
 			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
 				<h1 className="text-lg font-normal text-foreground">Overview</h1>
 				<DateRangePicker
@@ -180,11 +180,11 @@ export default function WebhookPage() {
 			</div>
 
 			<div className="space-y-6">
-				<section className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
-					<div className="border-b border-border/40 bg-secondary/40 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
+				<section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
+					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
 						Operations Snapshot
 					</div>
-					<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/20">
+					<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
 						<Metric label="Total Deliveries" value={analyticsLoading ? "-" : formatNumber(analytics?.total_deliveries)} />
 						<Metric label="Total Events" value={analyticsLoading ? "-" : formatNumber(analytics?.total_events)} />
 						<Metric
@@ -199,22 +199,22 @@ export default function WebhookPage() {
 					</div>
 				</section>
 
-				<section className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
-					<div className="border-b border-border/40 bg-secondary/40 px-4 py-3 flex items-center justify-between">
+				<section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
+					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3 flex items-center justify-between">
 						<h2 className="text-sm font-normal text-foreground">Traffic Timeline</h2>
 						<span className="text-xs text-muted-foreground">Daily</span>
 					</div>
 					<div className="px-4 pt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
 						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-green-600" />
+							<span className="w-2 h-2 rounded-full bg-emerald-500" />
 							Successful
 						</span>
 						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-red-500" />
+							<span className="w-2 h-2 rounded-full bg-rose-500" />
 							Failed
 						</span>
 						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-yellow-500" />
+							<span className="w-2 h-2 rounded-full bg-amber-500" />
 							Filtered
 						</span>
 					</div>
@@ -233,7 +233,7 @@ export default function WebhookPage() {
 						) : (
 							<ResponsiveContainer width="100%" height="100%">
 								<BarChart data={chartData} barCategoryGap="18%" margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
-									<CartesianGrid strokeDasharray="3 3" className="stroke-border/20" vertical={false} />
+									<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
 									<XAxis
 										dataKey="time"
 										axisLine={false}
@@ -304,31 +304,31 @@ export default function WebhookPage() {
 				</section>
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<section className="border border-border/30 rounded-xl overflow-hidden">
-						<div className="px-4 py-3 border-b border-border/20 text-xs uppercase tracking-wide text-muted-foreground">Latency Percentiles</div>
-						<div className="grid grid-cols-3 divide-x divide-border/20">
+					<section className="border border-border/60 rounded-xl overflow-hidden">
+						<div className="px-4 py-3 border-b border-border/60 text-xs uppercase tracking-wide text-muted-foreground">Latency Percentiles</div>
+						<div className="grid grid-cols-3 divide-x divide-border/60">
 							<Metric label="P50" value={analyticsLoading ? "-" : `${Math.round(analytics?.p50_response_time_ms || 0)}ms`} compact />
 							<Metric label="P95" value={analyticsLoading ? "-" : `${Math.round(analytics?.p95_response_time_ms || 0)}ms`} compact />
 							<Metric label="P99" value={analyticsLoading ? "-" : `${Math.round(analytics?.p99_response_time_ms || 0)}ms`} compact />
 						</div>
 					</section>
 
-					<section className="border border-border/30 rounded-xl overflow-hidden">
-						<div className="px-4 py-3 border-b border-border/20 flex items-center justify-between">
+					<section className="border border-border/60 rounded-xl overflow-hidden">
+						<div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
 							<h2 className="text-sm font-normal text-foreground">Workspace Totals</h2>
 						</div>
-						<div className="grid grid-cols-2 divide-x divide-border/20">
+						<div className="grid grid-cols-2 divide-x divide-border/60">
 							<Metric label="Active Endpoints" value={statsLoading ? "-" : formatNumber(stats?.endpoint_count)} href="/webhook/endpoints" compact />
 							<Metric label="Webhook Events" value={statsLoading ? "-" : formatNumber(stats?.event_count)} href="/webhook/events" compact />
 						</div>
 					</section>
 				</div>
 
-				<section className="border border-border/30 rounded-xl overflow-hidden">
-					<div className="px-4 py-3 border-b border-border/20 text-sm font-normal text-foreground">Signing Secret</div>
+				<section className="border border-border/60 rounded-xl overflow-hidden">
+					<div className="px-4 py-3 border-b border-border/60 text-sm font-normal text-foreground">Signing Secret</div>
 					<div className="p-4 space-y-3">
 						<div className="flex items-center gap-2 flex-nowrap">
-							<code className="flex-1 min-w-0 text-xs text-foreground/80 bg-muted/30 px-3 py-2 rounded border border-border/50 truncate">
+							<code className="flex-1 min-w-0 text-xs text-foreground/80 bg-muted/30 px-3 py-2 rounded border border-border/60 truncate">
 								{webhookApp?.signing_secret}
 							</code>
 							<Button
@@ -410,7 +410,7 @@ function Metric({
 		)}>
 			<div className="flex items-center justify-between">
 				<div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-				{href && <ArrowUpRight className="w-3 h-3 text-muted-foreground/0 group-hover/metric:text-muted-foreground/40 transition-all" />}
+				{href && <ArrowUpRight className="w-3 h-3 text-muted-foreground/0 group-hover/metric:text-muted-foreground/70 transition-all" />}
 			</div>
 			<div className={cn(compact ? "text-lg mt-1" : "text-base mt-1", "text-foreground", valueClass)}>{value}</div>
 		</div>

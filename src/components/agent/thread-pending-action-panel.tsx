@@ -166,7 +166,7 @@ export function ThreadPendingActionPanel({
     if (compact) {
         return (
             <div className="animate-in fade-in duration-200">
-                <div className="rounded border border-border/50 bg-secondary/10 p-3">
+                <div className="rounded border border-border/60 bg-secondary/10 p-3">
                     {content}
                 </div>
             </div>

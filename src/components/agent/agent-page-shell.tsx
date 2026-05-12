@@ -29,9 +29,9 @@ export function AgentPageShell({
                 right={actions}
             />
             <div className="flex-1 overflow-y-auto">
-                <div className="mx-auto w-full px-4 py-4 md:py-5">
+                <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6 md:py-8">
                     {description ? (
-                        <p className="mb-4 max-w-2xl text-sm leading-5 text-muted-foreground">
+                        <p className="mb-5 max-w-2xl text-sm leading-5 text-muted-foreground">
                             {description}
                         </p>
                     ) : null}
