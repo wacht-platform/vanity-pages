@@ -16,7 +16,7 @@ export type VanityNavItem = {
 };
 
 type VanityShellProps = {
-    brand: {
+    brand?: {
         icon: React.ReactNode;
         title: string;
         subtitle?: string;
@@ -74,8 +74,18 @@ function ThemeToggleButton() {
             onClick={() => setTheme(isDark ? "light" : "dark")}
             className="h-8 w-8 text-muted-foreground hover:text-foreground"
         >
-            <Sun className={cn("h-4 w-4 transition-all", isDark ? "scale-0 rotate-90" : "scale-100 rotate-0")} />
-            <Moon className={cn("absolute h-4 w-4 transition-all", isDark ? "scale-100 rotate-0" : "scale-0 -rotate-90")} />
+            <Sun
+                className={cn(
+                    "h-4 w-4 transition-all",
+                    isDark ? "scale-0 rotate-90" : "scale-100 rotate-0",
+                )}
+            />
+            <Moon
+                className={cn(
+                    "absolute h-4 w-4 transition-all",
+                    isDark ? "scale-100 rotate-0" : "scale-0 -rotate-90",
+                )}
+            />
         </Button>
     );
 }
@@ -91,29 +101,37 @@ export function VanityShell({
         <div className="flex min-h-screen flex-col bg-background">
             <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/65">
                 <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-6 px-4 md:px-6">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                            {brand.icon}
-                        </div>
-                        <div className="min-w-0 leading-tight">
-                            <div className="truncate text-sm font-semibold text-foreground">
-                                {brand.title}
+                    {brand && (
+                        <div className="flex min-w-0 items-center gap-2.5">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                                {brand.icon}
                             </div>
-                            {brand.subtitle ? (
-                                <div className="truncate text-[11px] text-muted-foreground">
-                                    {brand.subtitle}
+                            <div className="min-w-0 leading-tight">
+                                <div className="truncate text-sm font-semibold text-foreground">
+                                    {brand.title}
                                 </div>
-                            ) : null}
+                                {brand.subtitle ? (
+                                    <div className="truncate text-[11px] text-muted-foreground">
+                                        {brand.subtitle}
+                                    </div>
+                                ) : null}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {navItems.length > 0 ? (
                         <nav className="hidden min-w-0 flex-1 md:block">
                             <Tabs value={activeNavValue}>
                                 <TabsList>
                                     {navItems.map((item) => (
-                                        <TabsTrigger key={item.value} value={item.value} asChild>
-                                            <Link href={item.href}>{item.label}</Link>
+                                        <TabsTrigger
+                                            key={item.value}
+                                            value={item.value}
+                                            asChild
+                                        >
+                                            <Link href={item.href}>
+                                                {item.label}
+                                            </Link>
                                         </TabsTrigger>
                                     ))}
                                 </TabsList>
@@ -135,8 +153,14 @@ export function VanityShell({
                             <Tabs value={activeNavValue}>
                                 <TabsList>
                                     {navItems.map((item) => (
-                                        <TabsTrigger key={item.value} value={item.value} asChild>
-                                            <Link href={item.href}>{item.label}</Link>
+                                        <TabsTrigger
+                                            key={item.value}
+                                            value={item.value}
+                                            asChild
+                                        >
+                                            <Link href={item.href}>
+                                                {item.label}
+                                            </Link>
                                         </TabsTrigger>
                                     ))}
                                 </TabsList>
