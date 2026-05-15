@@ -12,7 +12,13 @@ import type {
 } from "@wacht/types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { IconArchive, IconChecklist, IconRoute } from "@tabler/icons-react";
+import {
+    IconArchive,
+    IconChecklist,
+    IconChevronDown,
+    IconChevronUp,
+    IconRoute,
+} from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
 import { PendingQuestionCard } from "@/components/agent/pending-question-card";
@@ -262,6 +268,7 @@ export default function ProjectTaskDetailPage() {
         taskWorkspaceLoading,
         taskWorkspaceError,
         getTaskWorkspaceFile,
+        downloadTaskWorkspaceFile,
         listTaskWorkspaceDirectory,
         refetchTaskWorkspace,
     } = useProjectTaskBoardItem(projectId, taskId, !!taskId, {
@@ -302,6 +309,20 @@ export default function ProjectTaskDetailPage() {
     const [requestedWorkspacePath, setRequestedWorkspacePath] = React.useState<
         string | null
     >(null);
+    const descriptionRef = React.useRef<HTMLDivElement>(null);
+    const [isDescriptionExpanded, setIsDescriptionExpanded] =
+        React.useState(false);
+    const [isDescriptionOverflowing, setIsDescriptionOverflowing] =
+        React.useState(false);
+
+    React.useLayoutEffect(() => {
+        const el = descriptionRef.current;
+        if (!el) {
+            setIsDescriptionOverflowing(false);
+            return;
+        }
+        setIsDescriptionOverflowing(el.scrollHeight > 240);
+    }, [item?.description]);
 
     const selectedAssignment =
         selection?.kind === "assignment"
@@ -486,21 +507,61 @@ export default function ProjectTaskDetailPage() {
                                 {item.title}
                             </h1>
                             {item.description ? (
-                                <div
-                                    className={DOCUMENT_PROSE_CLASSNAME}
-                                    onClickCapture={
-                                        handleWorkspaceLinkClickCapture
-                                    }
-                                >
-                                    <ReactMarkdown
-                                        remarkPlugins={[
-                                            remarkGfm,
-                                            remarkWorkspaceLinks,
-                                        ]}
-                                        components={markdownComponents}
+                                <div className="relative">
+                                    <div
+                                        ref={descriptionRef}
+                                        className={cn(
+                                            DOCUMENT_PROSE_CLASSNAME,
+                                            isDescriptionOverflowing &&
+                                                !isDescriptionExpanded &&
+                                                "max-h-[240px] overflow-hidden",
+                                        )}
+                                        onClickCapture={
+                                            handleWorkspaceLinkClickCapture
+                                        }
                                     >
-                                        {item.description}
-                                    </ReactMarkdown>
+                                        <ReactMarkdown
+                                            remarkPlugins={[
+                                                remarkGfm,
+                                                remarkWorkspaceLinks,
+                                            ]}
+                                            components={markdownComponents}
+                                        >
+                                            {item.description}
+                                        </ReactMarkdown>
+                                    </div>
+                                    {isDescriptionOverflowing &&
+                                    !isDescriptionExpanded ? (
+                                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent" />
+                                    ) : null}
+                                    {isDescriptionOverflowing ? (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setIsDescriptionExpanded(
+                                                    (v) => !v,
+                                                )
+                                            }
+                                            className="mt-2 flex items-center gap-1.5 text-xs font-normal text-muted-foreground transition-colors hover:text-foreground"
+                                        >
+                                            {isDescriptionExpanded ? (
+                                                <IconChevronUp
+                                                    size={13}
+                                                    stroke={1.5}
+                                                />
+                                            ) : (
+                                                <IconChevronDown
+                                                    size={13}
+                                                    stroke={1.5}
+                                                />
+                                            )}
+                                            <span>
+                                                {isDescriptionExpanded
+                                                    ? "Show less"
+                                                    : "Show more"}
+                                            </span>
+                                        </button>
+                                    ) : null}
                                 </div>
                             ) : (
                                 <p className="text-sm italic text-muted-foreground">
@@ -566,6 +627,7 @@ export default function ProjectTaskDetailPage() {
                                 listDirectory={listWorkspaceDirectory}
                                 refetchRoot={refetchTaskWorkspace}
                                 requestedPath={requestedWorkspacePath}
+                                downloadFile={downloadTaskWorkspaceFile}
                             />
                         ) : activeTab === "comments" ? (
                             <TaskCommentsPanel

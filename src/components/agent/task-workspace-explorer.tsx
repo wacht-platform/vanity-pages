@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconDownload, IconRefresh } from "@tabler/icons-react";
 import {
   ChevronDown,
   ChevronRight,
@@ -236,6 +236,7 @@ export function TaskWorkspaceExplorer({
   listDirectory,
   refetchRoot,
   requestedPath,
+  downloadFile,
 }: {
   rootEntries: ProjectTaskWorkspaceFileEntry[];
   rootLoading: boolean;
@@ -244,6 +245,7 @@ export function TaskWorkspaceExplorer({
   listDirectory: (path?: string) => Promise<ProjectTaskWorkspaceListing>;
   refetchRoot: () => Promise<void>;
   requestedPath?: string | null;
+  downloadFile?: (path: string) => Promise<void>;
 }) {
   const [selection, setSelection] = React.useState<WorkspaceSelection>(null);
   const [expandedDirs, setExpandedDirs] = React.useState<Set<string>>(new Set());
@@ -396,6 +398,18 @@ export function TaskWorkspaceExplorer({
     };
   }, [selectedFilePath, selectedFileRefreshNonce]);
 
+  const [isDownloading, setIsDownloading] = React.useState(false);
+
+  const handleDownload = React.useCallback(async () => {
+    if (!downloadFile || !selectedFilePath) return;
+    setIsDownloading(true);
+    try {
+      await downloadFile(selectedFilePath);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [downloadFile, selectedFilePath]);
+
   const handleRefresh = React.useCallback(async () => {
     await refetchRoot();
     setTreeEntries({});
@@ -479,11 +493,25 @@ export function TaskWorkspaceExplorer({
             <div className="min-w-0 truncate font-mono text-xs text-muted-foreground">
               {selectedPreviewPath}
             </div>
-            {selectedFile ? (
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {selectedFile.size_bytes > 0 ? `${selectedFile.size_bytes} B` : ""}
-              </span>
-            ) : null}
+            <div className="flex shrink-0 items-center gap-2">
+              {selectedFile ? (
+                <span className="text-xs text-muted-foreground">
+                  {selectedFile.size_bytes > 0 ? `${selectedFile.size_bytes} B` : ""}
+                </span>
+              ) : null}
+              {downloadFile && selectedFilePath ? (
+                <button
+                  type="button"
+                  className="inline-flex h-7 items-center gap-1.5 rounded-sm px-2 text-xs text-muted-foreground transition-colors hover:bg-accent/45 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => void handleDownload()}
+                  disabled={isDownloading}
+                  aria-label="Download file"
+                >
+                  <IconDownload className="h-3.5 w-3.5" />
+                  {isDownloading ? "Downloading…" : "Download"}
+                </button>
+              ) : null}
+            </div>
               </div>
               <div className="h-[calc(100%-36px)] min-h-0 overflow-y-auto">
                 {selectedFileLoading ? (
