@@ -512,9 +512,9 @@ export default function ProjectTaskDetailPage() {
                                         ref={descriptionRef}
                                         className={cn(
                                             DOCUMENT_PROSE_CLASSNAME,
-                                            isDescriptionOverflowing &&
-                                                !isDescriptionExpanded &&
-                                                "max-h-[240px] overflow-hidden",
+                                            isDescriptionExpanded
+                                                ? "max-h-[420px] overflow-y-auto pr-2"
+                                                : "max-h-[240px] overflow-hidden",
                                         )}
                                         onClickCapture={
                                             handleWorkspaceLinkClickCapture

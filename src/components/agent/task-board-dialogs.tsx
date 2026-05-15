@@ -27,7 +27,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { RichTextMarkdownInput } from "@/components/agent/rich-text-markdown-input";
 
 type TaskFormValues = {
@@ -151,7 +150,7 @@ export function CreateTaskDialog({ onCreate, trigger }: CreateTaskDialogProps) {
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="max-w-xl">
+            <DialogContent className="max-h-[calc(100vh-2rem)] max-w-xl overflow-hidden">
                 <DialogHeader>
                     <DialogTitle className="text-base font-normal">
                         Create Task
@@ -160,13 +159,15 @@ export function CreateTaskDialog({ onCreate, trigger }: CreateTaskDialogProps) {
                         Keep this simple. Add the task title and a short brief.
                     </DialogDescription>
                 </DialogHeader>
-                <TaskForm
-                    values={values}
-                    onChange={setValues}
-                    files={files}
-                    onFilesChange={setFiles}
-                />
-                <DialogFooter>
+                <div className="min-h-0 overflow-y-auto pr-1">
+                    <TaskForm
+                        values={values}
+                        onChange={setValues}
+                        files={files}
+                        onFilesChange={setFiles}
+                    />
+                </div>
+                <DialogFooter className="shrink-0">
                     <Button
                         variant="outline"
                         className="font-normal"
@@ -252,7 +253,7 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
                     Edit task
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-xl">
+            <DialogContent className="max-h-[calc(100vh-2rem)] max-w-xl overflow-hidden">
                 <DialogHeader>
                     <DialogTitle className="text-base font-normal">
                         Edit Task
@@ -262,13 +263,15 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
                         assignment history.
                     </DialogDescription>
                 </DialogHeader>
-                <TaskForm
-                    values={values}
-                    onChange={setValues}
-                    files={files}
-                    onFilesChange={setFiles}
-                />
-                <DialogFooter>
+                <div className="min-h-0 overflow-y-auto pr-1">
+                    <TaskForm
+                        values={values}
+                        onChange={setValues}
+                        files={files}
+                        onFilesChange={setFiles}
+                    />
+                </div>
+                <DialogFooter className="shrink-0">
                     <Button
                         variant="outline"
                         className="font-normal"
@@ -330,7 +333,7 @@ function TaskForm({
                     value={values.description}
                     onChange={(value) => setField("description", value)}
                     placeholder="Describe the task and the expected outcome."
-                    className="rounded-md border border-input bg-transparent px-3 py-2"
+                    className="max-h-[260px] overflow-y-auto rounded-md border border-input bg-transparent px-3 py-2"
                     contentClassName="min-h-[120px] text-sm leading-relaxed text-foreground prose-p:text-foreground prose-li:text-foreground prose-a:text-foreground"
                 />
             </div>
