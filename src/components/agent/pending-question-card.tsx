@@ -23,9 +23,26 @@ export function PendingQuestionCard({ pending, onSubmit, busy }: Props) {
     const [draft, setDraft] = React.useState<Record<string, AnswerValue | undefined>>({});
     const [error, setError] = React.useState<string | null>(null);
     const [submitting, setSubmitting] = React.useState(false);
+    const [freeformDraft, setFreeformDraft] = React.useState("");
+    const [freeformMode, setFreeformMode] = React.useState(false);
 
     const setAnswer = (id: string, value: AnswerValue) => {
         setDraft((prev) => ({ ...prev, [id]: value }));
+    };
+
+    const submitWith = async (submission: AnswerSubmission) => {
+        setError(null);
+        setSubmitting(true);
+        try {
+            await onSubmit(submission);
+            setDraft({});
+            setFreeformDraft("");
+            setFreeformMode(false);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to submit");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleSubmit = async () => {
@@ -38,16 +55,16 @@ export function PendingQuestionCard({ pending, onSubmit, busy }: Props) {
             }
             answers.push({ question_id: q.id, value });
         }
-        setError(null);
-        setSubmitting(true);
-        try {
-            await onSubmit({ answers });
-            setDraft({});
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to submit");
-        } finally {
-            setSubmitting(false);
+        await submitWith({ answers });
+    };
+
+    const handleFreeformSubmit = async () => {
+        const text = freeformDraft.trim();
+        if (text === "") {
+            setError("Type a message before sending.");
+            return;
         }
+        await submitWith({ freeform_text: text });
     };
 
     return (
@@ -58,21 +75,47 @@ export function PendingQuestionCard({ pending, onSubmit, busy }: Props) {
                     <div className="text-sm text-muted-foreground">{pending.context}</div>
                 ) : null}
             </div>
-            <div className="space-y-4">
-                {pending.questions.map((q) => (
-                    <QuestionField
-                        key={q.id}
-                        question={q}
-                        value={draft[q.id]}
-                        onChange={(v) => setAnswer(q.id, v)}
+            {freeformMode ? (
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium">Reply in your own words</Label>
+                    <textarea
+                        className="min-h-[96px] w-full rounded-md border border-border/60 bg-background p-2 text-sm"
+                        placeholder="Type whatever you want the agent to know — it'll skip the form."
+                        maxLength={4000}
+                        value={freeformDraft}
+                        onChange={(e) => setFreeformDraft(e.target.value)}
                     />
-                ))}
-            </div>
-            {error ? (
-                <div className="text-sm text-destructive">{error}</div>
-            ) : null}
-            <div className="flex justify-end">
-                <Button onClick={handleSubmit} disabled={busy || submitting}>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {pending.questions.map((q) => (
+                        <QuestionField
+                            key={q.id}
+                            question={q}
+                            value={draft[q.id]}
+                            onChange={(v) => setAnswer(q.id, v)}
+                        />
+                    ))}
+                </div>
+            )}
+            {error ? <div className="text-sm text-destructive">{error}</div> : null}
+            <div className="flex items-center justify-between gap-2">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={busy || submitting}
+                    onClick={() => {
+                        setError(null);
+                        setFreeformMode((v) => !v);
+                    }}
+                >
+                    {freeformMode ? "Use the form instead" : "Reply freely"}
+                </Button>
+                <Button
+                    onClick={freeformMode ? handleFreeformSubmit : handleSubmit}
+                    disabled={busy || submitting}
+                >
                     {submitting ? "Submitting…" : "Submit"}
                 </Button>
             </div>

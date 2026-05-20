@@ -32,6 +32,8 @@ export function ClarificationRequestCard({
     const [draft, setDraft] = React.useState<Record<string, AnswerValue | undefined>>({});
     const [error, setError] = React.useState<string | null>(null);
     const [expanded, setExpanded] = React.useState(false);
+    const [freeformDraft, setFreeformDraft] = React.useState("");
+    const [freeformMode, setFreeformMode] = React.useState(false);
 
     if (!response && expired) {
         return (
@@ -64,7 +66,21 @@ export function ClarificationRequestCard({
     }
 
     if (response) {
-        const answersById = new Map(response.answers.map((a) => [a.question_id, a.value]));
+        if (response.freeform_text) {
+            return (
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+                    <div className="text-xs text-muted-foreground">
+                        Replied freely (skipped the form)
+                    </div>
+                    <div className="mt-1 whitespace-pre-wrap text-sm">
+                        {response.freeform_text}
+                    </div>
+                </div>
+            );
+        }
+        const answersById = new Map(
+            (response.answers ?? []).map((a) => [a.question_id, a.value]),
+        );
         return (
             <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
                 <button
@@ -124,6 +140,22 @@ export function ClarificationRequestCard({
         }
     };
 
+    const handleFreeformSubmit = async () => {
+        const text = freeformDraft.trim();
+        if (text === "") {
+            setError("Type a message before sending.");
+            return;
+        }
+        setError(null);
+        try {
+            await onSubmit({ freeform_text: text });
+            setFreeformDraft("");
+            setFreeformMode(false);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to submit");
+        }
+    };
+
     return (
         <div className="space-y-4 rounded-lg border border-border/60 bg-accent/10 p-4">
             <div className="space-y-1">
@@ -132,21 +164,50 @@ export function ClarificationRequestCard({
                     <div className="text-sm text-muted-foreground">{content.context}</div>
                 ) : null}
             </div>
-            <div className="space-y-4">
-                {content.questions.map((q) => (
-                    <QuestionField
-                        key={q.id}
-                        question={q}
-                        value={draft[q.id]}
+            {freeformMode ? (
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium">Reply in your own words</Label>
+                    <textarea
+                        className="min-h-[96px] w-full rounded-md border border-border/60 bg-background p-2 text-sm"
+                        placeholder="Type whatever you want the agent to know — it'll skip the form."
+                        maxLength={4000}
+                        value={freeformDraft}
                         disabled={!isActive || submitting}
-                        onChange={(v) => setAnswer(q.id, v)}
+                        onChange={(e) => setFreeformDraft(e.target.value)}
                     />
-                ))}
-            </div>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {content.questions.map((q) => (
+                        <QuestionField
+                            key={q.id}
+                            question={q}
+                            value={draft[q.id]}
+                            disabled={!isActive || submitting}
+                            onChange={(v) => setAnswer(q.id, v)}
+                        />
+                    ))}
+                </div>
+            )}
             {error ? <div className="text-sm text-destructive">{error}</div> : null}
             {isActive ? (
-                <div className="flex justify-end">
-                    <Button onClick={handleSubmit} disabled={submitting}>
+                <div className="flex items-center justify-between gap-2">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={submitting}
+                        onClick={() => {
+                            setError(null);
+                            setFreeformMode((v) => !v);
+                        }}
+                    >
+                        {freeformMode ? "Use the form instead" : "Reply freely"}
+                    </Button>
+                    <Button
+                        onClick={freeformMode ? handleFreeformSubmit : handleSubmit}
+                        disabled={submitting}
+                    >
                         {submitting ? "Submitting…" : "Submit"}
                     </Button>
                 </div>

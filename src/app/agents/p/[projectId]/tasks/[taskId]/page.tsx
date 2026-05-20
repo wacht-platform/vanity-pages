@@ -7,6 +7,7 @@ import type {
     ActorProject,
     ProjectTaskBoardItemAssignment,
     ProjectTaskBoardItem,
+    ProjectTaskDeliverable,
     ProjectTaskSchedule,
     ProjectTaskWorkspaceFileEntry,
 } from "@wacht/types";
@@ -32,7 +33,7 @@ import { cn } from "@/lib/utils";
 
 type TaskPaneSelection = { kind: "assignment"; assignmentId: string };
 
-type TaskSurfaceTab = "assignments" | "files" | "comments";
+type TaskSurfaceTab = "assignments" | "deliverables" | "files" | "comments";
 
 const WORKSPACE_PATH_PATTERN = /\/(?:task|workspace)\/[A-Za-z0-9._/-]+/g;
 const WORKSPACE_PATH_CHECK_PATTERN = /^\/(?:task|workspace)\/[A-Za-z0-9._/-]+$/;
@@ -238,6 +239,112 @@ function remarkWorkspaceLinks() {
     return (tree: MarkdownNode) => {
         transformWorkspaceLinks(tree);
     };
+}
+
+function DeliverablesPanel({
+    deliverables,
+    onArtifactClick,
+}: {
+    deliverables?: ProjectTaskDeliverable[];
+    onArtifactClick: (path: string) => void;
+}) {
+    const entries = React.useMemo(() => {
+        if (!deliverables || deliverables.length === 0) return [];
+        return [...deliverables].sort(
+            (a, b) => timestampValue(b.at) - timestampValue(a.at),
+        );
+    }, [deliverables]);
+
+    if (entries.length === 0) {
+        return (
+            <div className="flex flex-1 items-center justify-center px-4 py-12 text-sm text-muted-foreground">
+                No deliverables recorded yet. They appear here once a task
+                completion is marked.
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex-1 overflow-y-auto px-4 py-4 md:px-5">
+            <div className="mx-auto max-w-3xl space-y-4">
+                {entries.map((entry, idx) => (
+                    <div
+                        key={`${entry.assignment_id}-${idx}`}
+                        className="rounded-md border border-border/60 bg-card/30 p-4"
+                    >
+                        <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                            <span className="text-sm font-normal text-foreground">
+                                {entry.by_agent_name || "agent"}
+                            </span>
+                            <span className="text-xs text-muted-foreground/70">
+                                {formatTime(entry.at)}
+                            </span>
+                            <span className="text-xs text-muted-foreground/50">
+                                · assignment #{entry.assignment_id}
+                            </span>
+                        </div>
+                        {entry.result_summary ? (
+                            <p className="mb-3 text-sm leading-relaxed text-foreground/90">
+                                {entry.result_summary}
+                            </p>
+                        ) : null}
+                        {entry.artifacts && entry.artifacts.length > 0 ? (
+                            <div className="mb-3">
+                                <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
+                                    Artifacts
+                                </div>
+                                <ul className="space-y-1">
+                                    {entry.artifacts.map((path) => (
+                                        <li key={path}>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    onArtifactClick(path)
+                                                }
+                                                className="text-left text-sm text-foreground/90 underline-offset-2 hover:underline"
+                                            >
+                                                {path}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : null}
+                        {entry.findings ? (
+                            <div className="mb-2 text-sm">
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground/70">
+                                    Findings:
+                                </span>{" "}
+                                <span className="text-foreground/90">
+                                    {entry.findings}
+                                </span>
+                            </div>
+                        ) : null}
+                        {entry.cautions ? (
+                            <div className="mb-2 text-sm">
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground/70">
+                                    Cautions:
+                                </span>{" "}
+                                <span className="text-foreground/90">
+                                    {entry.cautions}
+                                </span>
+                            </div>
+                        ) : null}
+                        {entry.next ? (
+                            <div className="text-sm">
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground/70">
+                                    Next:
+                                </span>{" "}
+                                <span className="text-foreground/90">
+                                    {entry.next}
+                                </span>
+                            </div>
+                        ) : null}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }
 
 export default function ProjectTaskDetailPage() {
@@ -594,6 +701,7 @@ export default function ProjectTaskDetailPage() {
                                 {(
                                     [
                                         "assignments",
+                                        "deliverables",
                                         "files",
                                         "comments",
                                     ] as const
@@ -633,6 +741,14 @@ export default function ProjectTaskDetailPage() {
                             <TaskCommentsPanel
                                 projectId={projectId}
                                 taskId={taskId}
+                            />
+                        ) : activeTab === "deliverables" ? (
+                            <DeliverablesPanel
+                                deliverables={item.deliverables}
+                                onArtifactClick={(path) => {
+                                    setRequestedWorkspacePath(path);
+                                    setActiveTab("files");
+                                }}
                             />
                         ) : (
                             <div className="flex min-h-0 flex-1">

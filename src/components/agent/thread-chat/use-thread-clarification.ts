@@ -59,7 +59,8 @@ export function useThreadClarification({
       map.set(requestId, {
         type: "clarification_response",
         request_message_id: requestId,
-        answers: submission.answers,
+        answers: submission.answers ?? [],
+        freeform_text: submission.freeform_text,
       });
     }
     return map;
