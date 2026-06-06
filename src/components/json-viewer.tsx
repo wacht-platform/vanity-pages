@@ -5,10 +5,19 @@ import { ChevronRight, ChevronDown } from "lucide-react"
 
 interface JsonViewerProps {
     data: any
-    level?: number
 }
 
-export function JsonViewer({ data, level = 0 }: JsonViewerProps) {
+// Design `.json` syntax palette (Wacht SDK surfaces).
+const C = {
+    key: "text-[#6e3bd3] dark:text-violet-400",
+    str: "text-[#0a7d4e] dark:text-emerald-400",
+    num: "text-[#b85c00] dark:text-amber-400",
+    bool: "text-[#2f6fdb] dark:text-blue-400",
+    null: "italic text-muted-foreground/60",
+    punct: "text-muted-foreground/70",
+}
+
+export function JsonViewer({ data }: JsonViewerProps) {
     const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
     const toggleCollapse = (path: string) => {
@@ -21,23 +30,21 @@ export function JsonViewer({ data, level = 0 }: JsonViewerProps) {
         setCollapsed(newCollapsed)
     }
 
-    const renderValue = (value: any, key: string, path: string) => {
-        const indent = level * 16
-
+    const renderValue = (value: any, path: string) => {
         if (value === null) {
-            return <span className="text-purple-600 dark:text-purple-400">null</span>
+            return <span className={C.null}>null</span>
         }
 
         if (typeof value === "boolean") {
-            return <span className="text-purple-600 dark:text-purple-400">{value.toString()}</span>
+            return <span className={C.bool}>{value.toString()}</span>
         }
 
         if (typeof value === "number") {
-            return <span className="text-green-600 dark:text-green-400">{value}</span>
+            return <span className={C.num}>{value}</span>
         }
 
         if (typeof value === "string") {
-            return <span className="text-orange-600 dark:text-yellow-400">"{value}"</span>
+            return <span className={C.str}>&quot;{value}&quot;</span>
         }
 
         if (Array.isArray(value)) {
@@ -46,23 +53,21 @@ export function JsonViewer({ data, level = 0 }: JsonViewerProps) {
                 <div>
                     <button
                         onClick={() => toggleCollapse(path)}
-                        className="inline-flex items-center gap-1 hover:bg-muted/50 dark:hover:bg-white/5 rounded px-1 -ml-1 transition-colors"
+                        className="-ml-1 inline-flex items-center gap-1 rounded px-1 transition-colors hover:bg-muted/50 dark:hover:bg-white/5"
                     >
                         {isCollapsed ? (
-                            <ChevronRight className="w-3 h-3 text-muted-foreground/50" />
+                            <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
                         ) : (
-                            <ChevronDown className="w-3 h-3 text-muted-foreground/50" />
+                            <ChevronDown className="h-3 w-3 text-muted-foreground/40" />
                         )}
-                        <span className="text-muted-foreground/60">[{value.length}]</span>
+                        <span className={C.punct}>[{value.length}]</span>
                     </button>
                     {!isCollapsed && (
-                        <div className="ml-4 border-l border-border/20 dark:border-white/10 pl-3 mt-1">
+                        <div className="ml-2 pl-3">
                             {value.map((item, index) => (
-                                <div key={index} className="mb-1">
-                                    <span className="text-blue-600 dark:text-blue-400">{index}</span>
-                                    <span className="text-muted-foreground/40">: </span>
-                                    {renderValue(item, index.toString(), `${path}.${index}`)}
-                                    {index < value.length - 1 && <span className="text-muted-foreground/40">,</span>}
+                                <div key={index}>
+                                    {renderValue(item, `${path}.${index}`)}
+                                    {index < value.length - 1 && <span className={C.punct}>,</span>}
                                 </div>
                             ))}
                         </div>
@@ -78,23 +83,23 @@ export function JsonViewer({ data, level = 0 }: JsonViewerProps) {
                 <div>
                     <button
                         onClick={() => toggleCollapse(path)}
-                        className="inline-flex items-center gap-1 hover:bg-muted/50 dark:hover:bg-white/5 rounded px-1 -ml-1 transition-colors"
+                        className="-ml-1 inline-flex items-center gap-1 rounded px-1 transition-colors hover:bg-muted/50 dark:hover:bg-white/5"
                     >
                         {isCollapsed ? (
-                            <ChevronRight className="w-3 h-3 text-muted-foreground/50" />
+                            <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
                         ) : (
-                            <ChevronDown className="w-3 h-3 text-muted-foreground/50" />
+                            <ChevronDown className="h-3 w-3 text-muted-foreground/40" />
                         )}
-                        <span className="text-muted-foreground/60">{`{${keys.length}}`}</span>
+                        <span className={C.punct}>{`{${keys.length}}`}</span>
                     </button>
                     {!isCollapsed && (
-                        <div className="ml-4 border-l border-border/20 dark:border-white/10 pl-3 mt-1">
+                        <div className="ml-2 pl-3">
                             {keys.map((objKey, index) => (
-                                <div key={objKey} className="mb-1">
-                                    <span className="text-blue-600 dark:text-blue-400">"{objKey}"</span>
-                                    <span className="text-muted-foreground/40">: </span>
-                                    {renderValue(value[objKey], objKey, `${path}.${objKey}`)}
-                                    {index < keys.length - 1 && <span className="text-muted-foreground/40">,</span>}
+                                <div key={objKey}>
+                                    <span className={C.key}>&quot;{objKey}&quot;</span>
+                                    <span className={C.punct}>: </span>
+                                    {renderValue(value[objKey], `${path}.${objKey}`)}
+                                    {index < keys.length - 1 && <span className={C.punct}>,</span>}
                                 </div>
                             ))}
                         </div>
@@ -107,39 +112,39 @@ export function JsonViewer({ data, level = 0 }: JsonViewerProps) {
     }
 
     return (
-        <div className="text-xs font-mono leading-relaxed min-w-0 break-all whitespace-pre-wrap">
+        <div className="min-w-0 whitespace-pre-wrap break-all font-mono text-[12px] leading-[1.55]">
             {typeof data === "object" && data !== null ? (
                 Array.isArray(data) ? (
                     <div>
-                        <span className="text-muted-foreground/40">[</span>
-                        <div className="ml-4 border-l border-border/20 dark:border-white/10 pl-3">
+                        <span className={C.punct}>[</span>
+                        <div className="ml-2 pl-3">
                             {data.map((item, index) => (
-                                <div key={index} className="my-1">
-                                    {renderValue(item, index.toString(), index.toString())}
-                                    {index < data.length - 1 && <span className="text-muted-foreground/40">,</span>}
+                                <div key={index}>
+                                    {renderValue(item, index.toString())}
+                                    {index < data.length - 1 && <span className={C.punct}>,</span>}
                                 </div>
                             ))}
                         </div>
-                        <span className="text-muted-foreground/40">]</span>
+                        <span className={C.punct}>]</span>
                     </div>
                 ) : (
                     <div>
-                        <span className="text-muted-foreground/40">{"{"}</span>
-                        <div className="ml-4 border-l border-border/20 dark:border-white/10 pl-3">
+                        <span className={C.punct}>{"{"}</span>
+                        <div className="ml-2 pl-3">
                             {Object.entries(data).map(([key, value], index, arr) => (
-                                <div key={key} className="my-1">
-                                    <span className="text-blue-600 dark:text-blue-400">"{key}"</span>
-                                    <span className="text-muted-foreground/40">: </span>
-                                    {renderValue(value, key, key)}
-                                    {index < arr.length - 1 && <span className="text-muted-foreground/40">,</span>}
+                                <div key={key}>
+                                    <span className={C.key}>&quot;{key}&quot;</span>
+                                    <span className={C.punct}>: </span>
+                                    {renderValue(value, key)}
+                                    {index < arr.length - 1 && <span className={C.punct}>,</span>}
                                 </div>
                             ))}
                         </div>
-                        <span className="text-muted-foreground/40">{"}"}</span>
+                        <span className={C.punct}>{"}"}</span>
                     </div>
                 )
             ) : (
-                renderValue(data, "", "")
+                renderValue(data, "")
             )}
         </div>
     )
