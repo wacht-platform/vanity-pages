@@ -17,33 +17,38 @@ type Props = {
 
 export function EndpointTrafficChart({ loading, data }: Props) {
 	return (
-		<div className="flex flex-col overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
-			<div className="flex items-center justify-between border-b border-border/40 bg-secondary/40 px-4 py-3">
-				<h3 className="text-sm font-normal text-foreground">Traffic Volume</h3>
-				<span className="text-xs text-muted-foreground">Daily</span>
+		<section className="rounded-[10px] border border-border bg-card p-[18px]">
+			<div className="mb-3.5 flex items-start justify-between gap-4">
+				<div>
+					<h3 className="text-[14px] font-medium leading-[1.2] text-foreground">Traffic volume</h3>
+					<p className="mt-1 text-[12px] text-muted-foreground">Deliveries per day · UTC</p>
+				</div>
+				<div className="flex flex-wrap items-center gap-3.5">
+					<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+						<span className="size-2 rounded-full bg-emerald-500" />
+						Successful
+					</span>
+					<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+						<span className="size-2 rounded-full bg-destructive" />
+						Failed
+					</span>
+					<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+						<span className="size-2 rounded-full bg-amber-500" />
+						Filtered
+					</span>
+					<span className="inline-flex h-6 items-center rounded-[4px] border border-border bg-secondary px-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+						Daily
+					</span>
+				</div>
 			</div>
-			<div className="px-4 pt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-				<span className="inline-flex items-center gap-1.5">
-					<span className="w-2 h-2 rounded-full bg-green-600" />
-					Successful
-				</span>
-				<span className="inline-flex items-center gap-1.5">
-					<span className="w-2 h-2 rounded-full bg-red-500" />
-					Failed
-				</span>
-				<span className="inline-flex items-center gap-1.5">
-					<span className="w-2 h-2 rounded-full bg-yellow-500" />
-					Filtered
-				</span>
-			</div>
-			<div className="p-4 h-[320px]">
+			<div className="h-[300px]">
 				{loading ? (
-					<div className="h-full flex items-center justify-center text-sm text-muted-foreground">Loading...</div>
+					<div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading...</div>
 				) : (
 					<ResponsiveContainer width="100%" height="100%">
 						<BarChart data={data} barCategoryGap="18%" margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
-							<CartesianGrid strokeDasharray="3 3" className="stroke-border/20" vertical={false} />
-							<XAxis dataKey="time" axisLine={false} tickLine={false} dy={10} minTickGap={20} interval="preserveStartEnd" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+							<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+							<XAxis dataKey="time" axisLine={false} tickLine={false} dy={8} minTickGap={20} interval="preserveStartEnd" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
 							<YAxis axisLine={false} tickLine={false} dx={-8} allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
 							<Tooltip
 								cursor={false}
@@ -74,6 +79,6 @@ export function EndpointTrafficChart({ loading, data }: Props) {
 					</ResponsiveContainer>
 				)}
 			</div>
-		</div>
+		</section>
 	)
 }

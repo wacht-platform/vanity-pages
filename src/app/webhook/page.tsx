@@ -165,8 +165,18 @@ export default function WebhookPage() {
 
 	return (
 		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-				<h1 className="text-lg font-normal text-foreground">Overview</h1>
+			<div className="mb-[22px] flex flex-col items-start justify-between gap-4 sm:flex-row">
+				<div className="min-w-0">
+					<div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+						Webhooks
+					</div>
+					<h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+						Overview
+					</h1>
+					<p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+						Volume and reliability across all endpoints.
+					</p>
+				</div>
 				<DateRangePicker
 					value={dateRange}
 					onChange={(range) => {
@@ -180,11 +190,11 @@ export default function WebhookPage() {
 			</div>
 
 			<div className="space-y-6">
-				<section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
-					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
-						Operations Snapshot
+				<section className="overflow-hidden rounded-[10px] border border-border bg-card">
+					<div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+						Operations snapshot
 					</div>
-					<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
+					<div className="grid grid-cols-2 divide-x divide-y divide-border lg:grid-cols-4 lg:divide-y-0">
 						<Metric label="Total Deliveries" value={analyticsLoading ? "-" : formatNumber(analytics?.total_deliveries)} />
 						<Metric label="Total Events" value={analyticsLoading ? "-" : formatNumber(analytics?.total_events)} />
 						<Metric
@@ -199,26 +209,35 @@ export default function WebhookPage() {
 					</div>
 				</section>
 
-				<section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
-					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3 flex items-center justify-between">
-						<h2 className="text-sm font-normal text-foreground">Traffic Timeline</h2>
-						<span className="text-xs text-muted-foreground">Daily</span>
+				<section className="rounded-[10px] border border-border bg-card p-[18px]">
+					<div className="mb-3.5 flex items-start justify-between gap-4">
+						<div>
+							<h3 className="text-[14px] font-medium leading-[1.2] text-foreground">
+								Traffic timeline
+							</h3>
+							<p className="mt-1 text-[12px] text-muted-foreground">
+								Daily aggregate · UTC
+							</p>
+						</div>
+						<div className="flex flex-wrap items-center gap-3.5">
+							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+								<span className="size-2 rounded-full bg-emerald-500" />
+								Successful
+							</span>
+							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+								<span className="size-2 rounded-full bg-destructive" />
+								Failed
+							</span>
+							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+								<span className="size-2 rounded-full bg-amber-500" />
+								Filtered
+							</span>
+							<span className="inline-flex h-6 items-center rounded-[4px] border border-border bg-secondary px-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+								Daily
+							</span>
+						</div>
 					</div>
-					<div className="px-4 pt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-emerald-500" />
-							Successful
-						</span>
-						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-rose-500" />
-							Failed
-						</span>
-						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-amber-500" />
-							Filtered
-						</span>
-					</div>
-					<div className="p-4 h-[320px]">
+					<div className="h-[300px]">
 						{timeseriesLoading ? (
 							<div className="h-full space-y-3">
 								<Skeleton className="h-4 w-24" />
@@ -304,31 +323,29 @@ export default function WebhookPage() {
 				</section>
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<section className="border border-border/60 rounded-xl overflow-hidden">
-						<div className="px-4 py-3 border-b border-border/60 text-xs uppercase tracking-wide text-muted-foreground">Latency Percentiles</div>
-						<div className="grid grid-cols-3 divide-x divide-border/60">
+					<section className="overflow-hidden rounded-[10px] border border-border bg-card">
+						<div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Latency percentiles</div>
+						<div className="grid grid-cols-3 divide-x divide-border">
 							<Metric label="P50" value={analyticsLoading ? "-" : `${Math.round(analytics?.p50_response_time_ms || 0)}ms`} compact />
 							<Metric label="P95" value={analyticsLoading ? "-" : `${Math.round(analytics?.p95_response_time_ms || 0)}ms`} compact />
 							<Metric label="P99" value={analyticsLoading ? "-" : `${Math.round(analytics?.p99_response_time_ms || 0)}ms`} compact />
 						</div>
 					</section>
 
-					<section className="border border-border/60 rounded-xl overflow-hidden">
-						<div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
-							<h2 className="text-sm font-normal text-foreground">Workspace Totals</h2>
-						</div>
-						<div className="grid grid-cols-2 divide-x divide-border/60">
+					<section className="overflow-hidden rounded-[10px] border border-border bg-card">
+						<div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Workspace totals</div>
+						<div className="grid grid-cols-2 divide-x divide-border">
 							<Metric label="Active Endpoints" value={statsLoading ? "-" : formatNumber(stats?.endpoint_count)} href="/webhook/endpoints" compact />
 							<Metric label="Webhook Events" value={statsLoading ? "-" : formatNumber(stats?.event_count)} href="/webhook/events" compact />
 						</div>
 					</section>
 				</div>
 
-				<section className="border border-border/60 rounded-xl overflow-hidden">
-					<div className="px-4 py-3 border-b border-border/60 text-sm font-normal text-foreground">Signing Secret</div>
-					<div className="p-4 space-y-3">
-						<div className="flex items-center gap-2 flex-nowrap">
-							<code className="flex-1 min-w-0 text-xs text-foreground/80 bg-muted/30 px-3 py-2 rounded border border-border/60 truncate">
+				<section className="overflow-hidden rounded-[10px] border border-border bg-card">
+					<div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Signing secret</div>
+					<div className="space-y-3 p-[18px]">
+						<div className="flex flex-nowrap items-center gap-2">
+							<code className="min-w-0 flex-1 truncate rounded-[6px] border border-border bg-foreground/[0.04] px-3 py-2 font-mono text-[12px] text-foreground/80">
 								{webhookApp?.signing_secret}
 							</code>
 							<Button
@@ -404,15 +421,15 @@ function Metric({
 }) {
 	const content = (
 		<div className={cn(
-			"px-4 transition-colors group/metric",
-			compact ? "py-4" : "py-3",
-			href && "hover:bg-muted/5 cursor-pointer"
+			"group/metric flex flex-col gap-1.5",
+			compact ? "px-[18px] py-[14px]" : "px-[22px] py-[18px]",
+			href && "cursor-pointer transition-colors hover:bg-accent/40"
 		)}>
 			<div className="flex items-center justify-between">
-				<div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-				{href && <ArrowUpRight className="w-3 h-3 text-muted-foreground/0 group-hover/metric:text-muted-foreground/70 transition-all" />}
+				<div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{label}</div>
+				{href && <ArrowUpRight className="h-3 w-3 text-muted-foreground/0 transition-all group-hover/metric:text-muted-foreground/70" />}
 			</div>
-			<div className={cn(compact ? "text-lg mt-1" : "text-base mt-1", "text-foreground", valueClass)}>{value}</div>
+			<div className={cn(compact ? "text-[18px]" : "text-[24px]", "font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground", valueClass)}>{value}</div>
 		</div>
 	)
 

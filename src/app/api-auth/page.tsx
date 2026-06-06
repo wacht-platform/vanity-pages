@@ -237,10 +237,17 @@ export default function ApiAuthLandingPage() {
 
 	return (
 		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-				<div className="flex items-center gap-2">
-					<h1 className="text-lg font-normal text-foreground">Overview</h1>
-
+			<div className="mb-[22px] flex flex-col items-start justify-between gap-4 sm:flex-row">
+				<div className="min-w-0">
+					<div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+						API keys
+					</div>
+					<h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+						Overview
+					</h1>
+					<p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+						Request volume and reliability across all credentials.
+					</p>
 				</div>
 				<DateRangePicker
 					value={dateRange}
@@ -255,34 +262,43 @@ export default function ApiAuthLandingPage() {
 			</div>
 
 			<div className="space-y-6">
-				<section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
-					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
-						Operations Snapshot
+				<section className="overflow-hidden rounded-[10px] border border-border bg-card">
+					<div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+						Operations snapshot
 					</div>
-					<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
-						<Metric label="Total Requests" value={analyticsLoading ? "-" : formatNumber(analytics?.total_requests)} />
-						<Metric label="Allowed" value={analyticsLoading ? "-" : formatNumber(analytics?.allowed_requests)} />
-						<Metric label="Blocked" value={analyticsLoading ? "-" : formatNumber(analytics?.blocked_requests)} />
-						<Metric label="Keys Used (24h)" value={analyticsLoading ? "-" : formatNumber(analytics?.keys_used_24h)} />
+					<div className="grid grid-cols-2 divide-x divide-y divide-border lg:grid-cols-4 lg:divide-y-0">
+						<Metric label="total requests" value={analyticsLoading ? "—" : formatNumber(analytics?.total_requests)} foot="all keys combined" />
+						<Metric label="allowed" value={analyticsLoading ? "—" : formatNumber(analytics?.allowed_requests)} foot="signed successfully" valueClass="text-emerald-600 dark:text-emerald-400" />
+						<Metric label="blocked" value={analyticsLoading ? "—" : formatNumber(analytics?.blocked_requests)} foot="scope or rate violations" />
+						<Metric label="keys used · 24h" value={analyticsLoading ? "—" : formatNumber(analytics?.keys_used_24h)} foot="active credentials" />
 					</div>
 				</section>
 
-				<section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
-					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3 flex items-center justify-between">
-						<h2 className="text-sm font-normal text-foreground">Traffic Volume</h2>
-						<span className="text-xs text-muted-foreground">Daily</span>
+				<section className="rounded-[10px] border border-border bg-card p-[18px]">
+					<div className="mb-3.5 flex items-start justify-between gap-4">
+						<div>
+							<h3 className="text-[14px] font-medium leading-[1.2] text-foreground">
+								Traffic volume
+							</h3>
+							<p className="mt-1 text-[12px] text-muted-foreground">
+								Daily aggregate
+							</p>
+						</div>
+						<div className="flex items-center gap-3.5">
+							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+								<span className="size-2 rounded-full bg-emerald-500" />
+								Allowed
+							</span>
+							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+								<span className="size-2 rounded-full bg-destructive" />
+								Blocked
+							</span>
+							<span className="inline-flex h-6 items-center rounded-[4px] border border-border bg-secondary px-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+								Daily
+							</span>
+						</div>
 					</div>
-					<div className="px-4 pt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-emerald-500" />
-							Allowed
-						</span>
-						<span className="inline-flex items-center gap-1.5">
-							<span className="w-2 h-2 rounded-full bg-rose-500" />
-							Blocked
-						</span>
-					</div>
-					<div className="p-4 h-[320px]">
+					<div className="h-[300px]">
 						{timeseriesLoading ? (
 							<div className="h-full space-y-3">
 								<Skeleton className="h-4 w-24" />
@@ -467,18 +483,32 @@ export default function ApiAuthLandingPage() {
 function Metric({
 	label,
 	value,
-	compact = false,
+	foot,
 	valueClass,
 }: {
 	label: string
 	value: string
-	compact?: boolean
+	foot?: string
 	valueClass?: string
 }) {
 	return (
-		<div className={cn("px-4", compact ? "py-4" : "py-3", "bg-transparent")}>
-			<div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-			<div className={cn(compact ? "text-lg mt-1" : "text-2xl mt-1", "text-foreground font-normal tracking-tight", valueClass)}>{value}</div>
+		<div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
+			<div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+				{label}
+			</div>
+			<div
+				className={cn(
+					"text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground",
+					valueClass,
+				)}
+			>
+				{value}
+			</div>
+			{foot ? (
+				<div className="font-mono text-[11px] leading-[1.4] text-muted-foreground/70">
+					{foot}
+				</div>
+			) : null}
 		</div>
 	)
 }

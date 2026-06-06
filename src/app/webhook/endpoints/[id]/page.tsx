@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, use } from "react"
 import { useWebhookDeliveries, useWebhookAnalytics, useWebhookTimeseries, useWebhookEndpoints } from "@wacht/nextjs"
 import type { EndpointWithSubscriptions } from "@wacht/types"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
@@ -440,399 +439,378 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 
 	if (!endpoint && !loading) {
 		return (
-			<div className="flex flex-col">
-				<div className="sticky top-14 z-30 flex h-12 items-center border-b border-border/60 bg-background/85 px-4 backdrop-blur md:px-6">
-					<Link href="/webhook/endpoints">
-						<Button variant="ghost" size="sm" className="h-8 gap-2" asChild>
-							<span className="flex items-center gap-2">
-								<ArrowLeft className="w-4 h-4" />
-								Back to Endpoints
-							</span>
-						</Button>
-					</Link>
-				</div>
-				<div className="flex-1 flex items-center justify-center">
-					<p className="text-muted-foreground">Endpoint not found</p>
+			<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
+				<Link
+					href="/webhook/endpoints"
+					className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+				>
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Back to endpoints
+				</Link>
+				<div className="mt-10 rounded-[10px] border border-dashed border-border bg-muted/30 py-16 text-center">
+					<p className="text-sm text-muted-foreground">Endpoint not found</p>
 				</div>
 			</div>
 		)
 	}
 
+	const subscribedCount = endpoint?.subscribed_events.length ?? 0
+
 	return (
-		<div className="flex flex-col">
-			<div className="sticky top-14 z-30 flex h-12 items-center justify-between border-b border-border/60 bg-background/85 px-4 backdrop-blur md:px-6">
-				<div className="flex items-center gap-2 text-sm text-muted-foreground">
-					<span className="text-foreground font-medium text-xs md:text-sm max-w-[150px] sm:max-w-[300px] truncate">{endpoint?.url}</span>
-				</div>
-				<div className="flex items-center gap-2">
-					<Popover>
-						<PopoverTrigger asChild>
-							<Button variant="outline" size="sm" className="h-8 w-8 p-0 border-border/60" aria-label="Endpoint actions">
-								<MoreHorizontal className="w-3.5 h-3.5" />
-							</Button>
-						</PopoverTrigger>
-						<PopoverContent align="end" className="w-[140px] p-1.5 bg-popover border-border">
-							<div className="space-y-1">
+		<div className="mx-auto w-full max-w-7xl space-y-[18px] px-4 py-6 md:px-6 md:py-8">
+			<Link
+				href="/webhook/endpoints"
+				className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+			>
+				<ArrowLeft className="h-3.5 w-3.5" />
+				Back to endpoints
+			</Link>
+
+			{/* Endpoint header card */}
+			<section className="rounded-[10px] border border-border bg-card p-[22px]">
+				<div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+					<div className="min-w-0 flex-1">
+						<div className="mb-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+							Endpoint · {endpointId}
+						</div>
+						<div className="mb-2 truncate font-mono text-[16px] font-medium text-foreground" title={endpoint?.url}>
+							{endpoint?.url}
+						</div>
+						<div className="flex flex-wrap items-center gap-2.5">
+							<span
+								className={cn(
+									"inline-flex h-[22px] items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
+									endpoint?.is_active
+										? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+										: "border-border bg-secondary text-muted-foreground",
+								)}
+							>
+								<span className={cn("size-1.5 rounded-full", endpoint?.is_active ? "bg-emerald-500" : "bg-muted-foreground/40")} />
+								{endpoint?.is_active ? "active" : "inactive"}
+							</span>
+							<span className="font-mono text-[11px] text-muted-foreground">
+								subscribed to {subscribedCount} {subscribedCount === 1 ? "event" : "events"}
+							</span>
+							{endpoint?.rate_limit_config && (
+								<span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+									<Zap className="h-3.5 w-3.5 text-muted-foreground/70" />
+									{endpoint.rate_limit_config.max_requests} / {endpoint.rate_limit_config.duration_ms === 1000 ? "sec" : endpoint.rate_limit_config.duration_ms === 60000 ? "min" : "hr"}
+								</span>
+							)}
+						</div>
+					</div>
+
+					<div className="flex shrink-0 flex-wrap items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							className="h-[30px]"
+							onClick={() => setTestDialogOpen(true)}
+							disabled={!endpoint?.is_active}
+						>
+							<Send className="mr-1.5 h-3.5 w-3.5" />
+							Test
+						</Button>
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button variant="outline" size="sm" className="size-[30px] p-0" aria-label="Endpoint actions">
+									<MoreHorizontal className="h-3.5 w-3.5" />
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent align="end" className="w-[150px] p-1">
 								<Button
 									variant="ghost"
 									size="sm"
 									className="h-8 w-full justify-start text-xs"
 									onClick={() => setEditDialogOpen(true)}
 								>
-									Edit
+									Edit configuration
 								</Button>
 								<Button
 									variant="ghost"
 									size="sm"
-									className="h-8 w-full justify-start text-xs text-red-500 hover:text-red-400 hover:bg-rose-500/10"
+									className="h-8 w-full justify-start text-xs text-destructive hover:text-destructive"
 									onClick={() => setDeleteDialogOpen(true)}
 								>
-									Delete
+									Delete endpoint
 								</Button>
-							</div>
-						</PopoverContent>
-					</Popover>
-					<div className="h-4 w-px bg-border/50 hidden md:block" />
-					<DateRangePicker
-						value={dateRange}
-						onChange={(range) => range?.from && setDateRange({ from: range.from, to: range.to })}
-					/>
-				</div>
-			</div>
-
-			<div className="mx-auto w-full max-w-7xl space-y-4 px-4 py-6 md:space-y-6 md:px-6 md:py-8">
-				<div className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
-					<div className="flex flex-col gap-4">
-						<div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-							<h2 className="text-base md:text-lg font-medium text-foreground break-all">{endpoint?.url}</h2>
-							<div className="flex items-center gap-3">
-								<div className={cn(
-									"flex items-center shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider font-normal",
-									endpoint?.is_active
-										? "bg-emerald-500/5 text-green-600 border-green-500/20"
-										: "bg-secondary/60 text-muted-foreground border-border/60"
-								)}>
-									{endpoint?.is_active ? "Active" : "Inactive"}
-								</div>
-
-								<div className="flex items-center gap-3 text-xs text-muted-foreground font-normal">
-									<span className="text-border/40">|</span>
-									<span>{endpoint?.subscribed_events.length} event{endpoint?.subscribed_events.length !== 1 ? 's' : ''}</span>
-
-									{endpoint?.rate_limit_config && (
-										<>
-											<span className="text-border/40">|</span>
-											<div className="flex items-center gap-1.5">
-												<Zap className="w-3.5 h-3.5 text-muted-foreground/70" />
-												<span>{endpoint.rate_limit_config.max_requests} / {endpoint.rate_limit_config.duration_ms === 1000 ? 'sec' : endpoint.rate_limit_config.duration_ms === 60000 ? 'min' : 'hr'}</span>
-											</div>
-										</>
-									)}
-								</div>
-							</div>
-							<div className="ml-auto">
-								<Button
-									variant="outline"
-									size="sm"
-									className="h-8 text-xs"
-									onClick={() => setTestDialogOpen(true)}
-									disabled={!endpoint?.is_active}
-								>
-									<Send className="w-3 h-3 mr-1.5" />
-									<span className="hidden sm:inline">Test</span>
-								</Button>
-							</div>
-						</div>
-
-						{endpoint?.description && (
-							<p className="text-sm text-muted-foreground font-normal max-w-3xl leading-relaxed">{endpoint.description}</p>
-						)}
-
-						<div className="flex flex-wrap gap-1.5 pt-1">
-							{endpoint?.subscribed_events.map((event: string) => (
-								<Badge key={event} variant="secondary" className="h-auto border-border/60 bg-secondary/60 px-2 py-0.5 text-xs font-normal text-muted-foreground">
-									{event}
-								</Badge>
-							))}
-						</div>
+							</PopoverContent>
+						</Popover>
+						<DateRangePicker
+							value={dateRange}
+							onChange={(range) => range?.from && setDateRange({ from: range.from, to: range.to })}
+						/>
 					</div>
 				</div>
 
-				<EndpointStatsGrid
-					analyticsLoading={analyticsLoading}
-					totalDeliveries={analytics?.total_deliveries}
-					successRate={analytics?.success_rate}
-					avgResponseTimeMs={analytics?.avg_response_time_ms}
-					failed={analytics?.failed}
-				/>
+				{endpoint?.description && (
+					<p className="mt-4 max-w-3xl text-[13px] leading-relaxed text-muted-foreground">{endpoint.description}</p>
+				)}
 
+				{subscribedCount > 0 && (
+					<div className="mt-4 flex flex-wrap gap-1.5">
+						{endpoint?.subscribed_events.map((event: string) => (
+							<span
+								key={event}
+								className="inline-flex h-[20px] items-center rounded-[4px] bg-primary/10 px-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-primary"
+							>
+								{event}
+							</span>
+						))}
+					</div>
+				)}
+			</section>
+
+			<EndpointStatsGrid
+				analyticsLoading={analyticsLoading}
+				totalDeliveries={analytics?.total_deliveries}
+				successRate={analytics?.success_rate}
+				avgResponseTimeMs={analytics?.avg_response_time_ms}
+				failed={analytics?.failed}
+			/>
+
+			{/* Chart + percentiles */}
+			<div className="grid grid-cols-1 gap-[18px] lg:grid-cols-[1.6fr_1fr]">
 				<EndpointTrafficChart loading={timeseriesLoading} data={chartData} />
 
-				{/* Response Time Percentiles */}
-				<div className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
-					<div className="border-b border-border/60 bg-secondary/40 px-4 py-3">
-						<h3 className="text-sm font-normal text-foreground">Response Time Percentiles</h3>
+				<section className="overflow-hidden rounded-[10px] border border-border bg-card">
+					<div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+						Response time percentiles
 					</div>
-					<div className="p-4 md:p-6">
-						<div className="grid grid-cols-3 gap-3 md:gap-6">
-							<div>
-								<div className="text-xs md:text-xs font-normal text-muted-foreground uppercase mb-1 md:mb-2 tracking-wider">P50 (Median)</div>
-								<div className="text-lg md:text-2xl text-foreground">
-									{analyticsLoading ? "—" : `${Math.round(analytics?.p50_response_time_ms || 0)}ms`}
-								</div>
-							</div>
-							<div>
-								<div className="text-xs md:text-xs font-medium text-muted-foreground uppercase mb-1 md:mb-2">P95</div>
-								<div className="text-lg md:text-2xl text-foreground">
-									{analyticsLoading ? "—" : `${Math.round(analytics?.p95_response_time_ms || 0)}ms`}
-								</div>
-							</div>
-							<div>
-								<div className="text-xs md:text-xs font-medium text-muted-foreground uppercase mb-1 md:mb-2">P99</div>
-								<div className="text-lg md:text-2xl text-foreground">
-									{analyticsLoading ? "—" : `${Math.round(analytics?.p99_response_time_ms || 0)}ms`}
-								</div>
-							</div>
-						</div>
+					<div className="grid grid-cols-3 divide-x divide-border">
+						<PctCell label="P50" value={analyticsLoading ? "—" : `${Math.round(analytics?.p50_response_time_ms || 0)}ms`} />
+						<PctCell label="P95" value={analyticsLoading ? "—" : `${Math.round(analytics?.p95_response_time_ms || 0)}ms`} />
+						<PctCell label="P99" value={analyticsLoading ? "—" : `${Math.round(analytics?.p99_response_time_ms || 0)}ms`} valueClass="text-amber-600 dark:text-amber-400" />
 					</div>
+				</section>
+			</div>
+
+			{/* Recent deliveries */}
+			<div>
+				<div className="mb-2.5 flex items-center justify-between gap-3">
+					<div>
+						<h3 className="text-[14px] font-medium leading-[1.2] text-foreground">Recent deliveries</h3>
+						<p className="mt-0.5 text-[12px] text-muted-foreground">Click any row to inspect the payload, headers and response.</p>
+					</div>
+					<WebhookLogControls
+						controlClassName="h-[30px] w-[30px] p-0"
+						filterStatus={status}
+						onFilterStatusChange={setStatus}
+						filterEventName={eventName}
+						onFilterEventNameChange={setEventName}
+						eventOptions={eventOptions}
+						onResetFilters={resetFilters}
+						replayPopoverOpen={replayPopoverOpen}
+						onReplayPopoverOpenChange={setReplayPopoverOpen}
+						activeReplayCount={activeReplayCount}
+						replayStatus={replayStatus}
+						onReplayStatusChange={setReplayStatus}
+						replayEventName={replayEventName}
+						onReplayEventNameChange={setReplayEventName}
+						replayStartDateTime={replayStartDateTime}
+						onReplayStartDateTimeChange={setReplayStartDateTime}
+						replayEndDateTime={replayEndDateTime}
+						onReplayEndDateTimeChange={setReplayEndDateTime}
+						isReplayRangeInvalid={replayRangeInvalid}
+						replayRangeLoading={replayRangeLoading}
+						onQueueReplay={handleReplayByRange}
+						replayJobs={replayJobs}
+						onRefreshReplayJobs={() => void loadReplayJobs()}
+						onCancelReplayJob={(taskId) => void handleCancelReplayTask(taskId)}
+						onExportCsv={exportVisibleCsv}
+					/>
 				</div>
 
-				{/* Deliveries Timeline */}
-				<div>
-					<div className="px-1 py-1 flex items-center justify-between">
-						<h3 className="text-sm font-normal text-foreground">Recent Deliveries</h3>
-						<div className="flex items-center gap-2">
-							<WebhookLogControls
-								controlClassName="h-8 w-8 p-0 border-border/60"
-								filterStatus={status}
-								onFilterStatusChange={setStatus}
-								filterEventName={eventName}
-								onFilterEventNameChange={setEventName}
-								eventOptions={eventOptions}
-								onResetFilters={resetFilters}
-								replayPopoverOpen={replayPopoverOpen}
-								onReplayPopoverOpenChange={setReplayPopoverOpen}
-								activeReplayCount={activeReplayCount}
-								replayStatus={replayStatus}
-								onReplayStatusChange={setReplayStatus}
-								replayEventName={replayEventName}
-								onReplayEventNameChange={setReplayEventName}
-								replayStartDateTime={replayStartDateTime}
-								onReplayStartDateTimeChange={setReplayStartDateTime}
-								replayEndDateTime={replayEndDateTime}
-								onReplayEndDateTimeChange={setReplayEndDateTime}
-								isReplayRangeInvalid={replayRangeInvalid}
-								replayRangeLoading={replayRangeLoading}
-								onQueueReplay={handleReplayByRange}
-								replayJobs={replayJobs}
-								onRefreshReplayJobs={() => void loadReplayJobs()}
-								onCancelReplayJob={(taskId) => void handleCancelReplayTask(taskId)}
-								onExportCsv={exportVisibleCsv}
-							/>
-						</div>
+				{loading && (!deliveries || deliveries.length === 0) ? (
+					<div className="space-y-7">
+						{[0, 1].map((g) => (
+							<div key={g}>
+								<div className="mb-2.5 flex items-center gap-3">
+									<span className="h-3 w-24 animate-pulse rounded bg-muted" />
+									<span className="h-px flex-1 bg-border" />
+								</div>
+								<div className="overflow-hidden rounded-[10px] border border-border bg-card">
+									{[0, 1, 2].map((i) => (
+										<div key={i} className="flex items-center gap-3 border-b border-border px-[18px] py-3 last:border-0">
+											<span className="size-1.5 animate-pulse rounded-full bg-muted" />
+											<span className="h-3 flex-1 animate-pulse rounded bg-muted" />
+											<span className="h-[22px] w-16 animate-pulse rounded-[4px] bg-muted" />
+										</div>
+									))}
+								</div>
+							</div>
+						))}
 					</div>
-					<div className="pt-2">
-						{loading && (!deliveries || deliveries.length === 0) ? (
-							<div className="space-y-4">
-								{[1, 2].map(group => (
-									<div key={group} className="relative">
-										<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
-										<div className="flex items-center gap-4 mb-4">
-											<div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
-											<div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
-											<div className="h-px flex-1 bg-border/30" />
-										</div>
-										<div className="space-y-2">
-											{[1, 2, 3].map(i => (
-												<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/60 bg-card" />
-											))}
-										</div>
-									</div>
-								))}
-							</div>
-						) : !groupedDeliveries || groupedDeliveries.length === 0 ? (
-							<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-16 text-center">
-								<p className="text-sm font-normal text-muted-foreground">No deliveries found for this endpoint.</p>
-							</div>
-						) : (
-							<div className="space-y-8">
-								{groupedDeliveries.map(([date, items]: [string, DeliveryRow[]]) => (
-									<div key={date} className="relative group/group">
-										<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10 group-last/group:h-0" />
-										<div className="flex items-center gap-4 mb-4">
-											<div className="w-4 h-4 rounded-full border-2 border-primary/40 bg-card z-10" />
-											<h2 className="text-xs font-normal uppercase text-foreground/70">{date}</h2>
-											<div className="h-px flex-1 bg-gradient-to-r from-border/30 to-transparent" />
-										</div>
-										<div className="space-y-2">
-											{items.map((delivery) => {
-												const isExpanded = expandedRowId === delivery.id
-												const deliveryStatus = normalizeWebhookStatus(
-													delivery.status,
-													delivery.response_status ?? delivery.http_status_code
-												)
-												const statusDotColor = webhookStatusDotClass(deliveryStatus)
+				) : !groupedDeliveries || groupedDeliveries.length === 0 ? (
+					<div className="rounded-[10px] border border-dashed border-border bg-muted/30 py-16 text-center">
+						<p className="text-sm text-muted-foreground">No deliveries found for this endpoint.</p>
+					</div>
+				) : (
+					<div className="space-y-7">
+						{groupedDeliveries.map(([date, items]: [string, DeliveryRow[]]) => (
+							<div key={date}>
+								<div className="mb-2.5 flex items-center gap-3">
+									<span className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{date}</span>
+									<span className="h-px flex-1 bg-border" />
+									<span className="font-mono text-[11px] text-muted-foreground/70">
+										{items.length} {items.length === 1 ? "delivery" : "deliveries"}
+									</span>
+								</div>
+								<div className="divide-y divide-border overflow-hidden rounded-[10px] border border-border bg-card">
+									{items.map((delivery) => {
+										const isExpanded = expandedRowId === delivery.id
+										const deliveryStatus = normalizeWebhookStatus(
+											delivery.status,
+											delivery.response_status ?? delivery.http_status_code
+										)
+										const statusDotColor = webhookStatusDotClass(deliveryStatus)
 
-												return (
-													<div key={delivery.id} className={cn("group/item transition-all duration-300", isExpanded ? "scale-[1.002]" : "")}>
-														<div className={cn(
-															"relative overflow-hidden rounded-lg border transition-all duration-300",
-															isExpanded
-																? "border-primary/20 bg-primary/[0.01]"
-																: "border-border/60 bg-card hover:border-border/60 hover:bg-accent/60"
-														)}>
-															<div
-																onClick={() => handleRowExpand(delivery.id)}
-																className="flex flex-col sm:flex-row sm:items-center gap-4 px-4 py-2 cursor-pointer"
-															>
-																<div className="flex items-center gap-4 flex-1 min-w-0">
-																	<div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse", statusDotColor)} />
-																	<div className="flex items-center gap-3 min-w-0">
-																		<span className="text-sm font-normal text-foreground truncate">
-																			{delivery.event_type || delivery.event_name}
-																		</span>
-																		<span className={cn("text-[10px] uppercase px-2 py-0.5 rounded-full border tracking-wide", webhookStatusBadgeClass(deliveryStatus))}>
-																			{webhookStatusLabel(deliveryStatus)}
-																		</span>
-																		<span className="hidden md:inline text-muted-foreground/60 text-xs">|</span>
-																		<span className="hidden md:inline text-xs text-muted-foreground font-normal">
-																				{new Date(delivery.created_at || delivery.timestamp || "").toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-																		</span>
-																	</div>
-																</div>
-																<div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/60">
-																	<div className="flex items-center gap-4">
-																		<span className="text-xs font-normal tabular-nums text-foreground/80">
-																			{delivery.response_status || delivery.http_status_code || "---"}
-																		</span>
-																		<span className="text-muted-foreground/60 text-xs">•</span>
-																		<span className="text-xs text-foreground/80 font-normal tabular-nums">
-																			{delivery.response_time_ms ? `${delivery.response_time_ms}ms` : "---"}
-																		</span>
-																	</div>
-																	<div className="flex items-center gap-2">
-																		<Button
-																			variant="ghost"
-																			size="sm"
-																			className="h-7 w-7 p-0"
-																			onClick={(e) => {
-																				e.stopPropagation()
-																				navigator.clipboard.writeText(delivery.id)
-																			}}
-																		>
-																			<Copy className="w-3.5 h-3.5" />
-																		</Button>
-																		<Button
-																			variant="ghost"
-																			size="sm"
-																			className="h-7 w-7 p-0"
-																			onClick={(e) => {
-																				e.stopPropagation()
-																				handleReplayDelivery(delivery.id)
-																			}}
-																			disabled={isDeliveryReplaying(delivery.id)}
-																		>
-																			{isDeliveryReplaying(delivery.id) ? (
-																				<div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-																			) : (
-																				<RotateCcw className="w-3.5 h-3.5" />
-																			)}
-																		</Button>
-																		<div className={cn(
-																			"p-1 rounded-lg transition-colors",
-																			isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground/60 group-hover/item:text-muted-foreground"
-																		)}>
-																			{isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-																		</div>
-																	</div>
-																</div>
-															</div>
-															{isExpanded && (
-																<div className="border-t border-border/10 px-4 py-4 animate-in slide-in-from-top-2 duration-300">
-																	{isLoadingExpandedDetails ? (
-																		<div className="flex items-center justify-center py-12">
-																			<Loader2 className="w-5 h-5 animate-spin text-muted-foreground/60" />
-																		</div>
-																	) : detailsList && detailsList.length > 0 ? (
-																		<div className="space-y-4">
-																			{delivery.filtered_reason && (
-																				<div className="rounded-xl border border-yellow-500/20 bg-amber-500/5 p-3 text-xs text-yellow-500">
-																					Filtered reason: {delivery.filtered_reason}
-																				</div>
-																			)}
-																			{detailsList.map((details) => (
-																			<AttemptDetail
-																				key={details.attempt_number}
-																				details={details}
-																				isExpanded={expandedAttempts[delivery.id]?.includes(details.attempt_number)}
-																				onToggle={() => toggleAttemptExpand(delivery.id, details.attempt_number)}
-																				getStatusColor={getStatusColor}
-																				enableCurlCopy={false}
-																			/>
-																		))}
-																		</div>
-																	) : (
-																		<div className="text-center py-10">
-																			<p className="text-xs text-muted-foreground/60 font-normal italic">Could not load delivery details</p>
-																		</div>
-																	)}
-																</div>
+										return (
+											<div key={delivery.id} className={cn(isExpanded && "bg-accent/20")}>
+												<div
+													onClick={() => handleRowExpand(delivery.id)}
+													className="flex cursor-pointer items-center gap-3 px-[18px] py-3 transition-colors hover:bg-accent/40"
+												>
+													<span className={cn("size-1.5 shrink-0 rounded-full", statusDotColor)} />
+													<span className="inline-flex h-[20px] max-w-[180px] shrink-0 items-center truncate rounded-[4px] bg-primary/10 px-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-primary">
+														{delivery.event_type || delivery.event_name || "unknown"}
+													</span>
+													<span
+														className={cn(
+															"inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
+															webhookStatusBadgeClass(deliveryStatus),
+														)}
+													>
+														<span className={cn("size-1.5 rounded-full", statusDotColor)} />
+														{webhookStatusLabel(deliveryStatus)}
+													</span>
+													<span className="hidden font-mono text-[11px] tabular-nums text-muted-foreground md:inline">
+														{new Date(delivery.created_at || delivery.timestamp || "").toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+													</span>
+													<div className="ml-auto flex shrink-0 items-center gap-3">
+														<span className="font-mono text-[11px] tabular-nums text-foreground/80">
+															{delivery.response_status || delivery.http_status_code || "—"}
+														</span>
+														<span className="hidden font-mono text-[11px] tabular-nums text-muted-foreground sm:inline">
+															{delivery.response_time_ms ? `${delivery.response_time_ms} ms` : "—"}
+														</span>
+														<Button
+															variant="outline"
+															size="sm"
+															className="size-7 shrink-0 p-0"
+															onClick={(e) => {
+																e.stopPropagation()
+																navigator.clipboard.writeText(delivery.id)
+															}}
+															aria-label="Copy delivery id"
+														>
+															<Copy className="h-3.5 w-3.5" />
+														</Button>
+														<Button
+															variant="outline"
+															size="sm"
+															className="size-7 shrink-0 p-0"
+															onClick={(e) => {
+																e.stopPropagation()
+																handleReplayDelivery(delivery.id)
+															}}
+															disabled={isDeliveryReplaying(delivery.id)}
+															aria-label="Replay delivery"
+														>
+															{isDeliveryReplaying(delivery.id) ? (
+																<Loader2 className="h-3.5 w-3.5 animate-spin" />
+															) : (
+																<RotateCcw className="h-3.5 w-3.5" />
 															)}
-														</div>
+														</Button>
+														<span className="text-muted-foreground/50">
+															{isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+														</span>
 													</div>
-												)
-											})}
-										</div>
-									</div>
-								))}
+												</div>
+												{isExpanded && (
+													<div className="border-t border-border bg-secondary/20 px-[18px] py-4">
+														{isLoadingExpandedDetails ? (
+															<div className="flex items-center justify-center py-10">
+																<Loader2 className="h-5 w-5 animate-spin text-muted-foreground/60" />
+															</div>
+														) : detailsList && detailsList.length > 0 ? (
+															<div className="space-y-3">
+																{delivery.filtered_reason && (
+																	<div className="rounded-[6px] border border-amber-500/25 bg-amber-500/10 p-3 text-[12px] text-amber-600 dark:text-amber-400">
+																		Filtered reason: {delivery.filtered_reason}
+																	</div>
+																)}
+																{detailsList.map((details) => (
+																	<AttemptDetail
+																		key={details.attempt_number}
+																		details={details}
+																		isExpanded={expandedAttempts[delivery.id]?.includes(details.attempt_number)}
+																		onToggle={() => toggleAttemptExpand(delivery.id, details.attempt_number)}
+																		getStatusColor={getStatusColor}
+																		enableCurlCopy={false}
+																	/>
+																))}
+															</div>
+														) : (
+															<div className="py-8 text-center text-[12px] italic text-muted-foreground/60">
+																Could not load delivery details
+															</div>
+														)}
+													</div>
+												)}
+											</div>
+										)
+									})}
+								</div>
 							</div>
-						)}
+						))}
 					</div>
-				</div>
+				)}
+			</div>
 
-				{/* Pagination */}
-				<div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-					<p className="text-xs md:text-xs text-muted-foreground text-center sm:text-left">Page {page}</p>
-					<div className="flex items-center gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-8 text-xs md:text-xs"
-							onClick={() => setPage(p => Math.max(1, p - 1))}
-							disabled={page === 1}
-						>
-							<ChevronLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
-							<span className="hidden sm:inline">Previous</span>
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-8 text-xs md:text-xs"
-							onClick={() => setPage(p => p + 1)}
-							disabled={!has_more || loading}
-						>
-							<span className="hidden sm:inline">Next</span>
-							<ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
-						</Button>
-					</div>
+			{/* Pagination */}
+			<div className="flex items-center justify-between border-t border-border pt-6">
+				<p className="font-mono text-[11px] text-muted-foreground">Page {page}</p>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-[30px]"
+						onClick={() => setPage(p => Math.max(1, p - 1))}
+						disabled={page === 1}
+					>
+						<ChevronLeft className="h-3.5 w-3.5" />
+						Previous
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-[30px]"
+						onClick={() => setPage(p => p + 1)}
+						disabled={!has_more || loading}
+					>
+						Next
+						<ChevronRight className="h-3.5 w-3.5" />
+					</Button>
 				</div>
 			</div>
 
 			{/* Test Webhook Dialog */}
 			<Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
-				<DialogContent className="sm:max-w-[800px] p-0 overflow-hidden flex flex-col h-[80vh]">
+				<DialogContent className="flex h-[80vh] flex-col overflow-hidden p-0 sm:max-w-[800px]">
 					<DialogHeader className="p-6 pb-0">
-						<DialogTitle className="text-xl font-normal">Test Webhook</DialogTitle>
+						<DialogTitle className="text-lg font-medium">Test webhook</DialogTitle>
 						<DialogDescription className="text-sm">
 							Dispatch a diagnostic payload to verify your endpoint integration.
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="flex-1 overflow-hidden p-6 pt-4 flex flex-col gap-6">
+					<div className="flex flex-1 flex-col gap-6 overflow-hidden p-6 pt-4">
 						<div className="space-y-2">
-							<Label className="text-xs uppercase font-normal text-muted-foreground">Select Event Type</Label>
+							<Label className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Select event type</Label>
 							<Select value={selectedTestEvent} onValueChange={setSelectedTestEvent}>
-								<SelectTrigger className="h-10 w-full border-border/60 bg-card text-sm">
+								<SelectTrigger className="h-[30px] w-full text-[12px]">
 									<SelectValue placeholder="Choose an event to test..." />
 								</SelectTrigger>
 								<SelectContent>
@@ -851,42 +829,38 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 							const examplePayload = eventData?.example_payload
 
 							return (
-								<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border/60 bg-card">
-									<div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border/30 h-full overflow-hidden">
-										{/* Schema Column */}
-										<div className="flex flex-col min-h-0 h-full">
-											<div className="border-b border-border/60 bg-secondary/40 px-4 py-2">
-												<span className="text-xs font-normal text-muted-foreground/60">Expected Schema</span>
+								<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[8px] border border-border">
+									<div className="grid h-full grid-cols-1 divide-y divide-border overflow-hidden md:grid-cols-2 md:divide-x md:divide-y-0">
+										<div className="flex min-h-0 flex-col">
+											<div className="border-b border-border bg-secondary/40 px-4 py-2.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+												Expected schema
 											</div>
-											<div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+											<div className="custom-scrollbar flex-1 overflow-y-auto p-4">
 												{schemaProps ? (
 													<SchemaViewer schema={schemaProps as Record<string, unknown>} />
 												) : (
-													<p className="text-xs text-muted-foreground/70 italic">No schema defined for this event.</p>
+													<p className="text-[12px] italic text-muted-foreground/70">No schema defined for this event.</p>
 												)}
 											</div>
 										</div>
 
-										{/* Example JSON Column */}
-										<div className="flex h-full min-h-0 flex-col bg-secondary/20">
-											<div className="flex items-center justify-between border-b border-border/60 bg-secondary/40 px-4 py-2">
-												<div>
-													<span className="text-xs font-normal text-muted-foreground/60">Expected Schema</span>
-												</div>
+										<div className="flex min-h-0 flex-col bg-secondary/20">
+											<div className="flex items-center justify-between border-b border-border bg-secondary/40 px-4 py-2.5">
+												<span className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Payload example</span>
 												{examplePayload && (
 													<button
 														onClick={() => navigator.clipboard.writeText(JSON.stringify(examplePayload, null, 2))}
-														className="text-xs text-primary hover:underline font-normal"
+														className="font-mono text-[10px] uppercase tracking-[0.06em] text-primary transition-colors hover:underline"
 													>
 														Copy
 													</button>
 												)}
 											</div>
-											<div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+											<div className="custom-scrollbar flex-1 overflow-y-auto p-4">
 												{examplePayload ? (
 													<JsonViewer data={examplePayload} />
 												) : (
-													<p className="text-xs text-muted-foreground/70 italic">No example payload provided.</p>
+													<p className="text-[12px] italic text-muted-foreground/70">No example payload provided.</p>
 												)}
 											</div>
 										</div>
@@ -894,20 +868,19 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 								</div>
 							)
 						})() : (
-							<div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 p-8 text-center">
-								<Send className="w-8 h-8 text-muted-foreground/60 mb-3" />
-								<p className="text-xs text-muted-foreground">Select an event type above to view its schema and test payload.</p>
+							<div className="flex flex-1 flex-col items-center justify-center rounded-[8px] border border-dashed border-border p-8 text-center">
+								<Send className="mb-3 h-8 w-8 text-muted-foreground/60" />
+								<p className="text-[12px] text-muted-foreground">Select an event type above to view its schema and test payload.</p>
 							</div>
 						)}
 					</div>
 
-					<div className="flex justify-end gap-3 border-t border-border/60 bg-secondary/30 p-6">
+					<div className="flex justify-end gap-2 border-t border-border bg-secondary/30 p-6">
 						<Button
 							variant="ghost"
 							size="sm"
 							onClick={() => setTestDialogOpen(false)}
 							disabled={isTesting}
-							className="h-9 px-5 text-xs font-normal"
 						>
 							Cancel
 						</Button>
@@ -915,17 +888,16 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 							size="sm"
 							onClick={handleTestWebhook}
 							disabled={!selectedTestEvent || isTesting}
-							className="h-9 px-6 text-xs font-normal"
 						>
 							{isTesting ? (
 								<>
-									<div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+									<Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
 									Sending...
 								</>
 							) : (
 								<>
-									<Send className="w-3 h-3 mr-2" />
-									Send Test
+									<Send className="mr-2 h-3.5 w-3.5" />
+									Send test
 								</>
 							)}
 						</Button>
@@ -943,7 +915,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<DialogContent className="sm:max-w-[400px]">
 					<DialogHeader>
-						<DialogTitle className="text-base">Delete Endpoint</DialogTitle>
+						<DialogTitle className="text-base">Delete endpoint</DialogTitle>
 						<DialogDescription className="text-xs">
 							Are you sure you want to delete this endpoint? This action cannot be undone.
 						</DialogDescription>
@@ -967,7 +939,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 			<Dialog open={confirmReplayOpen} onOpenChange={setConfirmReplayOpen}>
 				<DialogContent className="sm:max-w-[440px]">
 					<DialogHeader>
-						<DialogTitle className="text-base">Confirm Range Replay</DialogTitle>
+						<DialogTitle className="text-base">Confirm range replay</DialogTitle>
 						<DialogDescription className="text-xs">
 							Replay deliveries matching the selected replay filters and date/time range.
 						</DialogDescription>
@@ -976,20 +948,29 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 						<Button variant="outline" size="sm" onClick={() => setConfirmReplayOpen(false)} disabled={replayRangeLoading}>
 							Cancel
 						</Button>
-							<Button
-								size="sm"
-								onClick={confirmReplayByRange}
-								disabled={
-									replayRangeLoading ||
-									!replayStartDateTime ||
-									Boolean(replayEndDateTime && new Date(replayEndDateTime) < new Date(replayStartDateTime))
-								}
-							>
+						<Button
+							size="sm"
+							onClick={confirmReplayByRange}
+							disabled={
+								replayRangeLoading ||
+								!replayStartDateTime ||
+								Boolean(replayEndDateTime && new Date(replayEndDateTime) < new Date(replayStartDateTime))
+							}
+						>
 							{replayRangeLoading ? "Queuing..." : "Replay"}
 						</Button>
 					</div>
 				</DialogContent>
 			</Dialog>
+		</div>
+	)
+}
+
+function PctCell({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
+	return (
+		<div className="flex flex-col gap-1.5 px-[18px] py-[14px]">
+			<div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{label}</div>
+			<div className={cn("text-[20px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground", valueClass)}>{value}</div>
 		</div>
 	)
 }

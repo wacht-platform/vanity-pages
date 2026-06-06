@@ -68,13 +68,21 @@ export default function WebhookEndpointsPage() {
 	return (
 		<>
 			<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-				<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-					<div>
-						<h1 className="text-lg font-normal text-foreground">Endpoints</h1>
+				<div className="mb-[22px] flex flex-col items-start justify-between gap-4 sm:flex-row">
+					<div className="min-w-0">
+						<div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+							Webhooks
+						</div>
+						<h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+							Endpoints
+						</h1>
+						<p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+							URLs Wacht will POST to when subscribed events fire.
+						</p>
 					</div>
-					<Button size="sm" onClick={() => setCreateDialogOpen(true)} className="h-8 text-xs md:text-sm shadow-sm hover:shadow-md transition-all">
-						<Plus className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 md:mr-2" />
-						<span className="hidden sm:inline">Create Endpoint</span>
+					<Button size="sm" onClick={() => setCreateDialogOpen(true)} className="h-[30px] shrink-0">
+						<Plus className="mr-1.5 h-3.5 w-3.5" />
+						<span className="hidden sm:inline">Create endpoint</span>
 						<span className="sm:hidden">Create</span>
 					</Button>
 					<CreateEndpointDialog
@@ -118,118 +126,99 @@ export default function WebhookEndpointsPage() {
 					</DialogContent>
 				</Dialog>
 
-				{/* Endpoints List */}
-				<div className="relative">
-					{/* Vertical Rail */}
-					{!endpointsLoading && Array.isArray(endpoints) && endpoints.length > 0 && (
-						<div className="absolute left-[7px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10" />
-					)}
-
-					<div className="space-y-2">
-						{endpointsLoading ? (
-							<div className="space-y-2">
-								{[1, 2, 3].map(i => (
-									<div key={i} className="flex items-center gap-4">
-										<div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
-										<div className="h-10 flex-1 animate-pulse rounded-lg border border-border/60 bg-card" />
-									</div>
-								))}
+				{/* Endpoints list */}
+				{endpointsLoading ? (
+					<div className="divide-y divide-border overflow-hidden rounded-[10px] border border-border bg-card">
+						{[0, 1, 2].map((i) => (
+							<div key={i} className="flex items-center gap-3 px-[18px] py-[14px]">
+								<span className="size-1.5 shrink-0 animate-pulse rounded-full bg-muted" />
+								<span className="h-3 flex-1 animate-pulse rounded bg-muted" />
+								<span className="h-[22px] w-16 animate-pulse rounded-[4px] bg-muted" />
 							</div>
-						) : !Array.isArray(endpoints) || endpoints.length === 0 ? (
-							<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-12 text-center">
-								<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-									<Globe className="w-6 h-6 text-muted-foreground" />
-								</div>
-								<p className="text-sm font-normal text-muted-foreground">No endpoints configured</p>
-								<p className="text-xs text-muted-foreground mt-1">Create your first endpoint to start receiving webhooks.</p>
-							</div>
-						) : (
-							endpoints.map((endpoint) => (
-								<div
-									key={endpoint.id}
-									className="group/item"
-								>
-									<div
-										className={cn(
-											"flex cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl border px-4 py-3 transition-colors",
-											"border-border/60 bg-card hover:border-border bg-card/60 hover:bg-accent/40"
-										)}
-										onClick={() => router.push(`/webhook/endpoints/${endpoint.id}`)}
-									>
-										<div className="flex-1 min-w-0 flex items-center gap-4">
-											<div className="flex items-center gap-3 min-w-0">
-												<h3 className="text-sm font-normal text-foreground truncate max-w-[200px] md:max-w-[400px]">
-													{endpoint.url}
-												</h3>
-												{endpoint.description && (
-													<>
-														<span className="text-muted-foreground text-[10px]">•</span>
-														<span className="text-xs text-muted-foreground truncate max-w-[150px] md:max-w-[300px] font-normal">
-															{endpoint.description}
-														</span>
-													</>
-												)}
-											</div>
-
-											<div className="hidden md:flex items-center gap-4 shrink-0">
-												<span className="text-muted-foreground text-[10px]">•</span>
-												<div className="flex items-center gap-1.5 text-xs text-muted-foreground font-normal whitespace-nowrap">
-													<Zap className="w-3.5 h-3.5 text-muted-foreground/70" />
-													<span>{endpoint.subscribed_events.length} events</span>
-												</div>
-												{endpoint.rate_limit_config && (
-													<>
-														<span className="text-muted-foreground text-[10px]">•</span>
-														<span className="text-xs text-muted-foreground/70 tabular-nums font-normal whitespace-nowrap">
-															{endpoint.rate_limit_config.max_requests} req / {endpoint.rate_limit_config.duration_ms === 1000 ? 'sec' : endpoint.rate_limit_config.duration_ms === 60000 ? 'min' : 'hr'}
-														</span>
-													</>
-												)}
-											</div>
-										</div>
-
-										<div className="flex shrink-0 items-center justify-end gap-4">
-											<div className="flex items-center gap-1.5">
-												<div className={cn(
-													"h-1.5 w-1.5 rounded-full",
-													endpoint.is_active ? "bg-emerald-500" : "bg-muted-foreground/40"
-												)} />
-												<span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-													{endpoint.is_active ? "Active" : "Inactive"}
-												</span>
-											</div>
-
-											<div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-												<DropdownMenu>
-													<DropdownMenuTrigger asChild>
-														<Button
-															variant="ghost"
-															size="sm"
-															className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
-															onClick={(e) => e.stopPropagation()}
-														>
-															<MoreHorizontal className="w-4 h-4" />
-														</Button>
-													</DropdownMenuTrigger>
-													<DropdownMenuContent align="end" className="w-[160px]">
-														<DropdownMenuItem className="text-xs cursor-pointer" onClick={() => handleEditClick(endpoint)}>
-															Edit Configuration
-														</DropdownMenuItem>
-														<div className="h-px bg-border/50 my-1" />
-														<DropdownMenuItem className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20 cursor-pointer" onClick={() => handleDeleteClick(endpoint)}>
-															Delete Endpoint
-														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenu>
-												<ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover/item:text-muted-foreground transition-colors" />
-											</div>
-										</div>
-									</div>
-								</div>
-							))
-						)}
+						))}
 					</div>
-				</div>
+				) : !Array.isArray(endpoints) || endpoints.length === 0 ? (
+					<div className="rounded-[10px] border border-dashed border-border bg-muted/30 py-14 text-center">
+						<div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-[10px] bg-foreground/[0.04] text-muted-foreground">
+							<Globe className="h-5 w-5" />
+						</div>
+						<p className="text-sm text-muted-foreground">No endpoints configured</p>
+						<p className="mt-1 text-xs text-muted-foreground">
+							Create your first endpoint to start receiving webhooks.
+						</p>
+					</div>
+				) : (
+					<div className="divide-y divide-border overflow-hidden rounded-[10px] border border-border bg-card">
+						{endpoints.map((endpoint) => (
+							<div
+								key={endpoint.id}
+								className="group flex cursor-pointer items-center gap-3 px-[18px] py-[14px] transition-colors hover:bg-accent/50"
+								onClick={() => router.push(`/webhook/endpoints/${endpoint.id}`)}
+							>
+								<span
+									className={cn(
+										"size-1.5 shrink-0 rounded-full",
+										endpoint.is_active ? "bg-emerald-500" : "bg-muted-foreground/40",
+									)}
+								/>
+								<span
+									className="min-w-0 flex-1 truncate font-mono text-[12px] text-foreground/80"
+									title={endpoint.url}
+								>
+									{endpoint.url}
+								</span>
+								<span className="hidden shrink-0 items-center gap-1.5 font-mono text-[11px] text-muted-foreground md:inline-flex">
+									<Zap className="h-3.5 w-3.5 text-muted-foreground/70" />
+									{endpoint.subscribed_events.length}{" "}
+									{endpoint.subscribed_events.length === 1 ? "event" : "events"}
+								</span>
+								<span
+									className={cn(
+										"inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
+										endpoint.is_active
+											? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+											: "border-border bg-foreground/[0.04] text-muted-foreground",
+									)}
+								>
+									<span
+										className={cn(
+											"size-1.5 rounded-full",
+											endpoint.is_active ? "bg-emerald-500" : "bg-muted-foreground/40",
+										)}
+									/>
+									{endpoint.is_active ? "active" : "inactive"}
+								</span>
+								<div
+									className="flex shrink-0 items-center gap-1"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button
+												variant="ghost"
+												size="sm"
+												className="size-7 p-0 text-muted-foreground hover:text-foreground"
+												onClick={(e) => e.stopPropagation()}
+											>
+												<MoreHorizontal className="h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end" className="w-[160px]">
+											<DropdownMenuItem className="cursor-pointer text-xs" onClick={() => handleEditClick(endpoint)}>
+												Edit configuration
+											</DropdownMenuItem>
+											<div className="my-1 h-px bg-border" />
+											<DropdownMenuItem className="cursor-pointer text-xs text-destructive focus:text-destructive" onClick={() => handleDeleteClick(endpoint)}>
+												Delete endpoint
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+									<ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+								</div>
+							</div>
+						))}
+					</div>
+				)}
 			</div>
 		</>
 	)

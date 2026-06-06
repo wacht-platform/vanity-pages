@@ -65,43 +65,32 @@
 }
 
 :root {
-    --background: var(--theme-light-background, oklch(1 0 0));
-    --foreground: var(--theme-light-foreground, oklch(0.145 0 0));
-    --card: var(--theme-light-card, oklch(1 0 0));
-    --card-foreground: var(--theme-light-card-foreground, oklch(0.145 0 0));
-    --popover: var(--theme-light-popover, oklch(1 0 0));
-    --popover-foreground: var(
-        --theme-light-popover-foreground,
-        oklch(0.145 0 0)
-    );
-    --primary: var(--theme-light-primary, oklch(0.205 0 0));
-    --primary-foreground: var(
-        --theme-light-primary-foreground,
-        oklch(0.985 0 0)
-    );
-    --secondary: var(--theme-light-secondary, oklch(0.97 0 0));
-    --secondary-foreground: var(
-        --theme-light-secondary-foreground,
-        oklch(0.205 0 0)
-    );
-    --muted: var(--theme-light-muted, oklch(0.97 0 0));
-    --muted-foreground: var(--theme-light-muted-foreground, oklch(0.556 0 0));
-    --accent: var(--theme-light-accent, oklch(0.97 0 0));
-    --accent-foreground: var(--theme-light-accent-foreground, oklch(0.205 0 0));
-    --destructive: var(--theme-light-destructive, #ef4444);
-    --destructive-foreground: var(
-        --theme-light-destructive-foreground,
-        oklch(0.985 0 0)
-    );
-    --border: var(--theme-light-border, oklch(0.922 0 0));
-    --input: var(--theme-light-input, oklch(0.922 0 0));
-    --ring: var(--theme-light-ring, oklch(0.708 0 0));
+    /* Design palette (SDK surfaces) — vanity ignores deployment color branding. */
+    --background: #f5f5f2;
+    --foreground: #161618;
+    --card: #ffffff;
+    --card-foreground: #161618;
+    --popover: #ffffff;
+    --popover-foreground: #161618;
+    --primary: #6b3df5;
+    --primary-foreground: #ffffff;
+    --secondary: #fafaf8;
+    --secondary-foreground: #161618;
+    --muted: #fafaf8;
+    --muted-foreground: #76767c;
+    --accent: #f1f0ed;
+    --accent-foreground: #161618;
+    --destructive: #c4271f;
+    --destructive-foreground: #ffffff;
+    --border: rgba(20, 20, 22, 0.08);
+    --input: rgba(20, 20, 22, 0.14);
+    --ring: #6b3df5;
     --chart-1: oklch(0.809 0.105 251.813);
     --chart-2: oklch(0.623 0.214 259.815);
     --chart-3: oklch(0.546 0.245 262.881);
     --chart-4: oklch(0.488 0.243 264.376);
     --chart-5: oklch(0.424 0.199 265.638);
-    --radius: var(--theme-global-radius-lg, 0.875rem);
+    --radius: var(--theme-global-radius-lg, 0.625rem);
     --sidebar: var(--theme-light-card, oklch(0.985 0 0));
     --sidebar-foreground: var(--theme-light-foreground, oklch(0.145 0 0));
     --sidebar-primary: var(--theme-light-primary, oklch(0.205 0 0));

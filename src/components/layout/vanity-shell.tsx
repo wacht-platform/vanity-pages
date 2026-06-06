@@ -32,6 +32,16 @@ export function useIframeThemeSync() {
 
     React.useEffect(() => {
         if (typeof window === "undefined") return;
+
+        // Initial theme from the query string (?theme=light|dark) — the console
+        // host sets it so the first paint matches without a flash.
+        try {
+            const qp = new URLSearchParams(window.location.search).get("theme");
+            if (qp === "light" || qp === "dark") setTheme(qp);
+        } catch {
+            // ignore malformed search params
+        }
+
         if (window.parent === window) return;
 
         function onMessage(event: MessageEvent) {
@@ -99,8 +109,8 @@ export function VanityShell({
 }: VanityShellProps) {
     return (
         <div className="flex min-h-screen flex-col bg-background">
-            <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/65">
-                <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-6 px-4 md:px-6">
+            <header className="sticky top-0 z-40 border-b border-border bg-background">
+                <div className="mx-auto flex h-[56px] w-full max-w-7xl items-center gap-1 px-4 md:px-6">
                     {brand && (
                         <div className="flex min-w-0 items-center gap-2.5">
                             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -120,14 +130,15 @@ export function VanityShell({
                     )}
 
                     {navItems.length > 0 ? (
-                        <nav className="hidden min-w-0 flex-1 md:block">
+                        <nav className="hidden md:block">
                             <Tabs value={activeNavValue}>
-                                <TabsList>
+                                <TabsList className="h-auto gap-1 rounded-none bg-transparent p-0">
                                     {navItems.map((item) => (
                                         <TabsTrigger
                                             key={item.value}
                                             value={item.value}
                                             asChild
+                                            className="h-[30px] flex-none rounded-[6px] border-0 px-3.5 text-[13px] font-medium text-muted-foreground shadow-none data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_0_0.5px_var(--border),0_1px_2px_rgba(0,0,0,0.04)]"
                                         >
                                             <Link href={item.href}>
                                                 {item.label}
@@ -137,11 +148,9 @@ export function VanityShell({
                                 </TabsList>
                             </Tabs>
                         </nav>
-                    ) : (
-                        <div className="flex-1" />
-                    )}
+                    ) : null}
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="ml-auto flex items-center gap-1.5">
                         {rightSlot}
                         <ThemeToggleButton />
                     </div>

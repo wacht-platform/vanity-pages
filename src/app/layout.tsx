@@ -48,10 +48,15 @@ export default async function RootLayout({
         headersList.get("host") ||
         "";
 
+    // Local dev: set NEXT_PUBLIC_WACHT_PUBLIC_KEY in .env.local to point the
+    // app at a real deployment (host-based derivation doesn't work on localhost).
+    const envPublicKey = process.env.NEXT_PUBLIC_WACHT_PUBLIC_KEY?.trim();
     const frontendApiBase = deriveFrontendApiBase(portalHost) || "";
-    const publicKey = frontendApiBase
-        ? `pk_test_${Buffer.from(frontendApiBase).toString("base64")}`
-        : "";
+    const publicKey =
+        envPublicKey ||
+        (frontendApiBase
+            ? `pk_test_${Buffer.from(frontendApiBase).toString("base64")}`
+            : "");
 
     return (
         <html lang="en" suppressHydrationWarning>

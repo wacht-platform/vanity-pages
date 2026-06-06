@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PageState } from "@/components/ui/page-state"
-import { Key } from "lucide-react"
+import { Key, Plus, RotateCw, Trash2, Copy, Check } from "lucide-react"
 
 type KeyStatus = "active" | "revoked" | "all"
 
@@ -46,6 +46,7 @@ export default function ApiAuthKeysPage() {
 	const [selectedKeyId, setSelectedKeyId] = useState<string | null>(null)
 	const [selectedKeyName, setSelectedKeyName] = useState<string | null>(null)
 	const [secretValue, setSecretValue] = useState("")
+	const [secretCopied, setSecretCopied] = useState(false)
 
 	const [isCreating, setIsCreating] = useState(false)
 	const [isRevoking, setIsRevoking] = useState(false)
@@ -132,41 +133,30 @@ export default function ApiAuthKeysPage() {
 	if (loading || keysLoading) {
 		return (
 			<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-				<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-					<Skeleton className="h-6 w-20" />
-					<div className="flex items-center gap-3">
-						<Skeleton className="h-9 w-[160px] rounded-md" />
-						<Skeleton className="h-9 w-[96px] rounded-md" />
+				<div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+					<div className="space-y-2">
+						<Skeleton className="h-3 w-20" />
+						<Skeleton className="h-7 w-40" />
+						<Skeleton className="h-3 w-72" />
+					</div>
+					<div className="flex items-center gap-2">
+						<Skeleton className="h-8 w-[130px] rounded-md" />
+						<Skeleton className="h-8 w-[110px] rounded-md" />
 					</div>
 				</div>
 
-				<div className="relative">
-					<div className="absolute left-[7px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10" />
-					<div className="space-y-2">
-						{Array.from({ length: 7 }).map((_, idx) => (
-							<div
-								key={idx}
-								className="flex items-center justify-between gap-4 px-4 py-2 border border-border/60 rounded-xl bg-background"
-							>
-								<div className="flex-1 min-w-0 flex items-center gap-4">
-									<div className="flex items-center gap-3 min-w-0">
-										<Skeleton className="h-4 w-32" />
-										<Skeleton className="h-4 w-28 rounded-sm" />
-									</div>
-									<div className="hidden md:flex items-center gap-4 shrink-0">
-										<Skeleton className="h-3 w-32" />
-									</div>
-								</div>
-								<div className="flex items-center gap-6 shrink-0">
-									<Skeleton className="h-3 w-14" />
-									<div className="hidden sm:flex items-center gap-1.5">
-										<Skeleton className="h-6 w-12 rounded-md" />
-										<Skeleton className="h-6 w-12 rounded-md" />
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
+				<div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
+					{Array.from({ length: 7 }).map((_, idx) => (
+						<div key={idx} className="flex items-center gap-3 px-4 py-3">
+							<Skeleton className="size-1.5 rounded-full" />
+							<Skeleton className="h-4 w-32" />
+							<Skeleton className="h-4 w-28 rounded-sm" />
+							<Skeleton className="hidden h-3 w-24 md:block" />
+							<Skeleton className="ml-auto h-[22px] w-16 rounded-sm" />
+							<Skeleton className="h-6 w-16 rounded-md" />
+							<Skeleton className="h-6 w-16 rounded-md" />
+						</div>
+					))}
 				</div>
 			</div>
 		)
@@ -180,11 +170,22 @@ export default function ApiAuthKeysPage() {
 
 	return (
 		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-				<h1 className="text-lg font-normal text-foreground">API Keys</h1>
-				<div className="flex items-center gap-3">
+			<div className="mb-[22px] flex items-start justify-between gap-6">
+				<div className="min-w-0">
+					<div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+						Credentials
+					</div>
+					<h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+						API keys
+					</h1>
+					<p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+						Active keys can sign requests. Rotate to invalidate the
+						secret without dropping the key id.
+					</p>
+				</div>
+				<div className="flex shrink-0 items-center gap-2">
 					<Select value={status} onValueChange={(value) => setStatus(value as KeyStatus)}>
-						<SelectTrigger className="w-[160px]">
+						<SelectTrigger className="h-[30px] w-[120px] text-[12px]">
 							<SelectValue placeholder="Status" />
 						</SelectTrigger>
 						<SelectContent>
@@ -193,95 +194,98 @@ export default function ApiAuthKeysPage() {
 							<SelectItem value="all">All</SelectItem>
 						</SelectContent>
 					</Select>
-					<Button size="sm" onClick={() => setCreateOpen(true)}>
-						Create Key
+					<Button size="sm" className="h-[30px]" onClick={() => setCreateOpen(true)}>
+						<Plus className="mr-1.5 h-3.5 w-3.5" />
+						Create key
 					</Button>
 				</div>
 			</div>
 
-			<div className="relative">
-				{keys.length > 0 ? (
-					<div className="absolute left-[7px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10" />
-				) : null}
-
-				<div className="space-y-2">
-					{keys.length === 0 ? (
-					<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-12 text-center">
-							<p className="text-sm font-normal text-muted-foreground">No keys found</p>
-						</div>
-					) : (
-						keys.map((key: ApiKey) => (
-							<div key={key.id} className="group/item">
+			{keys.length === 0 ? (
+				<div className="rounded-lg border border-dashed border-border bg-secondary/30 py-14 text-center">
+					<p className="text-sm text-muted-foreground">No keys found</p>
+				</div>
+			) : (
+				<div className="overflow-x-auto rounded-lg border border-border bg-card">
+					<div className="min-w-[860px] divide-y divide-border">
+						{keys.map((key: ApiKey) => {
+							const lastUsed = (key as { last_used_at?: string | null })
+								.last_used_at
+							return (
 								<div
-									className={cn(
-										"flex-1 flex items-center justify-between gap-4 overflow-hidden rounded-lg border px-4 py-2 transition-all duration-300",
-										"border-border/60 bg-card hover:border-border/60 hover:bg-accent/60",
-									)}
+									key={key.id}
+									className="grid grid-cols-[8px_1.6fr_150px_130px_1fr_96px_100px_90px] items-center gap-[14px] px-[18px] py-[14px] transition-colors hover:bg-accent/50"
 								>
-									<div className="flex-1 min-w-0 flex items-center gap-4">
-										<div className="flex items-center gap-3 min-w-0">
-											<span className="text-sm font-normal text-foreground truncate max-w-[200px] md:max-w-[400px]">
-												{key.name}
-											</span>
-											<code className="rounded border border-border/60 bg-secondary/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-												{key.key_prefix}...{key.key_suffix}
-											</code>
-										</div>
-
-										<div className="hidden md:flex items-center gap-4 shrink-0">
-											<div className="flex items-center gap-1.5 text-xs text-muted-foreground font-normal whitespace-nowrap">
-												<span>Created {format(new Date(key.created_at), "MMM d, yyyy")}</span>
-											</div>
-										</div>
+									<span
+										className={cn(
+											"size-1.5 rounded-full",
+											key.is_active
+												? "bg-emerald-500"
+												: "bg-muted-foreground/40",
+										)}
+									/>
+									<span className="truncate text-[13px] font-medium text-foreground">
+										{key.name}
+									</span>
+									<code className="inline-flex w-fit items-center whitespace-nowrap rounded-[3px] border border-border bg-foreground/[0.05] px-1.5 py-px font-mono text-[11px] font-medium leading-[1.4] text-foreground">
+										{key.key_prefix}…{key.key_suffix}
+									</code>
+									<span className="font-mono text-[11px] leading-none text-muted-foreground">
+										{format(new Date(key.created_at), "MMM d, yyyy")}
+									</span>
+									<span className="truncate font-mono text-[11px] leading-none text-muted-foreground">
+										{lastUsed
+											? `last used ${format(new Date(lastUsed), "MMM d")}`
+											: "—"}
+									</span>
+									<span
+										className={cn(
+											"inline-flex h-[22px] w-fit items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
+											key.is_active
+												? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+												: "border-border bg-muted text-muted-foreground",
+										)}
+									>
+										<span
+											className={cn(
+												"size-1.5 rounded-full",
+												key.is_active
+													? "bg-emerald-500"
+													: "bg-muted-foreground/40",
+											)}
+										/>
+										{key.is_active ? "active" : "revoked"}
+									</span>
+									<div className="flex justify-end">
+										<Button
+											variant="outline"
+											size="sm"
+											className="h-[30px] gap-1.5 px-2 text-[12px] font-medium"
+											onClick={() => openKeyAction(key.id, key.name, "rotate")}
+											disabled={!key.is_active || rotatingKeyId !== null}
+										>
+											<RotateCw className="h-3.5 w-3.5" />
+											Rotate
+										</Button>
 									</div>
-
-									<div className="flex items-center justify-end gap-6 shrink-0 font-normal">
-										<div className="flex items-center gap-2">
-											<div
-												className={cn(
-													"w-1 h-1 rounded-full",
-													key.is_active ? "bg-emerald-500" : "bg-muted-foreground/50",
-												)}
-											/>
-											<span
-												className={cn(
-													"text-[10px] uppercase tracking-wider",
-													key.is_active
-														? "text-emerald-600/70"
-														: "text-muted-foreground",
-												)}
-											>
-												{key.is_active ? "Active" : "Revoked"}
-											</span>
-										</div>
-
-										<div className="flex items-center gap-1.5">
-											<Button
-												variant="ghost"
-												size="sm"
-												className="h-7 text-muted-foreground/60 hover:text-foreground hover:bg-transparent px-2"
-												onClick={() => openKeyAction(key.id, key.name, "rotate")}
-												disabled={!key.is_active || rotatingKeyId !== null}
-											>
-												Rotate
-											</Button>
-											<Button
-												variant="ghost"
-												size="sm"
-												className="h-7 text-muted-foreground/60 hover:text-red-500 hover:bg-transparent px-2"
-												onClick={() => openKeyAction(key.id, key.name, "revoke")}
-												disabled={!key.is_active || isRevoking}
-											>
-												Delete
-											</Button>
-										</div>
+									<div className="flex justify-end">
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-[30px] gap-1.5 px-2 text-[12px] font-medium text-destructive hover:text-destructive"
+											onClick={() => openKeyAction(key.id, key.name, "revoke")}
+											disabled={!key.is_active || isRevoking}
+										>
+											<Trash2 className="h-3.5 w-3.5" />
+											Delete
+										</Button>
 									</div>
 								</div>
-							</div>
-						))
-					)}
+							)
+						})}
+					</div>
 				</div>
-			</div>
+			)}
 
 			<Dialog open={createOpen} onOpenChange={setCreateOpen}>
 				<DialogContent className="sm:max-w-md">
@@ -333,30 +337,50 @@ export default function ApiAuthKeysPage() {
 				</DialogContent>
 			</Dialog>
 
-			<Dialog open={secretOpen} onOpenChange={setSecretOpen}>
-				<DialogContent className="sm:max-w-md">
+			<Dialog
+				open={secretOpen}
+				onOpenChange={(open) => {
+					setSecretOpen(open)
+					if (!open) setSecretCopied(false)
+				}}
+			>
+				<DialogContent className="sm:max-w-lg">
 					<DialogHeader>
-						<DialogTitle className="text-lg font-normal">API Key Created</DialogTitle>
-						<DialogDescription className="text-xs">
-							Copy this key now. It will not be shown again.
+						<DialogTitle>API key created</DialogTitle>
+						<DialogDescription>
+							Copy your secret now — it won&apos;t be shown again.
 						</DialogDescription>
 					</DialogHeader>
-					<div className="flex items-center gap-2 mt-2">
-						<code className="flex-1 break-all rounded border border-border/60 bg-card px-3 py-2 font-mono text-xs text-foreground">
+
+					<div className="flex items-center gap-2">
+						<code className="min-w-0 flex-1 truncate rounded-[6px] border border-border bg-foreground/[0.04] px-3 py-2 font-mono text-[12px] text-foreground">
 							{secretValue}
 						</code>
 						<Button
-							variant="ghost"
-							size="sm"
-							className="h-9 shrink-0 px-3"
+							variant="outline"
+							size="icon-sm"
+							className="shrink-0"
 							onClick={() => {
 								navigator.clipboard.writeText(secretValue)
-								toast.success("Copied")
+								setSecretCopied(true)
+								toast.success("Copied to clipboard")
+								setTimeout(() => setSecretCopied(false), 2000)
 							}}
+							aria-label="Copy secret"
 						>
-							Copy
+							{secretCopied ? (
+								<Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+							) : (
+								<Copy className="h-3.5 w-3.5" />
+							)}
 						</Button>
 					</div>
+
+					<DialogFooter>
+						<Button size="sm" onClick={() => setSecretOpen(false)}>
+							Done
+						</Button>
+					</DialogFooter>
 				</DialogContent>
 			</Dialog>
 

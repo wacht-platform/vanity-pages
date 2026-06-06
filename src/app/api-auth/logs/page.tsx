@@ -1,13 +1,10 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { Filter } from "lucide-react"
+import { Filter, ChevronRight } from "lucide-react"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { addDays } from "date-fns"
 import { useApiAuthAuditLogs } from "@wacht/nextjs"
@@ -73,16 +70,22 @@ export default function ApiAuthLogsPage() {
 		return Object.entries(groups).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
 	}, [logs])
 
-	const outcomeClass = (value: string) =>
-		value === "allowed" ? "bg-emerald-500" : value === "blocked" ? "bg-rose-500" : "bg-muted-foreground"
-
 	return (
 		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-				<div className="flex items-center gap-2">
-					<h1 className="text-lg font-normal text-foreground">Access Logs</h1>
+			<div className="mb-[22px] flex flex-col items-start justify-between gap-4 sm:flex-row">
+				<div className="min-w-0">
+					<div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+						Credentials
+					</div>
+					<h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+						Access logs
+					</h1>
+					<p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+						Every authenticated request, with the key it used and the
+						outcome.
+					</p>
 				</div>
-				<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+				<div className="flex w-full shrink-0 flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
 					<DateRangePicker
 						className="w-full sm:w-auto"
 						value={dateRange}
@@ -97,15 +100,15 @@ export default function ApiAuthLogsPage() {
 							}
 						}}
 					/>
-					<Select value={outcome} onValueChange={(value) => { setOutcome(value) }}>
-					<SelectTrigger className="w-full sm:w-[160px] h-9 border-border/60 bg-card text-sm shadow-sm">
+					<Select value={outcome} onValueChange={(value) => setOutcome(value)}>
+						<SelectTrigger className="h-[30px] w-full text-[12px] sm:w-[150px]">
 							<div className="flex items-center gap-2">
-								<Filter className="w-3.5 h-3.5" />
+								<Filter className="h-3.5 w-3.5" />
 								<SelectValue placeholder="Outcome" />
 							</div>
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="all">All Outcomes</SelectItem>
+							<SelectItem value="all">All outcomes</SelectItem>
 							<SelectItem value="allowed">Allowed</SelectItem>
 							<SelectItem value="blocked">Blocked</SelectItem>
 						</SelectContent>
@@ -113,85 +116,100 @@ export default function ApiAuthLogsPage() {
 				</div>
 			</div>
 
-			{/* Timeline View */}
 			{loading && logs.length === 0 ? (
-				<div className="space-y-10">
-					{[1, 2].map(group => (
-						<div key={group} className="relative">
-							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
-							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
-								<div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
-								<div className="h-px flex-1 bg-border/30" />
+				<div className="space-y-7">
+					{[0, 1].map((g) => (
+						<div key={g}>
+							<div className="mb-2.5 flex items-center gap-3">
+								<span className="h-3 w-24 animate-pulse rounded bg-muted" />
+								<span className="h-px flex-1 bg-border" />
 							</div>
-							<div className="space-y-2">
-								{[1, 2, 3].map(i => (
-									<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/60 bg-card" />
+							<div className="overflow-hidden rounded-lg border border-border bg-card">
+								{[0, 1, 2, 3].map((i) => (
+									<div key={i} className="flex items-center gap-3 px-[18px] py-[11px]">
+										<span className="h-[22px] w-16 animate-pulse rounded-[4px] bg-muted" />
+										<span className="h-3 flex-1 animate-pulse rounded bg-muted" />
+										<span className="h-3 w-20 animate-pulse rounded bg-muted" />
+									</div>
 								))}
 							</div>
 						</div>
 					))}
 				</div>
 			) : groupedLogs.length === 0 ? (
-				<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-16 text-center">
-					<p className="text-sm font-normal text-muted-foreground">No logs found matching your criteria.</p>
+				<div className="rounded-lg border border-dashed border-border bg-muted/30 py-16 text-center">
+					<p className="text-sm text-muted-foreground">
+						No logs found matching your criteria.
+					</p>
 				</div>
 			) : (
-				<div className="space-y-10">
+				<div className="space-y-7">
 					{groupedLogs.map(([date, items]: [string, ApiAuditLog[]]) => (
-						<div key={date} className="relative group/group">
-							{/* Rail Removed */}
-
-							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-primary/40 bg-card z-10" />
-								<h2 className="text-xs font-normal uppercase text-foreground/70">
+						<div key={date}>
+							{/* Day separator */}
+							<div className="mb-2.5 flex items-center gap-3">
+								<span className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
 									{date}
-								</h2>
-								<div className="h-px flex-1 bg-gradient-to-r from-border/30 to-transparent" />
+								</span>
+								<span className="h-px flex-1 bg-border" />
+								<span className="font-mono text-[11px] text-muted-foreground/70">
+									{items.length}{" "}
+									{items.length === 1 ? "request" : "requests"}
+								</span>
 							</div>
-
-							<div className="space-y-2">
-								{items.map((log: ApiAuditLog) => (
-									<div key={log.request_id} className="group/item">
-
-										<div
-											className={cn(
-												"flex-1 flex items-center justify-between gap-4 overflow-hidden rounded-lg border px-4 py-2 transition-all duration-300",
-												"border-border/60 bg-card hover:border-border/60 hover:bg-accent/60"
-											)}
-										>
-											<div className="flex-1 min-w-0 flex items-center gap-4">
-												<div className="flex items-center gap-3 min-w-0">
-													<span className="text-sm font-normal text-foreground truncate max-w-[300px] md:max-w-[500px]">
-														{log.path}
-													</span>
-													<span className="text-muted-foreground/60 text-xs">|</span>
-													<span className="text-xs text-muted-foreground font-normal">
-														{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-													</span>
-												</div>
-
-												<div className="hidden md:flex items-center gap-4 shrink-0 font-normal">
-													<span className="text-muted-foreground/60 text-[10px]">•</span>
-													<div className="text-xs text-muted-foreground/60">
-														{log.key_name || log.key_id}
-													</div>
-												</div>
+							<div className="overflow-x-auto rounded-lg border border-border bg-card">
+								<div className="min-w-[640px] divide-y divide-border">
+									{items.map((log: ApiAuditLog) => {
+										const allowed = log.outcome === "allowed"
+										return (
+											<div
+												key={log.request_id}
+												className="grid grid-cols-[96px_1fr_140px_104px_20px] items-center gap-3 px-[18px] py-[11px] transition-colors hover:bg-accent/50"
+											>
+												<span
+													className={cn(
+														"inline-flex h-[22px] w-fit items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
+														allowed
+															? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+															: "border-destructive/25 bg-destructive/10 text-destructive",
+													)}
+												>
+													<span
+														className={cn(
+															"size-1.5 rounded-full",
+															allowed
+																? "bg-emerald-500"
+																: "bg-destructive",
+														)}
+													/>
+													{log.outcome}
+												</span>
+												<span
+													className="truncate font-mono text-[12px] text-foreground/80"
+													title={log.path}
+												>
+													{log.path}
+												</span>
+												<span
+													className="truncate font-mono text-[11px] text-muted-foreground"
+													title={log.key_name || log.key_id}
+												>
+													{log.key_name || log.key_id}
+												</span>
+												<span className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+													{new Date(
+														log.timestamp,
+													).toLocaleTimeString([], {
+														hour: "2-digit",
+														minute: "2-digit",
+														second: "2-digit",
+													})}
+												</span>
+												<ChevronRight className="h-3.5 w-3.5 justify-self-end text-muted-foreground/50" />
 											</div>
-
-											<div className="flex items-center justify-end gap-6 shrink-0 font-normal">
-												<div className="flex items-center gap-4">
-													<Badge variant="outline" className={cn(
-														"text-[10px] px-2 py-0 h-4 border-0 bg-opacity-10 uppercase tracking-wider font-normal",
-														outcomeClass(log.outcome).replace("bg-", "bg-") + "/10"
-													)}>
-														{log.outcome}
-													</Badge>
-												</div>
-											</div>
-										</div>
-									</div>
-								))}
+										)
+									})}
+								</div>
 							</div>
 						</div>
 					))}

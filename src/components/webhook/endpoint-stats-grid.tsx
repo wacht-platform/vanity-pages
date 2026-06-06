@@ -1,5 +1,7 @@
 "use client"
 
+import { cn } from "@/lib/utils"
+
 type Props = {
 	analyticsLoading: boolean
 	totalDeliveries?: number
@@ -21,30 +23,29 @@ export function EndpointStatsGrid({
 	failed,
 }: Props) {
 	return (
-		<div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-			<div className="rounded-lg border border-border/50 bg-card p-3 shadow-sm">
-				<div className="text-xs font-normal text-muted-foreground uppercase mb-1 tracking-wider">Total Deliveries</div>
-				<div className="text-xl md:text-2xl text-foreground font-normal">
-					{analyticsLoading ? "—" : formatNumber(totalDeliveries)}
-				</div>
+		<div className="overflow-hidden rounded-[10px] border border-border bg-card">
+			<div className="grid grid-cols-2 divide-x divide-y divide-border lg:grid-cols-4 lg:divide-y-0">
+				<Cell label="Total deliveries" value={analyticsLoading ? "—" : formatNumber(totalDeliveries)} />
+				<Cell
+					label="Success rate"
+					value={analyticsLoading ? "—" : `${(successRate || 0).toFixed(1)}%`}
+					valueClass="text-emerald-600 dark:text-emerald-400"
+				/>
+				<Cell label="Avg response" value={analyticsLoading ? "—" : `${Math.round(avgResponseTimeMs || 0)}ms`} />
+				<Cell label="Failed" value={analyticsLoading ? "—" : formatNumber(failed)} />
 			</div>
-			<div className="rounded-lg border border-border/50 bg-card p-3 shadow-sm">
-				<div className="text-xs font-normal text-muted-foreground uppercase mb-1 tracking-wider">Success Rate</div>
-				<div className="text-xl md:text-2xl font-normal">
-					{analyticsLoading ? "—" : `${(successRate || 0).toFixed(1)}%`}
-				</div>
+		</div>
+	)
+}
+
+function Cell({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
+	return (
+		<div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
+			<div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+				{label}
 			</div>
-			<div className="rounded-lg border border-border/50 bg-card p-3 shadow-sm">
-				<div className="text-xs font-normal text-muted-foreground uppercase  mb-1 tracking-wider">Avg Response</div>
-				<div className="text-xl md:text-2xl text-foreground font-normal">
-					{analyticsLoading ? "—" : `${Math.round(avgResponseTimeMs || 0)}ms`}
-				</div>
-			</div>
-			<div className="rounded-lg border border-border/50 bg-card p-3 shadow-sm">
-				<div className="text-xs font-normal text-muted-foreground uppercase mb-1 tracking-wider">Failed</div>
-				<div className="text-xl md:text-2xl text-foreground font-normal">
-					{analyticsLoading ? "—" : formatNumber(failed)}
-				</div>
+			<div className={cn("text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground", valueClass)}>
+				{value}
 			</div>
 		</div>
 	)

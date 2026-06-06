@@ -1,14 +1,14 @@
 "use client"
 
 import { useWebhookEvents } from "@wacht/nextjs"
-import { Badge } from "@/components/ui/badge"
 import { Search, ChevronDown, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { JsonViewer } from "@/components/json-viewer"
 import { SchemaViewer } from "@/components/schema-viewer"
 import { useState, useMemo } from "react"
-import { cn } from "@/lib/utils"
 import type { WebhookAppEvent } from "@wacht/types"
+
+const LBL = "font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground"
 
 export default function WebhookEventsPage() {
     const { events, loading } = useWebhookEvents()
@@ -46,188 +46,141 @@ export default function WebhookEventsPage() {
         setExpandedEvents(newExpanded)
     }
 
-    if (loading) {
-        return (
-            <div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8 space-y-10">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-                    <div className="h-8 w-48 bg-muted/20 animate-pulse rounded-md" />
-                    <div className="h-10 w-full md:w-80 animate-pulse rounded-lg border border-border/60 bg-card" />
+    return (
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
+            <div className="mb-[22px] flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+                <div className="min-w-0">
+                    <div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+                        Webhooks
+                    </div>
+                    <h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+                        Event catalog
+                    </h1>
+                    <p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+                        Every event you can subscribe an endpoint to.
+                    </p>
                 </div>
+                <div className="relative w-full sm:w-72">
+                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/70" />
+                    <Input
+                        placeholder="Search events…"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="h-[30px] pl-9 text-[12px]"
+                    />
+                </div>
+            </div>
+
+            {loading ? (
                 <div className="space-y-8">
-                    {[1, 2].map(group => (
-                        <div key={group} className="relative">
-                            <div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
-                                <div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
-                                <div className="h-px flex-1 bg-border/30" />
+                    {[0, 1].map((g) => (
+                        <div key={g}>
+                            <div className="mb-2.5 flex items-center gap-3">
+                                <span className="h-3 w-28 animate-pulse rounded bg-muted" />
+                                <span className="h-px flex-1 bg-border" />
                             </div>
-                            <div className="space-y-2">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/60 bg-card" />
+                            <div className="overflow-hidden rounded-[10px] border border-border bg-card">
+                                {[0, 1, 2].map((i) => (
+                                    <div key={i} className="flex items-center gap-3 border-b border-border px-[18px] py-3 last:border-0">
+                                        <span className="h-3 w-40 animate-pulse rounded bg-muted" />
+                                        <span className="h-3 flex-1 animate-pulse rounded bg-muted" />
+                                    </div>
                                 ))}
                             </div>
                         </div>
                     ))}
                 </div>
-            </div>
-        )
-    }
-
-    return (
-        <div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-            {/* Header & Filter */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-lg font-normal text-foreground">Event Catalog</h1>
-                </div>
-
-                <div className="relative w-full md:w-80 group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 group-focus-within:text-primary/50 transition-colors" />
-                    <Input
-                        placeholder="Search event names, categories..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 h-8 rounded-lg border-border/60 bg-card text-xs font-normal transition-all focus-visible:ring-primary/20"
-                    />
-                </div>
-            </div>
-
-            {groupedEvents.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-12 text-center">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-                        <Search className="w-6 h-6 text-muted-foreground/60" />
+            ) : groupedEvents.length === 0 ? (
+                <div className="rounded-[10px] border border-dashed border-border bg-muted/30 py-14 text-center">
+                    <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-[10px] bg-foreground/[0.04] text-muted-foreground">
+                        <Search className="h-5 w-5" />
                     </div>
-                    <p className="text-sm font-normal text-muted-foreground">No events found matching your search</p>
+                    <p className="text-sm text-muted-foreground">No events found matching your search</p>
                 </div>
             ) : (
-                <div className="space-y-10">
+                <div className="space-y-8">
                     {groupedEvents.map(([groupName, groupEvents]) => (
-                        <div key={groupName} className="relative group/group">
-                            {/* Vertical Rail for the group */}
-                            <div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10 group-last/group:h-0" />
-
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-4 h-4 rounded-full border-2 border-primary/40 bg-card z-10" />
-                                <h2 className="text-xs font-normal uppercase text-foreground/70">
+                        <div key={groupName}>
+                            <div className="mb-2.5 flex items-center gap-3">
+                                <span className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                     {groupName}
-                                </h2>
-                                <div className="h-px flex-1 bg-gradient-to-r from-border/30 to-transparent" />
-                                <Badge variant="secondary" className="border-none bg-secondary/70 text-xs font-normal text-muted-foreground">
-                                    {groupEvents.length} {groupEvents.length === 1 ? 'Event' : 'Events'}
-                                </Badge>
+                                </span>
+                                <span className="h-px flex-1 bg-border" />
+                                <span className="font-mono text-[11px] text-muted-foreground/70">
+                                    {groupEvents.length} {groupEvents.length === 1 ? "event" : "events"}
+                                </span>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="divide-y divide-border overflow-hidden rounded-[10px] border border-border bg-card">
                                 {groupEvents.map((event: WebhookAppEvent) => {
                                     const isExpanded = expandedEvents.has(event.event_name)
-                                    const schemaProps = event.schema?.properties as Record<string, any> | undefined
+                                    const schemaProps = event.schema?.properties as Record<string, unknown> | undefined
 
                                     return (
-                                        <div
-                                            key={event.event_name}
-                                            className={cn(
-                                                "group/item transition-all duration-300",
-                                                isExpanded ? "scale-[1.005]" : ""
-                                            )}
-                                        >
-                                            <div
-                                                className={cn(
-                                                    "relative overflow-hidden rounded-lg border transition-all duration-300",
-                                                    isExpanded
-                                                        ? "border-primary/20 bg-primary/[0.01]"
-                                                        : "border-border/60 bg-card hover:border-border/60 hover:bg-accent/60"
-                                                )}
+                                        <div key={event.event_name}>
+                                            <button
+                                                onClick={() => toggleEventExpand(event.event_name)}
+                                                className="flex w-full items-center gap-3 px-[18px] py-3 text-left transition-colors hover:bg-accent/40"
                                             >
-                                                <button
-                                                    onClick={() => toggleEventExpand(event.event_name)}
-                                                    className="w-full text-left px-4 py-2 flex items-center gap-3"
-                                                >
-                                                    <div className="flex-1 min-w-0 flex items-center gap-3">
-                                                        <span className="text-sm font-normal text-foreground">
-                                                            {event.event_name}
-                                                        </span>
-                                                        {event.schema && (
-                                                            <Badge variant="secondary" className="text-xs h-4 px-1.5 font-normal bg-muted text-muted-foreground border-none">
-                                                                SCHEMA
-                                                            </Badge>
-                                                        )}
-                                                        {event.description && (
-                                                            <>
-                                                                <span className="text-muted-foreground/60 text-xs">|</span>
-                                                                <span className="text-xs font-normal text-muted-foreground truncate max-w-[400px]">
-                                                                    {event.description}
-                                                                </span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    <div className={cn(
-                                                        "p-1 rounded-lg transition-colors",
-                                                        isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground group-hover/item:text-muted-foreground"
-                                                    )}>
-                                                        {isExpanded ? (
-                                                            <ChevronDown className="w-3.5 h-3.5" />
-                                                        ) : (
-                                                            <ChevronRight className="w-3.5 h-3.5" />
-                                                        )}
-                                                    </div>
-                                                </button>
-
-                                                {/* Expanded Content */}
-                                                {isExpanded && (
-                                                    <div className="border-t border-border/10">
-                                                        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x border-border/5">
-                                                            {/* Schema Column */}
-                                                            <div className="py-6 px-4">
-                                                                <div className="flex items-center justify-between mb-4">
-                                                                    <h4 className="text-xs uppercase font-normal text-muted-foreground/80">Properties</h4>
-                                                                    <Badge variant="outline" className="text-xs font-normal border-border/60 opacity-50">JSON Schema</Badge>
-                                                                </div>
-                                                                <div className="min-h-[100px]">
-                                                                    {schemaProps && Object.keys(schemaProps).length > 0 ? (
-                                                                        <div className="overflow-x-auto text-sm font-normal">
-                                                                            <SchemaViewer schema={schemaProps} />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="py-8 text-center">
-                                                                            <p className="text-xs text-muted-foreground/60 italic font-normal">No schema properties defined</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Example Column */}
-                                                            <div className="bg-secondary/30 py-6 px-4">
-                                                                <div className="flex items-center justify-between mb-4">
-                                                                    <h4 className="text-xs uppercase font-normal text-muted-foreground/80">Payload Example</h4>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            if (event.example_payload) {
-                                                                                navigator.clipboard.writeText(JSON.stringify(event.example_payload, null, 2));
-                                                                            }
-                                                                        }}
-                                                                        className="text-xs font-normal text-primary/50 hover:text-primary hover:underline transition-colors"
-                                                                    >
-                                                                        Copy JSON
-                                                                    </button>
-                                                                </div>
-                                                                <div className="">
-                                                                    {event.example_payload ? (
-                                                                        <div className="max-h-[400px] overflow-y-auto custom-scrollbar font-normal">
-                                                                            <JsonViewer data={event.example_payload} />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="py-8 text-center">
-                                                                            <p className="text-xs text-muted-foreground/60 italic font-normal">No example payload provided</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                <span className="shrink-0 font-mono text-[12px] text-foreground/80">
+                                                    {event.event_name}
+                                                </span>
+                                                {event.schema && (
+                                                    <span className="inline-flex h-[18px] shrink-0 items-center rounded-[4px] bg-primary/10 px-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-primary">
+                                                        Schema
+                                                    </span>
                                                 )}
-                                            </div>
+                                                {event.description && (
+                                                    <span className="min-w-0 flex-1 truncate text-[12px] text-muted-foreground">
+                                                        {event.description}
+                                                    </span>
+                                                )}
+                                                <span className="ml-auto shrink-0 text-muted-foreground/50">
+                                                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                                </span>
+                                            </button>
+
+                                            {isExpanded && (
+                                                <div className="grid grid-cols-1 divide-y divide-border border-t border-border bg-secondary/30 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
+                                                    <div className="px-[18px] py-4">
+                                                        <div className="mb-3 flex items-center justify-between">
+                                                            <span className={LBL}>Properties</span>
+                                                            <span className="font-mono text-[10px] text-muted-foreground/60">JSON Schema</span>
+                                                        </div>
+                                                        {schemaProps && Object.keys(schemaProps).length > 0 ? (
+                                                            <div className="overflow-x-auto text-[13px]">
+                                                                <SchemaViewer schema={schemaProps} />
+                                                            </div>
+                                                        ) : (
+                                                            <p className="py-6 text-center text-[12px] italic text-muted-foreground/60">No schema properties defined</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="px-[18px] py-4">
+                                                        <div className="mb-3 flex items-center justify-between">
+                                                            <span className={LBL}>Payload example</span>
+                                                            {event.example_payload && (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        navigator.clipboard.writeText(JSON.stringify(event.example_payload, null, 2))
+                                                                    }}
+                                                                    className="font-mono text-[10px] uppercase tracking-[0.06em] text-primary transition-colors hover:underline"
+                                                                >
+                                                                    Copy JSON
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {event.example_payload ? (
+                                                            <div className="custom-scrollbar max-h-[400px] overflow-y-auto">
+                                                                <JsonViewer data={event.example_payload} />
+                                                            </div>
+                                                        ) : (
+                                                            <p className="py-6 text-center text-[12px] italic text-muted-foreground/60">No example payload provided</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )
                                 })}

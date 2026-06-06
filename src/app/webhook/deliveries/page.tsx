@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import { Check, ChevronLeft, ChevronRight, ChevronDown, Loader2, RotateCcw } from "lucide-react"
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, RotateCcw } from "lucide-react"
 import { useWebhookDeliveries, useWebhookEndpoints, useWebhookEvents } from "@wacht/nextjs"
 import { useWebhookApp } from "@/components/webhook-provider"
 import type {
@@ -345,23 +345,31 @@ export default function WebhookLogsPage() {
 
 	return (
 		<div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-			<div className="flex items-center justify-between gap-4 mb-6">
-				<div>
-					<h1 className="text-lg font-normal text-foreground">Webhook Logs</h1>
+			<div className="mb-[22px] flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+				<div className="min-w-0">
+					<div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+						Webhooks
+					</div>
+					<h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+						Deliveries
+					</h1>
+					<p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+						Every dispatch attempt — status, latency and payload.
+					</p>
 				</div>
 				<div className="flex flex-wrap items-center justify-end gap-2">
 					{hasSelection ? (
 						<Button
 							size="sm"
-							className="h-9 px-3"
+							className="h-[30px]"
 							onClick={handleReplaySelected}
 							disabled={replaySelectedLoading}
 						>
-							{replaySelectedLoading ? "Queuing..." : `Replay Selected (${selectedDeliveryIds.length})`}
+							{replaySelectedLoading ? "Queuing..." : `Replay selected (${selectedDeliveryIds.length})`}
 						</Button>
 					) : (
 						<WebhookLogControls
-							controlClassName="h-9 w-9 p-0 border-border/60"
+							controlClassName="h-[30px] w-[30px] p-0"
 							filterStatus={status}
 							onFilterStatusChange={setStatus}
 							filterEventName={eventName}
@@ -396,44 +404,45 @@ export default function WebhookLogsPage() {
 				</div>
 			</div>
 
-			{/* Timeline View */}
 			{loading && (!deliveries || deliveries.length === 0) ? (
-				<div className="space-y-4">
-					{[1, 2].map(group => (
-						<div key={group} className="relative">
-							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-border/30 -z-10" />
-							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-border/60 bg-card z-10" />
-								<div className="h-4 w-32 bg-muted/20 animate-pulse rounded" />
-								<div className="h-px flex-1 bg-border/30" />
+				<div className="space-y-7">
+					{[0, 1].map((g) => (
+						<div key={g}>
+							<div className="mb-2.5 flex items-center gap-3">
+								<span className="h-3 w-24 animate-pulse rounded bg-muted" />
+								<span className="h-px flex-1 bg-border" />
 							</div>
-							<div className="space-y-2">
-								{[1, 2, 3].map(i => (
-									<div key={i} className="h-10 w-full animate-pulse rounded-lg border border-border/60 bg-card" />
+							<div className="overflow-hidden rounded-[10px] border border-border bg-card">
+								{[0, 1, 2].map((i) => (
+									<div key={i} className="flex items-center gap-3 border-b border-border px-[18px] py-3 last:border-0">
+										<span className="size-1.5 animate-pulse rounded-full bg-muted" />
+										<span className="h-3 flex-1 animate-pulse rounded bg-muted" />
+										<span className="h-[22px] w-16 animate-pulse rounded-[4px] bg-muted" />
+									</div>
 								))}
 							</div>
 						</div>
 					))}
 				</div>
 			) : !groupedDeliveries || groupedDeliveries.length === 0 ? (
-				<div className="rounded-lg border border-dashed border-border/60 bg-secondary/30 py-16 text-center">
-					<p className="text-sm font-normal text-muted-foreground">No delivery logs found matching your criteria.</p>
+				<div className="rounded-[10px] border border-dashed border-border bg-muted/30 py-16 text-center">
+					<p className="text-sm text-muted-foreground">No delivery logs found matching your criteria.</p>
 				</div>
 			) : (
-				<div className="space-y-10">
+				<div className="space-y-7">
 					{groupedDeliveries.map(([date, items]: [string, DeliveryRow[]]) => (
-						<div key={date} className="relative group/group">
-							<div className="absolute left-[7px] top-8 bottom-0 w-[2px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent -z-10 group-last/group:h-0" />
-
-							<div className="flex items-center gap-4 mb-4">
-								<div className="w-4 h-4 rounded-full border-2 border-primary/40 bg-card z-10" />
-								<h2 className="text-xs font-normal uppercase text-foreground/70">
+						<div key={date}>
+							<div className="mb-2.5 flex items-center gap-3">
+								<span className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
 									{date}
-								</h2>
-								<div className="h-px flex-1 bg-gradient-to-r from-border/30 to-transparent" />
+								</span>
+								<span className="h-px flex-1 bg-border" />
+								<span className="font-mono text-[11px] text-muted-foreground/70">
+									{items.length} {items.length === 1 ? "delivery" : "deliveries"}
+								</span>
 							</div>
 
-							<div className="space-y-2">
+							<div className="divide-y divide-border overflow-hidden rounded-[10px] border border-border bg-card">
 								{items.map((delivery) => {
 									const isExpanded = expandedRowId === delivery.id
 									const deliveryStatus = normalizeWebhookStatus(
@@ -441,135 +450,109 @@ export default function WebhookLogsPage() {
 										delivery.response_status ?? delivery.http_status_code
 									)
 									const statusDotColor = webhookStatusDotClass(deliveryStatus)
+									const selected = selectedDeliveryIds.includes(delivery.id)
 
 									return (
-										<div
-											key={delivery.id}
-											className={cn(
-												"group/item transition-all duration-300",
-												isExpanded ? "scale-[1.002]" : ""
-											)}
-										>
+										<div key={delivery.id} className={cn(isExpanded && "bg-accent/20")}>
 											<div
-												className={cn(
-													"relative overflow-hidden rounded-lg border transition-all duration-300",
-													isExpanded
-														? "border-primary/20 bg-primary/[0.01]"
-														: "border-border/60 bg-card hover:border-border/60 hover:bg-accent/60"
-												)}
+												onClick={() => handleRowExpand(delivery.id)}
+												className="flex cursor-pointer items-center gap-3 px-[18px] py-3 transition-colors hover:bg-accent/40"
 											>
-												{/* Main Row */}
-												<div
-													onClick={() => handleRowExpand(delivery.id)}
-													className="flex items-center justify-between gap-4 px-4 py-2 cursor-pointer"
+												<label
+													className="relative inline-flex size-4 shrink-0 cursor-pointer items-center justify-center"
+													onClick={(e) => e.stopPropagation()}
 												>
-													{/* Status & Event */}
-													<div className="flex items-center gap-4 flex-1 min-w-0">
-														<label
-															className="relative inline-flex h-4 w-4 cursor-pointer items-center justify-center"
-															onClick={(e) => e.stopPropagation()}
-														>
-															<input
-																type="checkbox"
-																checked={selectedDeliveryIds.includes(delivery.id)}
-																onChange={() => toggleDeliverySelection(delivery.id)}
-																className="peer sr-only"
-															/>
-															<span className="h-4 w-4 rounded-[4px] border border-border/60 bg-muted/20 transition-colors peer-checked:border-primary/60 peer-checked:bg-primary/20" />
-															<Check className="pointer-events-none absolute h-3 w-3 text-primary opacity-0 transition-opacity peer-checked:opacity-100" />
-														</label>
-														<div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse", statusDotColor)} />
+													<input
+														type="checkbox"
+														checked={selected}
+														onChange={() => toggleDeliverySelection(delivery.id)}
+														className="peer sr-only"
+													/>
+													<span className="size-4 rounded-[4px] border border-input bg-card transition-colors peer-checked:border-primary peer-checked:bg-primary" />
+													<Check className="pointer-events-none absolute size-3 text-primary-foreground opacity-0 transition-opacity peer-checked:opacity-100" />
+												</label>
 
-														<div className="flex items-center gap-3 min-w-0">
-															<span className="text-sm font-normal text-foreground truncate">
-																{delivery.event_type || "Unknown Event"}
-															</span>
-															<span className={cn("text-[10px] uppercase px-2 py-0.5 rounded-full border tracking-wide", webhookStatusBadgeClass(deliveryStatus))}>
-																{webhookStatusLabel(deliveryStatus)}
-															</span>
-																<span className="hidden md:inline text-muted-foreground/60 text-xs">|</span>
-																<span className="hidden md:inline text-xs text-muted-foreground font-normal">
-																	{new Date(delivery.created_at ?? "").toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-																</span>
-														</div>
-													</div>
+												<span className={cn("size-1.5 shrink-0 rounded-full", statusDotColor)} />
 
-													{/* Metrics */}
-													<div className="flex items-center justify-end gap-6 shrink-0">
-														<div className="flex items-center gap-4">
-															<span className="text-xs font-normal tabular-nums text-foreground/80">
-																{delivery.response_status || delivery.http_status_code || "---"}
-															</span>
-															<span className="text-muted-foreground/60 text-xs">•</span>
-															<span className="text-xs text-foreground/80 font-normal tabular-nums">
-																{delivery.response_time_ms ? `${delivery.response_time_ms}ms` : "---"}
-															</span>
-														</div>
+												<span className="inline-flex h-[20px] max-w-[180px] shrink-0 items-center truncate rounded-[4px] bg-primary/10 px-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-primary">
+													{delivery.event_type || delivery.event_name || "unknown"}
+												</span>
 
-															<div className="flex items-center gap-2">
-																<Button
-																variant="ghost"
-																size="sm"
-																className="h-7 w-7 p-0"
-																onClick={(e) => {
-																	e.stopPropagation()
-																	handleReplayDelivery(delivery.id)
-																}}
-																disabled={isDeliveryReplaying(delivery.id)}
-															>
-																{isDeliveryReplaying(delivery.id) ? (
-																	<div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-																) : (
-																	<RotateCcw className="w-3.5 h-3.5" />
-																)}
-															</Button>
-															<div className={cn(
-																"p-1 rounded-lg transition-colors",
-																isExpanded ? "bg-primary/10 text-primary" : "text-muted-foreground/60 group-hover/item:text-muted-foreground"
-															)}>
-																{isExpanded ? (
-																	<ChevronDown className="w-3.5 h-3.5" />
-																) : (
-																	<ChevronRight className="w-3.5 h-3.5" />
-																)}
-															</div>
-														</div>
-													</div>
-												</div>
+												<span
+													className={cn(
+														"inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
+														webhookStatusBadgeClass(deliveryStatus),
+													)}
+												>
+													<span className={cn("size-1.5 rounded-full", statusDotColor)} />
+													{webhookStatusLabel(deliveryStatus)}
+												</span>
 
-												{/* Expanded Details */}
-												{isExpanded && (
-													<div className="border-t border-border/10 px-4 py-4 animate-in slide-in-from-top-2 duration-300">
-														{isLoadingDetails ? (
-															<div className="flex items-center justify-center py-12">
-																<Loader2 className="w-5 h-5 animate-spin text-muted-foreground/60" />
-															</div>
-														) : detailsList && detailsList.length > 0 ? (
-															<div className="space-y-4">
-																{delivery.filtered_reason && (
-																	<div className="rounded-lg border border-yellow-500/20 bg-amber-500/8 p-3 text-xs text-yellow-600 dark:text-yellow-400">
-																		Filtered reason: {delivery.filtered_reason}
-																	</div>
-																)}
-										{detailsList.map((details) => (
-																	<AttemptDetail
-																		key={details.attempt_number}
-																		details={details}
-																		isExpanded={expandedAttempts[delivery.id]?.includes(details.attempt_number)}
-																		onToggle={() => toggleAttemptExpand(delivery.id, details.attempt_number)}
-																		getStatusColor={getStatusColor}
-																		enableCurlCopy
-																	/>
-																))}
-															</div>
+												<span className="hidden font-mono text-[11px] tabular-nums text-muted-foreground md:inline">
+													{new Date(delivery.created_at ?? "").toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+												</span>
+
+												<div className="ml-auto flex shrink-0 items-center gap-3">
+													<span className="font-mono text-[11px] tabular-nums text-foreground/80">
+														{delivery.response_status || delivery.http_status_code || "—"}
+													</span>
+													<span className="hidden font-mono text-[11px] tabular-nums text-muted-foreground sm:inline">
+														{delivery.response_time_ms ? `${delivery.response_time_ms} ms` : "—"}
+													</span>
+													<Button
+														variant="outline"
+														size="sm"
+														className="size-7 shrink-0 p-0"
+														onClick={(e) => {
+															e.stopPropagation()
+															handleReplayDelivery(delivery.id)
+														}}
+														disabled={isDeliveryReplaying(delivery.id)}
+														aria-label="Replay delivery"
+													>
+														{isDeliveryReplaying(delivery.id) ? (
+															<Loader2 className="h-3.5 w-3.5 animate-spin" />
 														) : (
-															<div className="text-center py-10">
-																<p className="text-xs text-muted-foreground/60 font-normal italic">Could not load delivery details</p>
-															</div>
+															<RotateCcw className="h-3.5 w-3.5" />
 														)}
-													</div>
-												)}
+													</Button>
+													<span className="text-muted-foreground/50">
+														{isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+													</span>
+												</div>
 											</div>
+
+											{isExpanded && (
+												<div className="border-t border-border bg-secondary/20 px-[18px] py-4">
+													{isLoadingDetails ? (
+														<div className="flex items-center justify-center py-10">
+															<Loader2 className="h-5 w-5 animate-spin text-muted-foreground/60" />
+														</div>
+													) : detailsList && detailsList.length > 0 ? (
+														<div className="space-y-3">
+															{delivery.filtered_reason && (
+																<div className="rounded-[6px] border border-amber-500/25 bg-amber-500/10 p-3 text-[12px] text-amber-600 dark:text-amber-400">
+																	Filtered reason: {delivery.filtered_reason}
+																</div>
+															)}
+															{detailsList.map((details) => (
+																<AttemptDetail
+																	key={details.attempt_number}
+																	details={details}
+																	isExpanded={expandedAttempts[delivery.id]?.includes(details.attempt_number)}
+																	onToggle={() => toggleAttemptExpand(delivery.id, details.attempt_number)}
+																	getStatusColor={getStatusColor}
+																	enableCurlCopy
+																/>
+															))}
+														</div>
+													) : (
+														<div className="py-8 text-center text-[12px] italic text-muted-foreground/60">
+															Could not load delivery details
+														</div>
+													)}
+												</div>
+											)}
 										</div>
 									)
 								})}
@@ -580,8 +563,8 @@ export default function WebhookLogsPage() {
 			)}
 
 			{/* Pagination */}
-			<div className="flex items-center justify-between mt-12 pt-6 border-t border-border/60">
-				<div className="text-xs text-muted-foreground font-normal tracking-tight">
+			<div className="mt-8 flex items-center justify-between border-t border-border pt-6">
+				<div className="font-mono text-[11px] text-muted-foreground">
 					Page {page}
 				</div>
 				<div className="flex gap-2">
@@ -590,9 +573,9 @@ export default function WebhookLogsPage() {
 						size="sm"
 						onClick={() => setPage(Math.max(1, page - 1))}
 						disabled={page === 1 || loading}
-						className="h-8 rounded-lg border-border/60 px-3 text-xs font-normal transition-all hover:bg-accent"
+						className="h-[30px]"
 					>
-						<ChevronLeft className="w-3.5 h-3.5 mr-1 opacity-50" />
+						<ChevronLeft className="h-3.5 w-3.5" />
 						Previous
 					</Button>
 					<Button
@@ -600,10 +583,10 @@ export default function WebhookLogsPage() {
 						size="sm"
 						onClick={() => setPage(page + 1)}
 						disabled={!has_more || loading}
-						className="h-8 rounded-lg border-border/60 px-3 text-xs font-normal transition-all hover:bg-accent"
+						className="h-[30px]"
 					>
 						Next
-						<ChevronRight className="w-3.5 h-3.5 ml-1 opacity-50" />
+						<ChevronRight className="h-3.5 w-3.5" />
 					</Button>
 				</div>
 			</div>
@@ -611,7 +594,7 @@ export default function WebhookLogsPage() {
 			<Dialog open={confirmReplayOpen} onOpenChange={setConfirmReplayOpen}>
 				<DialogContent className="sm:max-w-[440px]">
 					<DialogHeader>
-						<DialogTitle className="text-base">Confirm Range Replay</DialogTitle>
+						<DialogTitle className="text-base">Confirm range replay</DialogTitle>
 						<DialogDescription className="text-xs">
 							Replay deliveries matching the selected replay filters and date/time range.
 						</DialogDescription>
@@ -620,15 +603,15 @@ export default function WebhookLogsPage() {
 						<Button variant="outline" size="sm" onClick={() => setConfirmReplayOpen(false)} disabled={replayRangeLoading}>
 							Cancel
 						</Button>
-							<Button
-								size="sm"
-								onClick={confirmReplayByRange}
-								disabled={
-									replayRangeLoading ||
-									!replayStartDateTime ||
-									Boolean(replayEndDateTime && new Date(replayEndDateTime) < new Date(replayStartDateTime))
-								}
-							>
+						<Button
+							size="sm"
+							onClick={confirmReplayByRange}
+							disabled={
+								replayRangeLoading ||
+								!replayStartDateTime ||
+								Boolean(replayEndDateTime && new Date(replayEndDateTime) < new Date(replayStartDateTime))
+							}
+						>
 							{replayRangeLoading ? "Queuing..." : "Replay"}
 						</Button>
 					</DialogFooter>
