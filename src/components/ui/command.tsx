@@ -71,7 +71,7 @@ function CommandInput({
   return (
     <div
       data-slot="command-input-wrapper"
-      className="border-b border-border/70 bg-background"
+      className="border-b border-border bg-background"
     >
       <InputGroup className="h-10 rounded-none border-0 bg-transparent shadow-none">
         <InputGroupAddon align="inline-start" className="pr-0 text-muted-foreground">

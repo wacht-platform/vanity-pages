@@ -83,7 +83,7 @@ function getThreadStatusMeta(kind: ThreadStatusKind) {
     return {
       icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
       label: "Running",
-      className: "text-blue-600 dark:text-blue-400",
+      className: "text-warning",
     };
   }
 
@@ -91,7 +91,7 @@ function getThreadStatusMeta(kind: ThreadStatusKind) {
     return {
       icon: <CheckCircle2 className="h-3.5 w-3.5" />,
       label: "Completed",
-      className: "text-emerald-600 dark:text-emerald-400",
+      className: "text-success",
     };
   }
 
@@ -99,7 +99,7 @@ function getThreadStatusMeta(kind: ThreadStatusKind) {
     return {
       icon: <AlertCircle className="h-3.5 w-3.5" />,
       label: "Needs attention",
-      className: "text-rose-600 dark:text-rose-400",
+      className: "text-error",
     };
   }
 
@@ -585,7 +585,7 @@ export default function SingleChatPage() {
               <div className="mx-auto w-full max-w-3xl">
                 {showRunFeedback ? (
                   <div className="mb-2 flex items-center justify-between px-1 py-1">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-2.5 py-1 text-xs text-blue-600 dark:text-blue-400">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-2.5 py-1 text-xs text-warning">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       <span>Run in progress</span>
                     </div>
@@ -601,7 +601,7 @@ export default function SingleChatPage() {
                   </div>
                 ) : null}
                 {draftThreadCreationError ? (
-                  <div className="mb-2 rounded-md border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                  <div className="mb-2 rounded-md border border-warning/30 bg-warning-soft px-3 py-2 text-xs text-warning">
                     {draftThreadCreationError}
                   </div>
                 ) : null}

@@ -43,9 +43,9 @@ export function SchemaViewer({ schema }: SchemaViewerProps) {
                                     className="hover:bg-muted/50 rounded p-0.5 transition-colors"
                                 >
                                     {isCollapsed ? (
-                                        <ChevronRight className="w-3 h-3 text-muted-foreground/50" />
+                                        <ChevronRight className="w-3 h-3 text-faint" />
                                     ) : (
-                                        <ChevronDown className="w-3 h-3 text-muted-foreground/50" />
+                                        <ChevronDown className="w-3 h-3 text-faint" />
                                     )}
                                 </button>
                             )}
@@ -59,7 +59,7 @@ export function SchemaViewer({ schema }: SchemaViewerProps) {
 
                         {/* Show expanded content for complex types */}
                         {isComplex && !isCollapsed && (
-                            <div className="mt-2 ml-5 border-l-2 border-primary/20 pl-3 space-y-2">
+                            <div className="mt-2 ml-5 border-l border-border pl-3 space-y-2">
                                 {fieldType === 'object' && fieldDef.properties ? (
                                     <div>
                                         <div className="text-xs text-muted-foreground mb-2 uppercase">Properties</div>

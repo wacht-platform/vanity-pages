@@ -448,8 +448,8 @@ export function TaskWorkspaceExplorer({
   return (
     <div className="min-h-0 flex-1">
       <div className="grid h-full min-h-0 grid-cols-[248px_minmax(0,1fr)]">
-        <div className="min-h-0 border-r border-border/60">
-          <div className="flex h-9 items-center justify-between border-b border-border/60 px-2.5">
+        <div className="min-h-0 border-r border-border">
+          <div className="flex h-9 items-center justify-between border-b border-border px-2.5">
             <div className="text-sm text-muted-foreground">workspace</div>
             <button
               type="button"
@@ -489,7 +489,7 @@ export function TaskWorkspaceExplorer({
         </div>
 
         <div className="min-h-0 min-w-0">
-          <div className="flex h-9 items-center justify-between gap-3 border-b border-border/60 px-3">
+          <div className="flex h-9 items-center justify-between gap-3 border-b border-border px-3">
             <div className="min-w-0 truncate font-mono text-xs text-muted-foreground">
               {selectedPreviewPath}
             </div>

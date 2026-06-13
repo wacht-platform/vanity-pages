@@ -52,7 +52,7 @@ export function DateTimePicker({
 					variant="outline"
 					size="sm"
 					className={cn(
-						"h-8 w-full justify-start border-border/40 bg-background px-2.5 text-left text-xs font-normal",
+						"h-8 w-full justify-start border-border bg-background px-2.5 text-left text-xs font-normal",
 						!selected && "text-muted-foreground",
 						className
 					)}
@@ -61,7 +61,7 @@ export function DateTimePicker({
 					{selected ? format(selected, "MMM dd, yyyy HH:mm") : placeholder}
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent align="start" className="w-auto border-border/60 p-0">
+			<PopoverContent align="start" className="w-auto border-border p-0">
 				<div className="p-2">
 					<Calendar
 						mode="single"
@@ -78,7 +78,7 @@ export function DateTimePicker({
 						}}
 					/>
 				</div>
-				<div className="border-t border-border/40 p-3 pt-2">
+				<div className="border-t border-border p-3 pt-2">
 					<div className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-wide text-muted-foreground">
 						<Clock3 className="h-3 w-3" />
 						Time
@@ -94,7 +94,7 @@ export function DateTimePicker({
 							next.setHours(h || 0, m || 0, 0, 0)
 							update(next)
 						}}
-						className="h-8 border-border/40 bg-background text-xs"
+						className="h-8 border-border bg-background text-xs"
 					/>
 				</div>
 			</PopoverContent>

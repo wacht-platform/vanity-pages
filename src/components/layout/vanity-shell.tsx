@@ -158,7 +158,7 @@ export function VanityShell({
 
                 {navItems.length > 0 ? (
                     <div className="md:hidden">
-                        <div className="overflow-x-auto border-t border-border/40 px-4 py-2">
+                        <div className="overflow-x-auto border-t border-border px-4 py-2">
                             <Tabs value={activeNavValue}>
                                 <TabsList>
                                     {navItems.map((item) => (

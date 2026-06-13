@@ -132,9 +132,9 @@ export function TaskCommentsPanel({
                     </div>
                 </div>
             </div>
-            <div className="border-t border-border/60 bg-background px-4 py-3 md:px-5">
+            <div className="border-t border-border bg-background px-4 py-3 md:px-5">
                 <div className="mx-auto w-full max-w-3xl">
-                    <div className="rounded-lg border border-border/60 bg-background focus-within:border-border focus-within:ring-1 focus-within:ring-border/40">
+                    <div className="rounded-lg border border-border bg-background focus-within:border-border focus-within:ring-1 focus-within:ring-border/40">
                         <Textarea
                             value={draft}
                             onChange={(e) => setDraft(e.target.value)}
@@ -145,11 +145,11 @@ export function TaskCommentsPanel({
                             className="resize-none border-0 bg-transparent shadow-none focus-visible:ring-0"
                         />
                         {pendingFiles.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5 border-t border-border/60 px-3 py-2">
+                            <div className="flex flex-wrap gap-1.5 border-t border-border px-3 py-2">
                                 {pendingFiles.map((file, i) => (
                                     <div
                                         key={`${file.name}-${file.size}-${i}`}
-                                        className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 text-xs"
+                                        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-2 py-0.5 text-xs"
                                     >
                                         <IconPaperclip
                                             size={11}
@@ -171,7 +171,7 @@ export function TaskCommentsPanel({
                                 ))}
                             </div>
                         ) : null}
-                        <div className="flex items-center justify-between gap-2 border-t border-border/60 px-2 py-1.5">
+                        <div className="flex items-center justify-between gap-2 border-t border-border px-2 py-1.5">
                             <input
                                 ref={fileInputRef}
                                 type="file"
@@ -226,7 +226,7 @@ function CommentRow({ comment }: { comment: ProjectTaskBoardItemComment }) {
 
     if (resolved) {
         return (
-            <div className="rounded-md border border-border/60 bg-muted/10 px-3 py-2 transition-colors hover:bg-muted/20">
+            <div className="rounded-md border border-border bg-muted/10 px-3 py-2 transition-colors hover:bg-muted/20">
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
@@ -248,7 +248,7 @@ function CommentRow({ comment }: { comment: ProjectTaskBoardItemComment }) {
                             <IconCheck
                                 size={11}
                                 stroke={2}
-                                className="text-emerald-600 dark:text-emerald-400"
+                                className="text-success"
                             />
                             <span className="font-medium">Resolved</span>
                             <span
@@ -266,7 +266,7 @@ function CommentRow({ comment }: { comment: ProjectTaskBoardItemComment }) {
                     </div>
                 </button>
                 {expanded ? (
-                    <div className="mt-2 border-t border-border/60 pt-2 pl-5">
+                    <div className="mt-2 border-t border-border pt-2 pl-5">
                         {comment.body ? (
                             <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/70">
                                 {comment.body}
@@ -277,7 +277,7 @@ function CommentRow({ comment }: { comment: ProjectTaskBoardItemComment }) {
                                 {attachments.map((a, i) => (
                                     <div
                                         key={`${a.path ?? a.name ?? i}-${i}`}
-                                        className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 text-xs text-foreground/70"
+                                        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-2 py-0.5 text-xs text-foreground/70"
                                     >
                                         <IconPaperclip size={11} stroke={1.5} />
                                         <span className="max-w-52 truncate">
@@ -297,7 +297,7 @@ function CommentRow({ comment }: { comment: ProjectTaskBoardItemComment }) {
     }
 
     return (
-        <div className="rounded-md border border-border/60 bg-background px-3 py-2.5 transition-colors hover:bg-muted/20">
+        <div className="rounded-md border border-border bg-background px-3 py-2.5 transition-colors hover:bg-muted/20">
             <div
                 className="mb-1 text-xs text-muted-foreground/70"
                 title={formatAbsolute(comment.created_at)}
@@ -314,7 +314,7 @@ function CommentRow({ comment }: { comment: ProjectTaskBoardItemComment }) {
                     {attachments.map((a, i) => (
                         <div
                             key={`${a.path ?? a.name ?? i}-${i}`}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 text-xs text-foreground/80"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-2 py-0.5 text-xs text-foreground/80"
                         >
                             <IconPaperclip size={11} stroke={1.5} />
                             <span className="max-w-52 truncate">

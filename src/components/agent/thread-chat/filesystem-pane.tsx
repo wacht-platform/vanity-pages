@@ -267,7 +267,7 @@ export function ThreadFilesystemPane({
     <div
       className={cn(
         "relative shrink-0 overflow-hidden bg-background transition-[width] duration-200 ease-out",
-        showFilesystem ? "border-l border-border/60" : "border-l border-transparent",
+        showFilesystem ? "border-l border-border" : "border-l border-transparent",
       )}
       style={{ width: `${activeFilesystemPaneWidth}px` }}
     >
@@ -287,7 +287,7 @@ export function ThreadFilesystemPane({
           onPointerDown={startFilesystemResize}
         />
         <div className="flex h-full min-w-0 flex-col">
-          <div className="flex h-9 items-center justify-between border-b border-border/60 px-2.5">
+          <div className="flex h-9 items-center justify-between border-b border-border px-2.5">
             <div className="min-w-0">
               <div className="text-sm font-normal text-foreground">
                 Files
@@ -313,8 +313,8 @@ export function ThreadFilesystemPane({
             </div>
           </div>
           <div className="grid min-h-0 flex-1 grid-cols-[248px_minmax(0,1fr)]">
-            <div className="min-h-0 border-r border-border/60">
-              <div className="border-b border-border/60 px-2.5 py-1.5 text-sm text-muted-foreground">
+            <div className="min-h-0 border-r border-border">
+              <div className="border-b border-border px-2.5 py-1.5 text-sm text-muted-foreground">
                 workspace
               </div>
               <div className="h-[calc(100%-35px)] min-h-0 overflow-y-auto py-1">
@@ -352,7 +352,7 @@ export function ThreadFilesystemPane({
             </div>
 
             <div className="min-h-0 min-w-0">
-              <div className="flex h-9 items-center justify-between gap-3 border-b border-border/60 px-3">
+              <div className="flex h-9 items-center justify-between gap-3 border-b border-border px-3">
                 <div className="min-w-0 truncate font-mono text-xs text-muted-foreground">
                   {selectedFilesystemPreviewPath}
                 </div>

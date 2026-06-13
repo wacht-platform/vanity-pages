@@ -327,7 +327,7 @@ function ThreadForm({
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-                <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-3">
+                <div className="flex items-center justify-between rounded-lg border border-border px-3 py-3">
                     <div>
                         <div className="text-sm font-medium">Reusable</div>
                         <div className="text-xs text-muted-foreground">
@@ -339,7 +339,7 @@ function ThreadForm({
                         onCheckedChange={(checked) => setField("reusable", checked)}
                     />
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-3">
+                <div className="flex items-center justify-between rounded-lg border border-border px-3 py-3">
                     <div>
                         <div className="text-sm font-medium">Accept Assignments</div>
                         <div className="text-xs text-muted-foreground">

@@ -9,11 +9,11 @@ interface JsonViewerProps {
 
 // Design `.json` syntax palette (Wacht SDK surfaces).
 const C = {
-    key: "text-[#6e3bd3] dark:text-violet-400",
-    str: "text-[#0a7d4e] dark:text-emerald-400",
-    num: "text-[#b85c00] dark:text-amber-400",
-    bool: "text-[#2f6fdb] dark:text-blue-400",
-    null: "italic text-muted-foreground/60",
+    key: "text-primary",
+    str: "text-success",
+    num: "text-warning",
+    bool: "text-info",
+    null: "italic text-faint",
     punct: "text-muted-foreground/70",
 }
 
@@ -53,7 +53,7 @@ export function JsonViewer({ data }: JsonViewerProps) {
                 <div>
                     <button
                         onClick={() => toggleCollapse(path)}
-                        className="-ml-1 inline-flex items-center gap-1 rounded px-1 transition-colors hover:bg-muted/50 dark:hover:bg-white/5"
+                        className="-ml-1 inline-flex items-center gap-1 rounded px-1 transition-colors hover:bg-muted/50"
                     >
                         {isCollapsed ? (
                             <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
@@ -83,7 +83,7 @@ export function JsonViewer({ data }: JsonViewerProps) {
                 <div>
                     <button
                         onClick={() => toggleCollapse(path)}
-                        className="-ml-1 inline-flex items-center gap-1 rounded px-1 transition-colors hover:bg-muted/50 dark:hover:bg-white/5"
+                        className="-ml-1 inline-flex items-center gap-1 rounded px-1 transition-colors hover:bg-muted/50"
                     >
                         {isCollapsed ? (
                             <ChevronRight className="h-3 w-3 text-muted-foreground/40" />

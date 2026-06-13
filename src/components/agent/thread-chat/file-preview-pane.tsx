@@ -266,7 +266,7 @@ function CsvPreview({ text, delimiter }: { text: string; delimiter: string }) {
     <div className="overflow-auto px-4 py-3">
       <table className="min-w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-border/60 text-left">
+          <tr className="border-b border-border text-left">
             {header.map((cell, index) => (
               <th key={`header-${index}`} className="px-3 py-2 font-medium text-foreground">
                 {cell || `Column ${index + 1}`}
@@ -276,7 +276,7 @@ function CsvPreview({ text, delimiter }: { text: string; delimiter: string }) {
         </thead>
         <tbody>
           {body.map((row, rowIndex) => (
-            <tr key={`row-${rowIndex}`} className="border-b border-border/35 align-top">
+            <tr key={`row-${rowIndex}`} className="border-b border-border align-top">
               {header.map((_, columnIndex) => (
                 <td key={`cell-${rowIndex}-${columnIndex}`} className="px-3 py-2 text-foreground/78">
                   {row[columnIndex] || ""}
@@ -417,7 +417,7 @@ export function FilePreviewPane({
     if (officePreview) {
       return (
         <Tabs defaultValue="preview" className="h-full gap-0">
-          <div className="border-b border-border/60 px-3 py-2">
+          <div className="border-b border-border px-3 py-2">
             <TabsList className="h-8 bg-accent/30">
               <TabsTrigger value="preview" className="text-xs">
                 Preview
@@ -460,7 +460,7 @@ export function FilePreviewPane({
   if (shouldPreviewAsText && isMarkdownFile(path)) {
     return (
       <Tabs defaultValue="preview" className="h-full gap-0">
-        <div className="border-b border-border/60 px-3 py-2">
+        <div className="border-b border-border px-3 py-2">
           <TabsList className="h-8 bg-accent/30">
             <TabsTrigger value="preview" className="text-xs">
               Preview
@@ -494,7 +494,7 @@ export function FilePreviewPane({
     const delimiter = /\.tsv$/i.test(path) ? "\t" : ",";
     return (
       <Tabs defaultValue="preview" className="h-full gap-0">
-        <div className="border-b border-border/60 px-3 py-2">
+        <div className="border-b border-border px-3 py-2">
           <TabsList className="h-8 bg-accent/30">
             <TabsTrigger value="preview" className="text-xs">
               Preview

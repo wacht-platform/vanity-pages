@@ -30,6 +30,23 @@
     --color-chart-3: var(--chart-3);
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
+
+    /* SDK status + extra surface tokens (map straight onto the provider's
+       `--wa-*`, so hues match the design and follow deployment overrides).
+       Enables text-success / bg-success-soft / border-error / text-faint etc. */
+    --color-success: var(--wa-success);
+    --color-success-soft: var(--wa-success-soft);
+    --color-info: var(--wa-info);
+    --color-info-soft: var(--wa-info-soft);
+    --color-warning: var(--wa-warning);
+    --color-warning-soft: var(--wa-warning-soft);
+    --color-error: var(--wa-error);
+    --color-error-soft: var(--wa-error-soft);
+    --color-canvas: var(--wa-canvas);
+    --color-faint: var(--wa-text-faint);
+    --color-foreground-secondary: var(--wa-text-secondary);
+    --color-border-strong: var(--wa-border-strong);
+
     --radius: var(--radius);
     --color-sidebar: var(--sidebar);
     --color-sidebar-foreground: var(--sidebar-foreground);
@@ -64,106 +81,102 @@
     }
 }
 
-:root {
-    /* Design palette (SDK surfaces) — vanity ignores deployment color branding. */
-    --background: #f5f5f2;
-    --foreground: #161618;
-    --card: #ffffff;
-    --card-foreground: #161618;
-    --popover: #ffffff;
-    --popover-foreground: #161618;
-    --primary: #6b3df5;
-    --primary-foreground: #ffffff;
-    --secondary: #fafaf8;
-    --secondary-foreground: #161618;
-    --muted: #fafaf8;
-    --muted-foreground: #76767c;
-    --accent: #f1f0ed;
-    --accent-foreground: #161618;
-    --destructive: #c4271f;
-    --destructive-foreground: #ffffff;
-    --border: rgba(20, 20, 22, 0.08);
-    --input: rgba(20, 20, 22, 0.14);
-    --ring: #6b3df5;
+/* ------------------------------------------------------------------
+   Theme tokens come from the Wacht SDK style provider.
+
+   DefaultStylesProvider (mounted in ClientProviders) injects the 24
+   `--wa-*` surface tokens onto `.wacht-root` and applies the current
+   deployment's `theme_tokens` as inline `--wa-ov-*` overrides. We map
+   shadcn's semantic tokens straight onto those `--wa-*` names, so:
+     - light/dark flips at the `--wa-*` layer (`.dark .wacht-root`),
+       so no separate `.dark` block is needed here, and
+     - per-deployment branding configured in the console flows through
+       automatically — nothing is hardcoded/duplicated in this file.
+
+   `.wacht-root` is also placed on <body> (see layout.tsx) so these
+   resolve document-wide, including Radix portals mounted to body.
+   ------------------------------------------------------------------ */
+.wacht-root {
+    --background: var(--wa-background);
+    --foreground: var(--wa-text);
+    --card: var(--wa-surface);
+    --card-foreground: var(--wa-text);
+    --popover: var(--wa-surface);
+    --popover-foreground: var(--wa-text);
+    --primary: var(--wa-primary);
+    --primary-foreground: var(--wa-primary-foreground);
+    --secondary: var(--wa-surface-subtle);
+    --secondary-foreground: var(--wa-text);
+    --muted: var(--wa-surface-subtle);
+    --muted-foreground: var(--wa-text-muted);
+    --accent: var(--wa-surface-subtle);
+    --accent-foreground: var(--wa-text);
+    --destructive: var(--wa-error);
+    --destructive-foreground: var(--wa-primary-foreground);
+    --border: var(--wa-border);
+    --input: var(--wa-border-strong);
+    --ring: var(--wa-primary);
+    --radius: var(--wa-radius-lg);
+
+    --sidebar: var(--wa-surface);
+    --sidebar-foreground: var(--wa-text);
+    --sidebar-primary: var(--wa-primary);
+    --sidebar-primary-foreground: var(--wa-primary-foreground);
+    --sidebar-accent: var(--wa-surface-subtle);
+    --sidebar-accent-foreground: var(--wa-text);
+    --sidebar-border: var(--wa-border);
+    --sidebar-ring: var(--wa-primary);
+
+    /* charts are not part of the SDK token contract; kept static */
     --chart-1: oklch(0.809 0.105 251.813);
     --chart-2: oklch(0.623 0.214 259.815);
     --chart-3: oklch(0.546 0.245 262.881);
     --chart-4: oklch(0.488 0.243 264.376);
     --chart-5: oklch(0.424 0.199 265.638);
-    --radius: var(--theme-global-radius-lg, 0.625rem);
-    --sidebar: var(--theme-light-card, oklch(0.985 0 0));
-    --sidebar-foreground: var(--theme-light-foreground, oklch(0.145 0 0));
-    --sidebar-primary: var(--theme-light-primary, oklch(0.205 0 0));
-    --sidebar-primary-foreground: var(
-        --theme-light-primary-foreground,
-        oklch(0.985 0 0)
-    );
-    --sidebar-accent: var(--theme-light-accent, oklch(0.97 0 0));
-    --sidebar-accent-foreground: var(
-        --theme-light-accent-foreground,
-        oklch(0.205 0 0)
-    );
-    --sidebar-border: var(--theme-light-border, oklch(0.922 0 0));
-    --sidebar-ring: var(--theme-light-ring, oklch(0.708 0 0));
 }
 
-.dark {
-    --background: var(--theme-dark-background, oklch(0.145 0 0));
-    --foreground: var(--theme-dark-foreground, oklch(0.985 0 0));
-    --card: var(--theme-dark-card, oklch(0.205 0 0));
-    --card-foreground: var(--theme-dark-card-foreground, oklch(0.985 0 0));
-    --popover: var(--theme-dark-popover, oklch(0.205 0 0));
-    --popover-foreground: var(
-        --theme-dark-popover-foreground,
-        oklch(0.985 0 0)
-    );
-    --primary: var(--theme-dark-primary, oklch(0.87 0 0));
-    --primary-foreground: var(
-        --theme-dark-primary-foreground,
-        oklch(0.205 0 0)
-    );
-    --secondary: var(--theme-dark-secondary, oklch(0.28 0 0));
-    --secondary-foreground: var(
-        --theme-dark-secondary-foreground,
-        oklch(0.985 0 0)
-    );
-    --muted: var(--theme-dark-muted, oklch(0.269 0 0));
-    --muted-foreground: var(--theme-dark-muted-foreground, oklch(0.708 0 0));
-    --accent: var(--theme-dark-accent, oklch(0.371 0 0));
-    --accent-foreground: var(--theme-dark-accent-foreground, oklch(0.985 0 0));
-    --destructive: var(--theme-dark-destructive, #f87171);
-    --destructive-foreground: var(
-        --theme-dark-destructive-foreground,
-        oklch(0.205 0 0)
-    );
-    --border: var(--theme-dark-border, oklch(1 0 0 / 10%));
-    --input: var(--theme-dark-input, oklch(1 0 0 / 15%));
-    --ring: var(--theme-dark-ring, oklch(0.553 0 0));
-    --chart-1: oklch(0.809 0.105 251.813);
-    --chart-2: oklch(0.623 0.214 259.815);
-    --chart-3: oklch(0.546 0.245 262.881);
-    --chart-4: oklch(0.488 0.243 264.376);
-    --chart-5: oklch(0.424 0.199 265.638);
-    --sidebar: var(--theme-dark-card, oklch(0.205 0 0));
-    --sidebar-foreground: var(--theme-dark-foreground, oklch(0.985 0 0));
-    --sidebar-primary: var(--theme-dark-primary, oklch(0.488 0.243 264.376));
-    --sidebar-primary-foreground: var(
-        --theme-dark-primary-foreground,
-        oklch(0.205 0 0)
-    );
-    --sidebar-accent: var(--theme-dark-accent, oklch(0.371 0 0));
-    --sidebar-accent-foreground: var(
-        --theme-dark-accent-foreground,
-        oklch(0.985 0 0)
-    );
-    --sidebar-border: var(--theme-dark-border, oklch(1 0 0 / 10%));
-    --sidebar-ring: var(--theme-dark-ring, oklch(0.553 0 0));
+/* Use vanity's locally-loaded Geist for the SDK font token. The SDK default
+   references the literal "Geist" family, but next/font registers Geist under a
+   hashed name exposed via --font-geist-sans. The doubled class out-specifies
+   the SDK's own `.wacht-root` rule regardless of stylesheet injection order. */
+.wacht-root.wacht-root {
+    --wa-font-sans: var(--font-geist-sans), "Inter", system-ui, -apple-system,
+        sans-serif;
+    --wa-font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+        monospace;
+}
+
+/* Hairline borders — the design language uses 0.5px lines throughout. These
+   rules are unlayered, so they override Tailwind's 1px `border*` utilities (which
+   live in @layer utilities). Intentional thicker borders (border-2, border-[Npx],
+   etc.) use different utility classes and are left untouched. */
+.wacht-root .border {
+    border-width: 0.5px;
+}
+.wacht-root .border-t {
+    border-top-width: 0.5px;
+}
+.wacht-root .border-b {
+    border-bottom-width: 0.5px;
+}
+.wacht-root .border-l {
+    border-left-width: 0.5px;
+}
+.wacht-root .border-r {
+    border-right-width: 0.5px;
+}
+.wacht-root .border-x {
+    border-left-width: 0.5px;
+    border-right-width: 0.5px;
+}
+.wacht-root .border-y {
+    border-top-width: 0.5px;
+    border-bottom-width: 0.5px;
 }
 
 * {
     scrollbar-width: thin;
-    scrollbar-color: var(--theme-scrollbar-thumb, var(--muted-foreground))
-        var(--theme-scrollbar-track, var(--muted));
+    scrollbar-color: var(--muted-foreground) var(--muted);
 }
 
 *::-webkit-scrollbar {
@@ -171,16 +184,16 @@
 }
 
 *::-webkit-scrollbar-track {
-    background: var(--theme-scrollbar-track, var(--muted));
+    background: var(--muted);
 }
 
 *::-webkit-scrollbar-thumb {
-    background: var(--theme-scrollbar-thumb, var(--muted-foreground));
+    background: var(--muted-foreground);
     border-radius: 4px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background: var(--theme-scrollbar-thumb-hover, var(--foreground));
+    background: var(--foreground);
 }
 
 @theme inline {
@@ -191,7 +204,7 @@
     --radius-2xl: calc(var(--radius) + 8px);
     --radius-3xl: calc(var(--radius) + 12px);
     --radius-4xl: calc(var(--radius) + 16px);
-    --font-sans: var(--font-geist-sans), "Public Sans", system-ui, sans-serif;
+    --font-sans: var(--font-geist-sans), "Inter", system-ui, sans-serif;
     --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 

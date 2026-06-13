@@ -44,17 +44,17 @@ function initials(name: string) {
 function StatusDot({ status }: { status?: string }) {
     if (status === "running" || status === "in_progress") {
         return (
-            <span className="size-1.5 shrink-0 rounded-full bg-blue-500 animate-pulse" />
+            <span className="size-1.5 shrink-0 rounded-full bg-info animate-pulse" />
         );
     }
     if (status === "completed") {
         return (
-            <span className="size-1.5 shrink-0 rounded-full bg-emerald-500/80" />
+            <span className="size-1.5 shrink-0 rounded-full bg-success/80" />
         );
     }
     if (status === "failed" || status === "blocked") {
         return (
-            <span className="size-1.5 shrink-0 rounded-full bg-rose-500/80" />
+            <span className="size-1.5 shrink-0 rounded-full bg-error/80" />
         );
     }
     return <span className="size-1.5 shrink-0 rounded-full bg-border" />;
@@ -64,7 +64,7 @@ const shellButtonClass =
     "inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
 const primaryNavItemClass =
     "flex h-8 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
-const primaryNavItemActiveClass = "bg-accent text-foreground";
+const primaryNavItemActiveClass = "bg-accent text-foreground [&_svg]:text-primary";
 const nestedNavItemClass =
     "flex h-8 items-center gap-2 rounded-sm px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
 const nestedNavItemActiveClass = "bg-accent text-foreground";
@@ -129,7 +129,7 @@ export function AppSidebar({ className }: { className?: string }) {
             <button
                 type="button"
                 onClick={() => setIsMobileOpen((current) => !current)}
-                className="fixed left-3 top-3 z-50 flex size-9 items-center justify-center rounded-md border border-border/60 bg-background text-foreground shadow-sm md:hidden"
+                className="fixed left-3 top-3 z-50 flex size-9 items-center justify-center rounded-md border border-border bg-background text-foreground shadow-sm md:hidden"
                 aria-label="Toggle sidebar"
             >
                 <IconMenu2 size={16} stroke={1.8} />
@@ -144,7 +144,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
             <aside
                 className={cn(
-                    "fixed z-50 flex h-full shrink-0 flex-col border-r border-sidebar-border/70 bg-sidebar text-sidebar-foreground transition-all duration-200 ease-out md:relative",
+                    "fixed z-50 flex h-full shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200 ease-out md:relative",
                     isMobileOpen
                         ? "translate-x-0"
                         : "-translate-x-full md:translate-x-0",
@@ -216,7 +216,7 @@ function ExpandedSidebar({
 }) {
     return (
         <div className="flex h-full flex-col">
-            <div className="flex h-12 items-center justify-between border-b border-sidebar-border/70 px-2.5">
+            <div className="flex h-12 items-center justify-between border-b border-sidebar-border px-2.5">
                 <div className="min-w-0">
                     <div className="text-sm text-foreground">Agents</div>
                 </div>
@@ -240,13 +240,13 @@ function ExpandedSidebar({
                         <button
                             type="button"
                             onClick={onOpenCommand}
-                            className="flex h-8 w-full items-center justify-between rounded-md bg-accent/45 px-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                            className="flex h-[34px] w-full items-center justify-between rounded-[8px] border border-border bg-card px-2.5 text-[13px] text-faint transition-colors hover:text-foreground"
                         >
                             <span className="flex items-center gap-2">
                                 <IconSearch size={14} stroke={1.9} />
                                 <span>Search or jump</span>
                             </span>
-                            <span className="rounded-sm bg-background/80 px-1.5 py-0.5 text-xs text-muted-foreground">
+                            <span className="font-mono text-[11px] font-medium text-faint">
                                 ⌘K
                             </span>
                         </button>
@@ -574,7 +574,7 @@ function ProjectSection({
             </div>
 
             {isOpen ? (
-                <div className="ml-2.5 space-y-1 border-l border-border/50 pl-2">
+                <div className="ml-2.5 space-y-1 border-l border-border pl-2">
                     <NestedLink
                         href={`/agents/p/${project.id}/tasks`}
                         active={pathname.startsWith(
@@ -628,7 +628,7 @@ function ProjectSection({
                         </button>
 
                         {showArchived ? (
-                            <div className="mt-1 ml-2.5 space-y-0.5 border-l border-border/50 pl-2">
+                            <div className="mt-1 ml-2.5 space-y-0.5 border-l border-border pl-2">
                                 {archivedThreads.length > 0 ? (
                                     archivedThreads.map(
                                         (thread: AgentThread) => (

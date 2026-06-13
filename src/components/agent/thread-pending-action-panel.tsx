@@ -166,7 +166,7 @@ export function ThreadPendingActionPanel({
     if (compact) {
         return (
             <div className="animate-in fade-in duration-200">
-                <div className="rounded border border-border/60 bg-secondary/10 p-3">
+                <div className="rounded border border-border bg-secondary/10 p-3">
                     {content}
                 </div>
             </div>
@@ -225,7 +225,7 @@ function ApprovalActionContent({
                                 }))
                             }
                         >
-                            <SelectTrigger className="h-7 w-[100px] bg-background/50 border-border/60 text-xs font-normal shadow-none hover:bg-background focus:ring-0 px-2 rounded-sm">
+                            <SelectTrigger className="h-7 w-[100px] bg-background/50 border-border text-xs font-normal shadow-none hover:bg-background focus:ring-0 px-2 rounded-sm">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="rounded-sm shadow-xl border-border">

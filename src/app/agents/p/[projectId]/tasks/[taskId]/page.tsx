@@ -18,7 +18,7 @@ import {
     IconChecklist,
     IconChevronDown,
     IconChevronUp,
-    IconRoute,
+    IconChevronRight,
 } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
@@ -73,30 +73,6 @@ function timestampValue(value?: string) {
     return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-function getStatusIndicator(status?: string) {
-    const colors: Record<string, string> = {
-        completed: "bg-emerald-500",
-        failed: "bg-rose-500",
-        blocked: "bg-rose-500",
-        rejected: "bg-rose-500",
-        cancelled: "bg-muted-foreground/60",
-        in_progress: "bg-blue-500 animate-pulse",
-        claimed: "bg-blue-500",
-        available: "bg-amber-500",
-        pending: "bg-amber-500",
-        needs_clarification: "bg-violet-500",
-        waiting_for_children: "bg-sky-500",
-    };
-    return (
-        <div
-            className={cn(
-                "size-1.5 rounded-full shrink-0",
-                colors[status || ""] || "bg-muted-foreground/40",
-            )}
-        />
-    );
-}
-
 function formatLabel(value?: string) {
     if (!value) return "Unknown";
     return value
@@ -109,6 +85,72 @@ function formatAssignmentStatus(assignment: ProjectTaskBoardItemAssignment) {
         return `${formatLabel(assignment.status)} · ${formatLabel(assignment.result_status)}`;
     }
     return formatLabel(assignment.status);
+}
+
+const STATUS_PILL_KIND: Record<string, "ok" | "warn" | "info" | "err"> = {
+    completed: "ok",
+    failed: "err",
+    blocked: "warn",
+    rejected: "err",
+    cancelled: "err",
+    in_progress: "info",
+    claimed: "info",
+    available: "warn",
+    pending: "warn",
+    needs_clarification: "warn",
+    waiting_for_children: "warn",
+};
+
+const PILL_KIND_CLASS: Record<"ok" | "warn" | "info" | "err", string> = {
+    ok: "border-success/30 bg-success-soft text-success",
+    warn: "border-warning/30 bg-warning-soft text-warning",
+    info: "",
+    err: "",
+};
+
+const PILL_DOT_CLASS: Record<"ok" | "warn" | "info" | "err", string> = {
+    ok: "bg-success",
+    warn: "bg-warning",
+    info: "bg-info",
+    err: "bg-error",
+};
+
+function statusHueClass(status?: string) {
+    const kind = STATUS_PILL_KIND[status || ""];
+    if (kind === "ok") return "text-success";
+    if (kind === "warn") return "text-warning";
+    if (kind === "info") return "text-info";
+    return "";
+}
+
+const DOT_COLOR_CLASS: Record<string, string> = {
+    completed: "bg-success",
+    failed: "bg-error",
+    blocked: "bg-error",
+    rejected: "bg-error",
+    cancelled: "bg-muted-foreground/60",
+    in_progress: "bg-info",
+    claimed: "bg-info",
+    available: "bg-warning",
+    pending: "bg-warning",
+    needs_clarification: "bg-warning",
+    waiting_for_children: "bg-warning",
+};
+
+function dotColorClass(status?: string) {
+    return DOT_COLOR_CLASS[status || ""] || "bg-faint";
+}
+
+function formatDuration(startValue?: string, endValue?: string) {
+    const start = timestampValue(startValue);
+    if (!start) return "—";
+    const end = timestampValue(endValue);
+    if (!end || end < start) return "—";
+    const seconds = (end - start) / 1000;
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const minutes = seconds / 60;
+    if (minutes < 60) return `${Math.round(minutes)}m`;
+    return `${(minutes / 60).toFixed(1)}h`;
 }
 
 function normalizeWorkspacePath(value: unknown) {
@@ -270,7 +312,7 @@ function DeliverablesPanel({
                 {entries.map((entry, idx) => (
                     <div
                         key={`${entry.assignment_id}-${idx}`}
-                        className="rounded-md border border-border/60 bg-card/30 p-4"
+                        className="rounded-md border border-border bg-card/30 p-4"
                     >
                         <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                             <span className="text-sm font-normal text-foreground">
@@ -439,6 +481,36 @@ export default function ProjectTaskDetailPage() {
               ) || null
             : null;
 
+    const snapshot = React.useMemo(() => {
+        const runCount = assignments.length;
+        const runningCount = assignments.filter(
+            (a: ProjectTaskBoardItemAssignment) =>
+                a.status === "in_progress" || a.status === "claimed",
+        ).length;
+        const deliverableCount = item?.deliverables?.length ?? 0;
+        const latestDeliverable = item?.deliverables
+            ? [...item.deliverables].sort(
+                  (a, b) => timestampValue(b.at) - timestampValue(a.at),
+              )[0]
+            : undefined;
+        const lastActivityTs = Math.max(
+            timestampValue(item?.updated_at),
+            ...assignments.map((a: ProjectTaskBoardItemAssignment) =>
+                timestampValue(a.updated_at),
+            ),
+        );
+        const lastActivity = lastActivityTs
+            ? new Date(lastActivityTs).toISOString()
+            : undefined;
+        return {
+            runCount,
+            runningCount,
+            deliverableCount,
+            latestDeliverableSummary: latestDeliverable?.result_summary,
+            lastActivity,
+        };
+    }, [assignments, item]);
+
     const openWorkspacePath = React.useCallback((path: string | null) => {
         const normalizedPath = normalizeWorkspacePath(path);
         if (!normalizedPath) return;
@@ -559,12 +631,26 @@ export default function ProjectTaskDetailPage() {
                 }
                 right={
                     <>
-                        <div className="flex items-center gap-2 rounded-md border border-border/60 px-2 py-1">
-                            {getStatusIndicator(item.status)}
-                            <span className="text-sm text-muted-foreground">
-                                {item.status?.replace(/_/g, " ")}
-                            </span>
-                        </div>
+                        <span
+                            className={cn(
+                                "inline-flex h-[22px] w-fit items-center gap-1.5 rounded-[4px] border border-border bg-secondary px-2 font-mono text-[11px] font-medium lowercase text-foreground-secondary",
+                                PILL_KIND_CLASS[
+                                    STATUS_PILL_KIND[item.status || ""] ||
+                                        "info"
+                                ],
+                            )}
+                        >
+                            <span
+                                className={cn(
+                                    "size-[6px] rounded-full",
+                                    PILL_DOT_CLASS[
+                                        STATUS_PILL_KIND[item.status || ""] ||
+                                            "info"
+                                    ],
+                                )}
+                            />
+                            {item.status?.replace(/_/g, " ")}
+                        </span>
                         <EditTaskDialog
                             task={item}
                             onUpdate={async (request, files) => {
@@ -583,7 +669,7 @@ export default function ProjectTaskDetailPage() {
                                         return;
                                     await cancelItem();
                                 }}
-                                className="flex h-8 items-center gap-1.5 rounded-md border border-border/60 px-3 text-sm transition-colors hover:bg-accent/50"
+                                className="flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm transition-colors hover:bg-accent/50"
                             >
                                 <span>Cancel</span>
                             </button>
@@ -594,7 +680,7 @@ export default function ProjectTaskDetailPage() {
                                     ? await unarchiveItem()
                                     : await archiveItem()
                             }
-                            className="flex h-8 items-center gap-1.5 rounded-md border border-border/60 px-3 text-sm transition-colors hover:bg-accent/50"
+                            className="flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm transition-colors hover:bg-accent/50"
                         >
                             <IconArchive size={13} stroke={1.5} />
                             <span>
@@ -608,11 +694,86 @@ export default function ProjectTaskDetailPage() {
             <div className="flex-1 overflow-y-auto">
                 <div className="flex h-full w-full flex-col">
                     {/* Task Title Section */}
-                    <div className="border-b border-border/60 px-4 py-4 md:px-5">
+                    <div className="border-b border-border px-4 py-4 md:px-5">
                         <div className="max-w-4xl space-y-3">
-                            <h1 className="text-base font-normal leading-tight">
+                            <div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+                                {project?.name || "Tasks"} ·{" "}
+                                {item.task_key ||
+                                    `TSK-${item.id.substring(0, 4)}`}
+                            </div>
+                            <h1 className="text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
                                 {item.title}
                             </h1>
+                            {/* Task snapshot */}
+                            <div className="overflow-hidden rounded-[10px] border border-border bg-card">
+                                <div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                    Task snapshot
+                                </div>
+                                <div className="grid grid-cols-2 divide-x divide-border sm:grid-cols-4">
+                                    <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
+                                        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                            status
+                                        </div>
+                                        <div
+                                            className={cn(
+                                                "text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground",
+                                                statusHueClass(item.status),
+                                            )}
+                                        >
+                                            {item.status?.replace(/_/g, " ") ||
+                                                "—"}
+                                        </div>
+                                        <div className="font-mono text-[11px] leading-[1.4] text-faint">
+                                            {item.completed_at
+                                                ? "completed"
+                                                : item.scheduled_for
+                                                  ? "scheduled"
+                                                  : "active"}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
+                                        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                            agent runs
+                                        </div>
+                                        <div className="text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground">
+                                            {snapshot.runCount}
+                                        </div>
+                                        <div className="font-mono text-[11px] leading-[1.4] text-faint">
+                                            {snapshot.runningCount > 0
+                                                ? `${snapshot.runningCount} running`
+                                                : "—"}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
+                                        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                            deliverables
+                                        </div>
+                                        <div className="text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground">
+                                            {snapshot.deliverableCount}
+                                        </div>
+                                        <div className="truncate font-mono text-[11px] leading-[1.4] text-faint">
+                                            {snapshot.latestDeliverableSummary ||
+                                                "—"}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
+                                        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                            last activity
+                                        </div>
+                                        <div className="text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground">
+                                            {formatTime(snapshot.lastActivity) ||
+                                                "—"}
+                                        </div>
+                                        <div className="font-mono text-[11px] leading-[1.4] text-faint">
+                                            {snapshot.lastActivity
+                                                ? new Date(
+                                                      snapshot.lastActivity,
+                                                  ).toLocaleDateString()
+                                                : "—"}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             {item.description ? (
                                 <div className="relative">
                                     <div
@@ -696,8 +857,8 @@ export default function ProjectTaskDetailPage() {
 
                     {/* Agentic Workspace */}
                     <div className="flex min-h-0 flex-1 flex-col">
-                        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 px-4">
-                            <div className="flex rounded-md border border-border/60 p-0.5">
+                        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
+                            <div className="inline-flex gap-0.5 rounded-[8px] border border-border bg-secondary p-[3px]">
                                 {(
                                     [
                                         "assignments",
@@ -710,10 +871,10 @@ export default function ProjectTaskDetailPage() {
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
                                         className={cn(
-                                            "rounded px-3 py-1 text-sm font-normal capitalize transition-all",
+                                            "h-7 rounded-[6px] px-[13px] text-[12px] font-medium capitalize text-muted-foreground transition-all",
                                             activeTab === tab
-                                                ? "border border-border bg-background text-foreground"
-                                                : "text-muted-foreground hover:text-foreground",
+                                                ? "bg-card text-foreground shadow-[0_0_0_0.5px_var(--wa-border-strong)]"
+                                                : "hover:text-foreground",
                                         )}
                                     >
                                         {tab}
@@ -752,60 +913,103 @@ export default function ProjectTaskDetailPage() {
                             />
                         ) : (
                             <div className="flex min-h-0 flex-1">
-                                <div className="flex w-75 flex-col border-r border-border/60">
-                                    <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-hide">
-                                        <div className="space-y-px">
+                                <div className="flex w-75 flex-col border-r border-border">
+                                    <div className="flex-1 overflow-y-auto py-3 scrollbar-hide">
+                                        <div className="px-4 pb-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                            Agent assignments
+                                        </div>
+                                        <div>
                                             {orderedAssignments.map(
-                                                (assignment) => (
-                                                    <button
-                                                        key={assignment.id}
-                                                        onClick={() =>
-                                                            setSelection({
-                                                                kind: "assignment",
-                                                                assignmentId:
-                                                                    assignment.id,
-                                                            })
-                                                        }
-                                                        className={cn(
-                                                            "group flex w-full items-center gap-3 rounded px-3 py-1.5 text-left transition-all",
-                                                            selection?.kind ===
-                                                                "assignment" &&
-                                                                selection.assignmentId ===
-                                                                    assignment.id
-                                                                ? "bg-accent/40"
-                                                                : "hover:bg-accent/20",
-                                                        )}
-                                                    >
-                                                        <IconRoute
-                                                            size={14}
+                                                (assignment) => {
+                                                    const isActive =
+                                                        selection?.kind ===
+                                                            "assignment" &&
+                                                        selection.assignmentId ===
+                                                            assignment.id;
+                                                    const latestActivity =
+                                                        assignment.result_summary ||
+                                                        formatAssignmentStatus(
+                                                            assignment,
+                                                        );
+                                                    const startedAt =
+                                                        assignment.started_at ||
+                                                        assignment.claimed_at ||
+                                                        assignment.created_at;
+                                                    const duration =
+                                                        formatDuration(
+                                                            assignment.started_at ||
+                                                                assignment.claimed_at,
+                                                            assignment.completed_at ||
+                                                                assignment.rejected_at,
+                                                        );
+                                                    return (
+                                                        <button
+                                                            key={assignment.id}
+                                                            onClick={() =>
+                                                                setSelection({
+                                                                    kind: "assignment",
+                                                                    assignmentId:
+                                                                        assignment.id,
+                                                                })
+                                                            }
                                                             className={cn(
-                                                                "shrink-0",
-                                                                selection?.kind ===
-                                                                    "assignment" &&
-                                                                    selection.assignmentId ===
-                                                                        assignment.id
-                                                                    ? "text-foreground"
-                                                                    : "text-muted-foreground/60",
+                                                                "grid w-full grid-cols-[7px_1fr_20px] items-center gap-[14px] border-b border-border px-4 py-[13px] text-left last:border-b-0 hover:bg-secondary",
+                                                                isActive &&
+                                                                    "bg-secondary",
                                                             )}
-                                                        />
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="truncate text-sm font-normal">
-                                                                {formatLabel(
-                                                                    assignment.assignment_role,
+                                                        >
+                                                            <span
+                                                                className={cn(
+                                                                    "size-[7px] rounded-full",
+                                                                    dotColorClass(
+                                                                        assignment.status,
+                                                                    ),
                                                                 )}
+                                                            />
+                                                            <div className="min-w-0">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="truncate text-[13px] font-medium leading-[1.2] text-foreground">
+                                                                        {formatLabel(
+                                                                            assignment.assignment_role,
+                                                                        )}
+                                                                    </span>
+                                                                    <span className="inline-flex w-fit flex-none items-center rounded-[3px] border border-border bg-secondary px-1.5 py-px font-mono text-[11px] font-medium text-foreground-secondary">
+                                                                        {formatLabel(
+                                                                            assignment.status,
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="mt-1 truncate text-[12px] text-muted-foreground">
+                                                                    {latestActivity}
+                                                                </div>
+                                                                <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-faint">
+                                                                    <span>
+                                                                        {formatTime(
+                                                                            startedAt,
+                                                                        ) ||
+                                                                            "—"}
+                                                                    </span>
+                                                                    <span>
+                                                                        ·
+                                                                    </span>
+                                                                    <span className="tabular-nums">
+                                                                        {
+                                                                            duration
+                                                                        }
+                                                                    </span>
+                                                                </div>
                                                             </div>
-                                                            <div className="text-xs text-muted-foreground/60">
-                                                                {formatAssignmentStatus(
-                                                                    assignment,
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </button>
-                                                ),
+                                                            <IconChevronRight
+                                                                size={14}
+                                                                className="justify-self-end text-faint"
+                                                            />
+                                                        </button>
+                                                    );
+                                                },
                                             )}
                                         </div>
                                         {assignmentsHasMore ? (
-                                            <div className="px-3 pt-3">
+                                            <div className="px-4 pt-3">
                                                 <button
                                                     type="button"
                                                     onClick={() =>
@@ -814,7 +1018,7 @@ export default function ProjectTaskDetailPage() {
                                                     disabled={
                                                         assignmentsLoadingMore
                                                     }
-                                                    className="w-full rounded-md border border-border/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/20 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                                                    className="w-full rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/20 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                                                 >
                                                     {assignmentsLoadingMore
                                                         ? "Loading..."
@@ -826,7 +1030,7 @@ export default function ProjectTaskDetailPage() {
                                 </div>
 
                                 <div className="flex min-w-0 flex-1 flex-col bg-background">
-                                    <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 px-4 md:px-5">
+                                    <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 md:px-5">
                                         <div className="max-w-md truncate text-sm font-normal text-muted-foreground">
                                             {selection?.kind === "assignment"
                                                 ? formatLabel(

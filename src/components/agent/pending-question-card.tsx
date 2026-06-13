@@ -68,7 +68,7 @@ export function PendingQuestionCard({ pending, onSubmit, busy }: Props) {
     };
 
     return (
-        <div className="space-y-4 rounded-lg border border-border/60 bg-accent/10 p-4">
+        <div className="space-y-4 rounded-lg border border-border bg-accent/10 p-4">
             <div className="space-y-1">
                 <div className="text-sm font-medium">The agent is asking for your input</div>
                 {pending.context ? (
@@ -79,7 +79,7 @@ export function PendingQuestionCard({ pending, onSubmit, busy }: Props) {
                 <div className="space-y-2">
                     <Label className="text-sm font-medium">Reply in your own words</Label>
                     <textarea
-                        className="min-h-[96px] w-full rounded-md border border-border/60 bg-background p-2 text-sm"
+                        className="min-h-[96px] w-full rounded-md border border-border bg-background p-2 text-sm"
                         placeholder="Type whatever you want the agent to know — it'll skip the form."
                         maxLength={4000}
                         value={freeformDraft}

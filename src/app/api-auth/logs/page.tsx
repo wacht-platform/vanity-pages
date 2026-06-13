@@ -170,7 +170,7 @@ export default function ApiAuthLogsPage() {
 													className={cn(
 														"inline-flex h-[22px] w-fit items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
 														allowed
-															? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+															? "border-success/30 bg-success-soft text-success"
 															: "border-destructive/25 bg-destructive/10 text-destructive",
 													)}
 												>
@@ -178,7 +178,7 @@ export default function ApiAuthLogsPage() {
 														className={cn(
 															"size-1.5 rounded-full",
 															allowed
-																? "bg-emerald-500"
+																? "bg-success"
 																: "bg-destructive",
 														)}
 													/>
@@ -226,7 +226,7 @@ export default function ApiAuthLogsPage() {
 						size="sm"
 						onClick={() => setPage(p => Math.max(1, p - 1))}
 						disabled={page === 1}
-						className="h-8 px-3 border-border/60 text-xs font-normal hover:bg-muted/50 transition-all rounded-lg"
+						className="h-8 px-3 border-border text-xs font-normal hover:bg-muted/50 transition-all rounded-lg"
 					>
 						Previous
 					</Button>
@@ -235,7 +235,7 @@ export default function ApiAuthLogsPage() {
 						size="sm"
 						onClick={() => setPage(p => p + 1)}
 						disabled={!has_more || loading}
-						className="h-8 px-3 border-border/60 text-xs font-normal hover:bg-muted/50 transition-all rounded-lg"
+						className="h-8 px-3 border-border text-xs font-normal hover:bg-muted/50 transition-all rounded-lg"
 					>
 						Next
 					</Button>

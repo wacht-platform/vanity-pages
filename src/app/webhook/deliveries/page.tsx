@@ -95,9 +95,9 @@ export default function WebhookLogsPage() {
 
 
 	const getStatusColor = (statusCode: number) => {
-		if (statusCode >= 200 && statusCode < 300) return "bg-emerald-500"
-		if (statusCode >= 400 && statusCode < 500) return "bg-amber-500"
-		if (statusCode >= 500) return "bg-rose-500"
+		if (statusCode >= 200 && statusCode < 300) return "bg-success"
+		if (statusCode >= 400 && statusCode < 500) return "bg-warning"
+		if (statusCode >= 500) return "bg-error"
 		return "bg-muted-foreground"
 	}
 
@@ -531,7 +531,7 @@ export default function WebhookLogsPage() {
 													) : detailsList && detailsList.length > 0 ? (
 														<div className="space-y-3">
 															{delivery.filtered_reason && (
-																<div className="rounded-[6px] border border-amber-500/25 bg-amber-500/10 p-3 text-[12px] text-amber-600 dark:text-amber-400">
+																<div className="rounded-[6px] border border-warning/30 bg-warning-soft p-3 text-[12px] text-warning">
 																	Filtered reason: {delivery.filtered_reason}
 																</div>
 															)}

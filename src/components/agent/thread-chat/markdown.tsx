@@ -21,7 +21,7 @@ export const threadChatMarkdownComponents: Components = {
     if (!isBlock) {
       return (
         <code
-          className="mx-0.5 inline break-words rounded-md border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[0.84em] font-medium leading-none text-emerald-950 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-100"
+          className="mx-0.5 inline break-words rounded-md border border-success/30 bg-success-soft px-1.5 py-0.5 font-mono text-[0.84em] font-medium leading-none text-success"
           {...props}
         >
           {children}
@@ -31,7 +31,7 @@ export const threadChatMarkdownComponents: Components = {
 
     return (
       <code
-        className="block overflow-x-auto rounded-lg border border-border/70 bg-muted/60 p-3 font-mono text-[12px] leading-6 text-foreground"
+        className="block overflow-x-auto rounded-lg border border-border bg-muted/60 p-3 font-mono text-[12px] leading-6 text-foreground"
         {...props}
       >
         {children}
@@ -41,7 +41,7 @@ export const threadChatMarkdownComponents: Components = {
   pre({ children, ...props }) {
     return (
       <pre
-        className="overflow-x-auto rounded-xl border border-border/70 bg-muted/40 p-0"
+        className="overflow-x-auto rounded-xl border border-border bg-muted/40 p-0"
         {...props}
       >
         {children}

@@ -25,15 +25,15 @@ export function EndpointTrafficChart({ loading, data }: Props) {
 				</div>
 				<div className="flex flex-wrap items-center gap-3.5">
 					<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-						<span className="size-2 rounded-full bg-emerald-500" />
+						<span className="size-2 rounded-full bg-success" />
 						Successful
 					</span>
 					<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-						<span className="size-2 rounded-full bg-destructive" />
+						<span className="size-2 rounded-full bg-error" />
 						Failed
 					</span>
 					<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-						<span className="size-2 rounded-full bg-amber-500" />
+						<span className="size-2 rounded-full bg-warning" />
 						Filtered
 					</span>
 					<span className="inline-flex h-6 items-center rounded-[4px] border border-border bg-secondary px-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
@@ -72,9 +72,9 @@ export function EndpointTrafficChart({ loading, data }: Props) {
 									return [Number(value ?? 0).toLocaleString(), label]
 								}}
 							/>
-							<Bar dataKey="successful" name="Successful" fill="hsl(142, 76%, 36%)" fillOpacity={0.85} radius={[3, 3, 0, 0]} strokeWidth={0} />
-							<Bar dataKey="failed" name="Failed" fill="hsl(0, 84%, 60%)" fillOpacity={0.85} radius={[3, 3, 0, 0]} strokeWidth={0} />
-							<Bar dataKey="filtered" name="Filtered" fill="hsl(38, 92%, 50%)" fillOpacity={0.9} radius={[3, 3, 0, 0]} strokeWidth={0} />
+							<Bar dataKey="successful" name="Successful" fill="var(--wa-success)" fillOpacity={0.85} radius={[3, 3, 0, 0]} strokeWidth={0} />
+							<Bar dataKey="failed" name="Failed" fill="var(--wa-error)" fillOpacity={0.85} radius={[3, 3, 0, 0]} strokeWidth={0} />
+							<Bar dataKey="filtered" name="Filtered" fill="var(--wa-warning)" fillOpacity={0.9} radius={[3, 3, 0, 0]} strokeWidth={0} />
 						</BarChart>
 					</ResponsiveContainer>
 				)}

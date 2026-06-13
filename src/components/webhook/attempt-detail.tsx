@@ -51,9 +51,9 @@ const LBL = "font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-
 const JSON_BLOCK = "overflow-x-auto rounded-[6px] border border-border bg-secondary/40 px-3.5 py-3"
 
 function statusPillClass(code: number) {
-	if (code >= 200 && code < 300) return "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-	if (code >= 500) return "border-rose-500/25 bg-rose-500/10 text-rose-600 dark:text-rose-400"
-	if (code >= 400) return "border-amber-500/25 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+	if (code >= 200 && code < 300) return "border-success/30 bg-success-soft text-success"
+	if (code >= 500) return "border-error/30 bg-error-soft text-error"
+	if (code >= 400) return "border-warning/30 bg-warning-soft text-warning"
 	return "border-border bg-secondary text-muted-foreground"
 }
 
@@ -122,7 +122,7 @@ export function AttemptDetail({
 							<div className="flex-1" />
 							{requestExpanded && (
 								<Button variant="outline" size="sm" className="h-6 gap-1.5 px-2 text-[11px]" onClick={copyRequest}>
-									{copied ? <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-3 w-3" />}
+									{copied ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
 									{enableCurlCopy ? "Copy curl" : "Copy"}
 								</Button>
 							)}
@@ -185,13 +185,13 @@ export function AttemptDetail({
 								</div>
 
 								{details.error_message ? (
-									<div className="flex items-start gap-2 rounded-[6px] bg-destructive/10 px-3 py-2.5 text-[12px] leading-relaxed text-destructive">
-										<span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-destructive" />
+									<div className="flex items-start gap-2 rounded-[6px] bg-error-soft px-3 py-2.5 text-[12px] leading-relaxed text-error">
+										<span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-error" />
 										<span>{details.error_message}</span>
 									</div>
 								) : ok ? (
-									<div className="flex items-start gap-2 rounded-[6px] bg-emerald-500/10 px-3 py-2.5 text-[12px] leading-relaxed text-emerald-600 dark:text-emerald-400">
-										<span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-emerald-500" />
+									<div className="flex items-start gap-2 rounded-[6px] bg-success-soft px-3 py-2.5 text-[12px] leading-relaxed text-success">
+										<span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-success" />
 										<span>
 											Delivered{details.response_time_ms ? ` in ${details.response_time_ms} ms` : ""} · signature verified
 										</span>

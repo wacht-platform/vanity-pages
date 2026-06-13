@@ -37,7 +37,7 @@ export function ClarificationRequestCard({
 
     if (!response && expired) {
         return (
-            <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+            <div className="rounded-lg border border-border bg-muted/20 p-3">
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
@@ -68,7 +68,7 @@ export function ClarificationRequestCard({
     if (response) {
         if (response.freeform_text) {
             return (
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+                <div className="rounded-lg border border-border bg-muted/20 p-3">
                     <div className="text-xs text-muted-foreground">
                         Replied freely (skipped the form)
                     </div>
@@ -82,7 +82,7 @@ export function ClarificationRequestCard({
             (response.answers ?? []).map((a) => [a.question_id, a.value]),
         );
         return (
-            <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+            <div className="rounded-lg border border-border bg-muted/20 p-3">
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
@@ -157,7 +157,7 @@ export function ClarificationRequestCard({
     };
 
     return (
-        <div className="space-y-4 rounded-lg border border-border/60 bg-accent/10 p-4">
+        <div className="space-y-4 rounded-lg border border-border bg-accent/10 p-4">
             <div className="space-y-1">
                 <div className="text-sm font-medium">The agent is asking for input</div>
                 {content.context ? (
@@ -168,7 +168,7 @@ export function ClarificationRequestCard({
                 <div className="space-y-2">
                     <Label className="text-sm font-medium">Reply in your own words</Label>
                     <textarea
-                        className="min-h-[96px] w-full rounded-md border border-border/60 bg-background p-2 text-sm"
+                        className="min-h-[96px] w-full rounded-md border border-border bg-background p-2 text-sm"
                         placeholder="Type whatever you want the agent to know — it'll skip the form."
                         maxLength={4000}
                         value={freeformDraft}

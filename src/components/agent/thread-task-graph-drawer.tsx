@@ -101,11 +101,11 @@ function deriveGraphRunState(
 function graphToneClasses(tone: GraphRunState["tone"]) {
   switch (tone) {
     case "primary":
-      return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      return "bg-info-soft text-info border-info/30";
     case "success":
-      return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+      return "bg-success-soft text-success border-success/30";
     case "danger":
-      return "bg-rose-500/10 text-rose-500 border-rose-500/20";
+      return "bg-error-soft text-error border-error/30";
     default:
       return "bg-accent/30 text-muted-foreground border-border";
   }
@@ -201,19 +201,19 @@ function TaskStageNode({ data, selected }: NodeProps<Node<TaskNodeData>>) {
               "w-[220px] h-[56px] flex items-center px-3 gap-3 rounded-md bg-card border transition-all duration-200 shadow-sm text-left",
               selected
                 ? "border-border ring-1 ring-border/40 shadow-md bg-accent/20"
-                : "border-border/60 hover:border-border hover:shadow-md",
+                : "border-border hover:border-border hover:shadow-md",
             )}
           >
             <div
               className={cn(
                 "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border",
                 isCompleted
-                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                  ? "bg-success-soft text-success border-success/30"
                   : isRunning
-                    ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                    ? "bg-info-soft text-info border-info/30"
                     : isFailed
-                      ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                      : "bg-muted/50 text-muted-foreground border-border/60",
+                      ? "bg-error-soft text-error border-error/30"
+                      : "bg-muted/50 text-muted-foreground border-border",
               )}
             >
               {graphStepIcon(data.status)}
@@ -226,11 +226,11 @@ function TaskStageNode({ data, selected }: NodeProps<Node<TaskNodeData>>) {
                     className={cn(
                       "h-1 w-1 rounded-full",
                       isCompleted
-                        ? "bg-emerald-500"
+                        ? "bg-success"
                         : isRunning
-                          ? "bg-blue-500"
+                          ? "bg-info"
                           : isFailed
-                            ? "bg-rose-500"
+                            ? "bg-error"
                             : "bg-muted-foreground/50",
                     )}
                   />
@@ -245,7 +245,7 @@ function TaskStageNode({ data, selected }: NodeProps<Node<TaskNodeData>>) {
           <div className="space-y-2">
             <div className="text-sm leading-tight text-foreground">{data.title}</div>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className={cn(isCompleted ? "text-emerald-500" : isRunning ? "text-blue-500" : isFailed ? "text-rose-500" : "")}>{data.status || "Pending"}</span>
+              <span className={cn(isCompleted ? "text-success" : isRunning ? "text-info" : isFailed ? "text-error" : "")}>{data.status || "Pending"}</span>
               <span>P{data.priority}</span>
             </div>
             {data.description ? (
@@ -315,7 +315,7 @@ function GraphDrawerContent({
       edges.map((edge) => {
         const fromNode = nodeById.get(edge.from_node_id);
         const isAnimated = !!fromNode && ["running", "in_progress"].includes(fromNode.status);
-        const edgeColor = isAnimated ? "#3b82f6" : "#a1a1aa";
+        const edgeColor = isAnimated ? "var(--wa-info)" : "var(--wa-text-faint)";
         return {
           id: `${edge.from_node_id}:${edge.to_node_id}`,
           source: edge.from_node_id,
@@ -348,20 +348,20 @@ function GraphDrawerContent({
         </div>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500/10">
-              <IconCheck size={8} className="text-emerald-500" />
+            <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-success-soft">
+              <IconCheck size={8} className="text-success" />
             </div>
             <span className="text-muted-foreground">Completed <span className="text-foreground">{completed}</span></span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500/10">
-              <IconPlayerPauseFilled size={6} className="text-blue-500" />
+            <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-info-soft">
+              <IconPlayerPauseFilled size={6} className="text-info" />
             </div>
             <span className="text-muted-foreground">Active <span className="text-foreground">{active}</span></span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500/10">
-              <IconX size={8} className="text-rose-500" />
+            <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-error-soft">
+              <IconX size={8} className="text-error" />
             </div>
             <span className="text-muted-foreground">Failed <span className="text-foreground">{failed}</span></span>
           </div>
@@ -395,7 +395,7 @@ function GraphDrawerContent({
             proOptions={{ hideAttribution: true }}
             defaultEdgeOptions={{ type: "smoothstep" }}
           >
-            <Background gap={24} size={1} color="#27272a" />
+            <Background gap={24} size={1} color="var(--wa-border-strong)" />
           </ReactFlow>
         )}
       </div>
@@ -427,11 +427,11 @@ function GraphDrawerContent({
                 className={cn(
                   "h-1.5 w-1.5 rounded-full shrink-0",
                   rs.tone === "success"
-                    ? "bg-emerald-500"
+                    ? "bg-success"
                     : rs.tone === "danger"
-                      ? "bg-rose-500"
+                      ? "bg-error"
                       : rs.tone === "primary"
-                        ? "bg-blue-500"
+                        ? "bg-info"
                         : "bg-muted-foreground/50",
                 )}
               />

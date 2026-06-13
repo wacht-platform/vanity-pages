@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { DefaultStylesProvider } from "@wacht/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useIframeThemeSync } from "@/components/layout/vanity-shell";
 
@@ -18,7 +19,9 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
             disableTransitionOnChange
         >
             <ThemeSyncBridge />
-            {children}
+            {/* Injects the SDK `--wa-*` token stylesheet and applies the
+                deployment's theme_tokens as inline `--wa-ov-*` overrides. */}
+            <DefaultStylesProvider>{children}</DefaultStylesProvider>
         </ThemeProvider>
     );
 }

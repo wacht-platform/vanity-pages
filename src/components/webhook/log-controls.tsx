@@ -91,7 +91,7 @@ export function WebhookLogControls({
 						<Filter className="w-3.5 h-3.5" />
 					</Button>
 				</PopoverTrigger>
-				<PopoverContent align="end" className="w-[360px] rounded-lg border-border/60 bg-popover p-4 shadow-lg">
+				<PopoverContent align="end" className="w-[360px] rounded-lg border-border bg-popover p-4 shadow-lg">
 					<div className="space-y-4">
 						<div className="flex items-center justify-between">
 							<div className="text-xs uppercase tracking-wide text-muted-foreground">Delivery Filters</div>
@@ -102,7 +102,7 @@ export function WebhookLogControls({
 						<div className="space-y-2">
 							<div className="text-[11px] uppercase tracking-wide text-muted-foreground">Status</div>
 							<Select value={filterStatus} onValueChange={onFilterStatusChange}>
-								<SelectTrigger className="h-8 w-full border-border/40 bg-card text-xs font-normal">
+								<SelectTrigger className="h-8 w-full border-border bg-card text-xs font-normal">
 									<SelectValue placeholder="All Status" />
 								</SelectTrigger>
 								<SelectContent>
@@ -116,7 +116,7 @@ export function WebhookLogControls({
 						<div className="space-y-2">
 							<div className="text-[11px] uppercase tracking-wide text-muted-foreground">Event</div>
 							<Select value={filterEventName} onValueChange={onFilterEventNameChange}>
-								<SelectTrigger className="h-8 w-full border-border/40 bg-card text-xs font-normal">
+								<SelectTrigger className="h-8 w-full border-border bg-card text-xs font-normal">
 									<SelectValue placeholder="All Events" />
 								</SelectTrigger>
 								<SelectContent>
@@ -133,7 +133,7 @@ export function WebhookLogControls({
 							<div className="space-y-2">
 								<div className="text-[11px] uppercase tracking-wide text-muted-foreground">Endpoint</div>
 								<Select value={filterEndpointId} onValueChange={onFilterEndpointIdChange}>
-									<SelectTrigger className="h-8 w-full border-border/40 bg-card text-xs font-normal">
+									<SelectTrigger className="h-8 w-full border-border bg-card text-xs font-normal">
 										<SelectValue placeholder="All Endpoints" />
 									</SelectTrigger>
 									<SelectContent>
@@ -162,7 +162,7 @@ export function WebhookLogControls({
 						) : null}
 					</Button>
 				</PopoverTrigger>
-				<PopoverContent align="end" className="w-[360px] rounded-lg border-border/60 bg-popover p-4 shadow-lg">
+				<PopoverContent align="end" className="w-[360px] rounded-lg border-border bg-popover p-4 shadow-lg">
 					<Tabs defaultValue="create" className="gap-3">
 						<TabsList className="grid h-8 w-full grid-cols-2">
 							<TabsTrigger value="create" className="text-xs">Create Job</TabsTrigger>
@@ -173,7 +173,7 @@ export function WebhookLogControls({
 								<div className="space-y-2">
 									<div className="text-[11px] uppercase tracking-wide text-muted-foreground">Status</div>
 									<Select value={replayStatus} onValueChange={onReplayStatusChange}>
-										<SelectTrigger className="h-8 w-full border-border/40 bg-card text-xs font-normal">
+										<SelectTrigger className="h-8 w-full border-border bg-card text-xs font-normal">
 											<SelectValue placeholder="All Status" />
 										</SelectTrigger>
 										<SelectContent>
@@ -187,7 +187,7 @@ export function WebhookLogControls({
 								<div className="space-y-2">
 									<div className="text-[11px] uppercase tracking-wide text-muted-foreground">Event</div>
 									<Select value={replayEventName} onValueChange={onReplayEventNameChange}>
-										<SelectTrigger className="h-8 w-full border-border/40 bg-card text-xs font-normal">
+										<SelectTrigger className="h-8 w-full border-border bg-card text-xs font-normal">
 											<SelectValue placeholder="All Events" />
 										</SelectTrigger>
 										<SelectContent>
@@ -205,7 +205,7 @@ export function WebhookLogControls({
 								<div className="space-y-2">
 									<div className="text-[11px] uppercase tracking-wide text-muted-foreground">Endpoint</div>
 									<Select value={replayEndpointId} onValueChange={onReplayEndpointIdChange}>
-										<SelectTrigger className="h-8 w-full border-border/40 bg-card text-xs font-normal">
+										<SelectTrigger className="h-8 w-full border-border bg-card text-xs font-normal">
 											<SelectValue placeholder="All Endpoints" />
 										</SelectTrigger>
 										<SelectContent>
@@ -236,7 +236,7 @@ export function WebhookLogControls({
 								/>
 							</div>
 							{isReplayRangeInvalid ? (
-								<div className="text-[11px] text-red-500">End date/time must be after start date/time.</div>
+								<div className="text-[11px] text-error">End date/time must be after start date/time.</div>
 							) : null}
 							<Button
 								variant="default"
@@ -271,7 +271,7 @@ export function WebhookLogControls({
 							) : (
 								<div className="max-h-72 space-y-1 overflow-y-auto pr-1">
 									{replayJobs.map((job) => (
-										<div key={job.task_id} className="rounded-lg border border-border/40 p-2.5">
+										<div key={job.task_id} className="rounded-lg border border-border p-2.5">
 											<div className="flex items-center justify-between gap-2">
 												<div className="truncate text-[11px] text-foreground">{job.task_id}</div>
 												<div className="flex items-center gap-2">
@@ -280,7 +280,7 @@ export function WebhookLogControls({
 														<Button
 															variant="ghost"
 															size="sm"
-															className="h-6 px-2 text-[10px] text-red-400 hover:text-red-300 hover:bg-red-500/10"
+															className="h-6 px-2 text-[10px] text-error hover:text-error hover:bg-error-soft"
 															onClick={() => onCancelReplayJob(job.task_id)}
 														>
 															Stop

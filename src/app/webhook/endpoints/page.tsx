@@ -158,7 +158,7 @@ export default function WebhookEndpointsPage() {
 								<span
 									className={cn(
 										"size-1.5 shrink-0 rounded-full",
-										endpoint.is_active ? "bg-emerald-500" : "bg-muted-foreground/40",
+										endpoint.is_active ? "bg-success" : "bg-muted-foreground/40",
 									)}
 								/>
 								<span
@@ -176,14 +176,14 @@ export default function WebhookEndpointsPage() {
 									className={cn(
 										"inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
 										endpoint.is_active
-											? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+											? "border-success/30 bg-success-soft text-success"
 											: "border-border bg-foreground/[0.04] text-muted-foreground",
 									)}
 								>
 									<span
 										className={cn(
 											"size-1.5 rounded-full",
-											endpoint.is_active ? "bg-emerald-500" : "bg-muted-foreground/40",
+											endpoint.is_active ? "bg-success" : "bg-muted-foreground/40",
 										)}
 									/>
 									{endpoint.is_active ? "active" : "inactive"}

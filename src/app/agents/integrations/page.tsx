@@ -15,18 +15,9 @@ import {
     type ExternalAgentConnection,
 } from "@wacht/nextjs";
 import { AgentPageShell } from "@/components/agent/agent-page-shell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import { useActiveAgent } from "@/components/agent-provider";
 
 type UnifiedRow = {
@@ -202,6 +193,19 @@ export default function IntegrationsPage() {
         return [...extRows, ...mcpRows];
     }, [servers, connections, connectMcp, disconnectMcp, connectExternal, disconnectExternal]);
 
+    const { connected, available } = React.useMemo(() => {
+        const connected: UnifiedRow[] = [];
+        const available: UnifiedRow[] = [];
+        for (const row of rows) {
+            if (isAvailable(row)) {
+                available.push(row);
+            } else {
+                connected.push(row);
+            }
+        }
+        return { connected, available };
+    }, [rows]);
+
     return (
         <AgentPageShell
             title="Integrations"
@@ -217,98 +221,57 @@ export default function IntegrationsPage() {
                 </Button>
             }
         >
-            <div className="space-y-5">
-                {loading ? (
-                    <LoadingSkeleton />
-                ) : error ? (
-                    <PageState
-                        title="Failed to load integrations"
-                        description="Your integrations could not be loaded."
-                        icon={<CircleOff className="h-5 w-5" />}
-                        className="py-8"
-                    />
-                ) : rows.length === 0 ? (
-                    <PageState
-                        title="No integrations"
-                        description="No integrations are available for this deployment yet."
-                        icon={<Cable className="h-5 w-5" />}
-                        className="py-8"
-                    />
-                ) : (
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-foreground">
-                                Connections
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                                {rows.length}
-                            </span>
-                        </div>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead className="w-[120px]">
-                                        Source
-                                    </TableHead>
-                                    <TableHead className="w-[150px]">
-                                        Status
-                                    </TableHead>
-                                    <TableHead className="w-[220px] text-right">
-                                        Actions
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {rows.map((row) => (
-                                    <TableRow key={row.key}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar
-                                                    logoUrl={row.logoUrl}
-                                                    name={row.name}
-                                                />
-                                                <div className="min-w-0">
-                                                    <div className="truncate text-sm text-foreground">
-                                                        {row.name}
-                                                    </div>
-                                                    {row.subtitle && (
-                                                        <div
-                                                            className="mt-0.5 truncate text-xs text-muted-foreground"
-                                                            title={row.subtitle}
-                                                        >
-                                                            {row.subtitle}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline">
-                                                {row.source}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant={row.statusVariant}
-                                            >
-                                                {row.statusLabel}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <RowActions
-                                                row={row}
-                                                busy={busyKey === row.key}
-                                                onBusy={setBusyKey}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+            <div className="mb-[18px] flex items-start justify-between gap-6">
+                <div className="min-w-0">
+                    <div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+                        Agents
                     </div>
-                )}
+                    <h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+                        Integrations
+                    </h1>
+                    <p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+                        Connect external tools and MCP servers so your agents
+                        can read context and take action across your stack.
+                    </p>
+                </div>
             </div>
+
+            {loading ? (
+                <LoadingSkeleton />
+            ) : error ? (
+                <PageState
+                    title="Failed to load integrations"
+                    description="Your integrations could not be loaded."
+                    icon={<CircleOff className="h-5 w-5" />}
+                    className="py-8"
+                />
+            ) : rows.length === 0 ? (
+                <PageState
+                    title="No integrations"
+                    description="No integrations are available for this deployment yet."
+                    icon={<Cable className="h-5 w-5" />}
+                    className="py-8"
+                />
+            ) : (
+                <div className="space-y-7">
+                    {connected.length > 0 && (
+                        <ConnectorSection
+                            heading="Connected"
+                            rows={connected}
+                            busyKey={busyKey}
+                            onBusy={setBusyKey}
+                        />
+                    )}
+                    {available.length > 0 && (
+                        <ConnectorSection
+                            heading="Available"
+                            rows={available}
+                            busyKey={busyKey}
+                            onBusy={setBusyKey}
+                        />
+                    )}
+                </div>
+            )}
         </AgentPageShell>
     );
 }
@@ -318,61 +281,60 @@ function providerLabel(provider: string): string {
     return provider.charAt(0).toUpperCase() + provider.slice(1);
 }
 
-function Avatar({ logoUrl, name }: { logoUrl?: string; name: string }) {
-    const initial = (name.charAt(0) || "?").toUpperCase();
+function isAvailable(row: UnifiedRow): boolean {
+    if (!row.requiresConnection) return false;
     return (
-        <div className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-md border border-border/60 bg-background">
-            {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                    src={logoUrl}
-                    alt=""
-                    className="h-full w-full object-contain p-1"
-                    loading="lazy"
-                />
-            ) : (
-                <span className="text-xs font-medium text-muted-foreground">
-                    {initial}
-                </span>
-            )}
-        </div>
+        row.status === "not_connected" ||
+        row.status === "ready" ||
+        row.status === "" ||
+        (row.kind === "external" &&
+            row.status !== "active" &&
+            row.status !== "pending" &&
+            row.status !== "expired" &&
+            row.status !== "failed")
     );
 }
 
-function LoadingSkeleton() {
+function isOk(status: string): boolean {
+    return status === "active" || status === "connected";
+}
+
+function ConnectorSection({
+    heading,
+    rows,
+    busyKey,
+    onBusy,
+}: {
+    heading: string;
+    rows: UnifiedRow[];
+    busyKey: string | null;
+    onBusy: (key: string | null) => void;
+}) {
     return (
-        <div className="space-y-3">
-            <div className="flex items-center gap-2">
-                <span className="text-sm text-foreground">Connections</span>
-                <span className="text-sm text-muted-foreground">…</span>
+        <section>
+            <div className="mb-4 flex items-baseline gap-2.5">
+                <h2 className="text-[16px] font-medium text-foreground">
+                    {heading}
+                </h2>
+                <span className="font-mono text-[13px] text-faint">
+                    {rows.length}
+                </span>
             </div>
-            <div className="rounded-md border border-border/60">
-                {Array.from({ length: 5 }).map((_, idx) => (
-                    <div
-                        key={idx}
-                        className="grid grid-cols-[minmax(0,1.4fr)_120px_150px_220px] gap-4 border-b border-border/60 px-4 py-3 last:border-b-0"
-                    >
-                        <div className="flex items-center gap-3">
-                            <Skeleton className="h-8 w-8 rounded-md" />
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-32" />
-                                <Skeleton className="h-3 w-48" />
-                            </div>
-                        </div>
-                        <Skeleton className="h-6 w-20" />
-                        <Skeleton className="h-6 w-24" />
-                        <div className="flex justify-end gap-2">
-                            <Skeleton className="h-8 w-24" />
-                            <Skeleton className="h-8 w-24" />
-                        </div>
-                    </div>
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+                {rows.map((row) => (
+                    <ConnectorCard
+                        key={row.key}
+                        row={row}
+                        busy={busyKey === row.key}
+                        onBusy={onBusy}
+                    />
                 ))}
             </div>
-        </div>
+        </section>
     );
 }
 
-function RowActions({
+function ConnectorCard({
     row,
     busy,
     onBusy,
@@ -381,13 +343,7 @@ function RowActions({
     busy: boolean;
     onBusy: (key: string | null) => void;
 }) {
-    if (!row.requiresConnection) {
-        return (
-            <span className="text-xs text-muted-foreground">
-                No action needed
-            </span>
-        );
-    }
+    const available = isAvailable(row);
 
     const run = async (fn?: () => Promise<void>) => {
         if (!fn) return;
@@ -399,10 +355,91 @@ function RowActions({
         }
     };
 
-    const connectLabel =
-        row.status === "active" || row.status === "connected"
-            ? "Reconnect"
-            : "Connect";
+    return (
+        <div className="flex flex-col gap-3 rounded-[12px] border border-border bg-card p-4">
+            <div className="flex items-center gap-[11px]">
+                <Logo logoUrl={row.logoUrl} name={row.name} />
+                <div className="min-w-0">
+                    <div className="truncate text-[14px] font-medium text-foreground">
+                        {row.name}
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-faint">
+                        {row.source}
+                    </div>
+                </div>
+            </div>
+            {row.subtitle && (
+                <div
+                    className="flex-1 truncate text-[12px] leading-[1.5] text-muted-foreground"
+                    title={row.subtitle}
+                >
+                    {row.subtitle}
+                </div>
+            )}
+            <div className="flex items-center justify-between gap-2">
+                {available ? (
+                    <>
+                        <span />
+                        {row.onConnect && (
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                disabled={busy}
+                                onClick={() => void run(row.onConnect)}
+                            >
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                Connect
+                            </Button>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        <StatusPill row={row} />
+                        <CardActions row={row} busy={busy} run={run} />
+                    </>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function StatusPill({ row }: { row: UnifiedRow }) {
+    const ok = isOk(row.status);
+    const pillClass = ok
+        ? "border-success/30 bg-success-soft text-success"
+        : "border-warning/30 bg-warning-soft text-warning";
+    const dotClass = ok ? "bg-success" : "bg-warning";
+    const label = ok ? "connected" : "needs auth";
+
+    return (
+        <span
+            className={`inline-flex h-[22px] w-fit items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase ${pillClass}`}
+        >
+            <span className={`size-[6px] rounded-full ${dotClass}`} />
+            {label}
+        </span>
+    );
+}
+
+function CardActions({
+    row,
+    busy,
+    run,
+}: {
+    row: UnifiedRow;
+    busy: boolean;
+    run: (fn?: () => Promise<void>) => Promise<void>;
+}) {
+    if (!row.requiresConnection) {
+        return (
+            <span className="font-mono text-[11px] text-faint">
+                no action needed
+            </span>
+        );
+    }
+
+    const reconnectLabel = isOk(row.status) ? "Manage" : "Reconnect";
 
     return (
         <div className="inline-flex items-center gap-2">
@@ -414,8 +451,7 @@ function RowActions({
                     disabled={busy}
                     onClick={() => void run(row.onConnect)}
                 >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    {connectLabel}
+                    {reconnectLabel}
                 </Button>
             )}
             {row.onDisconnect && (
@@ -430,6 +466,65 @@ function RowActions({
                     Disconnect
                 </Button>
             )}
+        </div>
+    );
+}
+
+function Logo({ logoUrl, name }: { logoUrl?: string; name: string }) {
+    const initials = name
+        .split(/\s+/)
+        .map((part) => part.charAt(0))
+        .join("")
+        .slice(0, 2)
+        .toUpperCase() || "?";
+    return (
+        <span className="grid size-[38px] flex-none place-items-center overflow-hidden rounded-[9px] border border-border bg-secondary text-[14px] font-medium text-foreground">
+            {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                    src={logoUrl}
+                    alt=""
+                    className="h-full w-full object-contain p-1.5"
+                    loading="lazy"
+                />
+            ) : (
+                initials
+            )}
+        </span>
+    );
+}
+
+function LoadingSkeleton() {
+    return (
+        <div className="space-y-7">
+            {Array.from({ length: 2 }).map((_, section) => (
+                <section key={section}>
+                    <div className="mb-4 flex items-baseline gap-2.5">
+                        <Skeleton className="h-5 w-24" />
+                    </div>
+                    <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+                        {Array.from({ length: 3 }).map((__, idx) => (
+                            <div
+                                key={idx}
+                                className="flex flex-col gap-3 rounded-[12px] border border-border bg-card p-4"
+                            >
+                                <div className="flex items-center gap-[11px]">
+                                    <Skeleton className="size-[38px] rounded-[9px]" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-28" />
+                                        <Skeleton className="h-3 w-16" />
+                                    </div>
+                                </div>
+                                <Skeleton className="h-8 w-full" />
+                                <div className="flex items-center justify-between">
+                                    <Skeleton className="h-[22px] w-24" />
+                                    <Skeleton className="h-8 w-24" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            ))}
         </div>
     );
 }

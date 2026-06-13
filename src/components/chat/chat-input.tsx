@@ -97,10 +97,10 @@ export function ChatInput({
     return (
         <div
             className={cn(
-                "relative w-full rounded-xl border bg-background transition-colors",
+                "relative w-full rounded-[12px] border bg-card transition-colors",
                 isFocused
-                    ? "border-border shadow-[0_0_0_1px_rgba(0,0,0,0.04)]"
-                    : "border-border/60",
+                    ? "border-border-strong shadow-[0_0_0_1px_rgba(0,0,0,0.04)]"
+                    : "border-border-strong",
                 isBusy && "opacity-80",
                 className,
             )}
@@ -184,7 +184,7 @@ export function ChatInput({
                         >
                             <SelectTrigger
                                 size="sm"
-                                className="h-8 w-auto min-w-0 max-w-[200px] gap-1.5 rounded-full border-border/50 bg-accent/35 px-2.5 text-sm text-muted-foreground shadow-none hover:bg-accent/50"
+                                className="h-8 w-auto min-w-0 max-w-[200px] gap-1.5 rounded-full border-border bg-accent/35 px-2.5 text-sm text-muted-foreground shadow-none hover:bg-accent/50"
                             >
                                 <Bot className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
                                 <SelectValue placeholder="Select agent" />
@@ -203,7 +203,7 @@ export function ChatInput({
                         onClick={() => void handleSend()}
                         disabled={!canSend}
                         className={cn(
-                            "inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+                            "grid size-[30px] place-items-center rounded-[8px] transition-colors",
                             canSend
                                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
                                 : "bg-muted/60 text-muted-foreground/35 cursor-not-allowed",

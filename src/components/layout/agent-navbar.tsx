@@ -16,7 +16,7 @@ export function AgentNavbar({
     return (
         <header
             className={cn(
-                "flex h-12 shrink-0 items-center justify-between border-b border-border/70 bg-background px-4",
+                "flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-[22px]",
                 className,
             )}
         >

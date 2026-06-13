@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div className="overflow-hidden rounded-md border border-border/70">
+    <div className="overflow-hidden rounded-md border border-border">
       <table
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}
@@ -20,7 +20,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b [&_tr]:border-border/70", className)}
+      className={cn("[&_tr]:border-b [&_tr]:border-border", className)}
       {...props}
     />
   )
@@ -41,7 +41,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t border-border/70 bg-muted/20 font-medium [&>tr]:last:border-b-0",
+        "border-t border-border bg-muted/20 font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -54,7 +54,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-border/60 transition-colors hover:bg-accent/35 data-[state=selected]:bg-accent/40",
+        "border-b border-border transition-colors hover:bg-accent/35 data-[state=selected]:bg-accent/40",
         className
       )}
       {...props}

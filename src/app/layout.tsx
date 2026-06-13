@@ -61,7 +61,7 @@ export default async function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} bg-background font-sans text-foreground antialiased`}
+                className={`wacht-root ${geistSans.variable} ${geistMono.variable} ${newsreader.variable} bg-background font-sans text-foreground antialiased`}
             >
                 <DeploymentProvider publicKey={publicKey}>
                     <DeploymentInitialized>

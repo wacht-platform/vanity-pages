@@ -25,6 +25,7 @@ import {
   getDecisionStepMeta,
   InlineEventRow,
   InlineStatusBadge,
+  type TraceNodeStatus,
 } from "./event-row";
 import { LazyCodeFileViewer } from "./lazy-code-file-viewer";
 import { ToolDetailSection } from "./structured-value";
@@ -64,6 +65,13 @@ function toolStatus(content: ToolResultContent) {
   if (content.status === "success" || content.status === "completed") return "completed";
   if (content.status === "error" || content.status === "failed") return "failed";
   return "pending";
+}
+
+function toolNode(content: ToolResultContent): TraceNodeStatus {
+  const status = toolStatus(content);
+  if (status === "completed") return "ok";
+  if (status === "failed") return "err";
+  return "run";
 }
 
 function toolOutputEnvelope(content: ToolResultContent) {
@@ -108,14 +116,12 @@ function MetaList({
   if (visible.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm leading-6 text-muted-foreground">
+    <div className="flex flex-wrap gap-4 font-mono text-[11px] leading-[1.5] text-muted-foreground">
       {visible.map((item) => (
-        <div key={item.label} className="flex items-baseline gap-1.5">
-          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            {item.label}
-          </span>
-          <span className="text-foreground">{item.value}</span>
-        </div>
+        <span key={item.label}>
+          <b className="font-medium text-foreground-secondary">{item.label}</b>{" "}
+          {item.value}
+        </span>
       ))}
     </div>
   );
@@ -126,7 +132,7 @@ function ErrorNotice({ content }: { content: ToolResultContent }) {
   if (!message) return null;
 
   return (
-    <div className="rounded-lg border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-sm leading-6 text-rose-700 dark:text-rose-300">
+    <div className="rounded-lg border border-error/30 bg-error-soft px-3 py-2 text-sm leading-6 text-error">
       {message}
     </div>
   );
@@ -137,28 +143,39 @@ function ToolInlineRow({
   title,
   subtitle,
   badge,
+  content,
+  kind,
+  primaryIcon,
+  defaultOpen,
   children,
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle?: React.ReactNode;
   badge?: React.ReactNode;
+  content?: ToolResultContent;
+  kind?: string;
+  primaryIcon?: boolean;
+  defaultOpen?: boolean;
   children?: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2 py-1">
-      <div className="flex items-center gap-2">
-        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-          {icon}
-        </div>
-        <span className="text-sm font-medium text-foreground">{title}</span>
-        {badge}
-      </div>
+    <InlineEventRow
+      icon={icon}
+      title={title}
+      kind={kind ?? content?.tool_name}
+      node={content ? toolNode(content) : "idle"}
+      primaryIcon={primaryIcon}
+      meta={badge}
+      defaultOpen={defaultOpen}
+    >
       {subtitle ? (
-        <div className="pl-7 text-sm leading-6 text-muted-foreground">{subtitle}</div>
+        <div className="font-mono text-[11px] leading-[1.5] text-muted-foreground">
+          {subtitle}
+        </div>
       ) : null}
-      {children ? <div className="pl-7 space-y-2">{children}</div> : null}
-    </div>
+      {children}
+    </InlineEventRow>
   );
 }
 
@@ -172,27 +189,17 @@ function CommandBlock({
   stderr?: string | null;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-muted/40">
-      <div className="flex items-center gap-1.5 border-b border-border/60 bg-muted/60 px-3 py-2">
-        <span className="h-2 w-2 rounded-full bg-rose-400/80" />
-        <span className="h-2 w-2 rounded-full bg-amber-400/80" />
-        <span className="h-2 w-2 rounded-full bg-emerald-400/80" />
-        <span className="ml-2 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          Shell
-        </span>
+    <div className="overflow-auto rounded-[6px] border border-border bg-canvas px-3.5 py-[11px] font-mono text-[12px] leading-[1.7]">
+      <div className="text-foreground">
+        <span className="select-none text-primary">$ </span>
+        <span className="break-all">{command}</span>
       </div>
-      <div className="space-y-2 px-4 py-3 font-mono text-[12px] leading-6">
-        <div className="flex gap-2">
-          <span className="select-none text-emerald-600 dark:text-emerald-400">$</span>
-          <span className="break-all text-foreground">{command}</span>
-        </div>
-        {stdout ? (
-          <pre className="whitespace-pre-wrap break-words text-foreground">{stdout}</pre>
-        ) : null}
-        {stderr ? (
-          <pre className="whitespace-pre-wrap break-words text-rose-600 dark:text-rose-300">{stderr}</pre>
-        ) : null}
-      </div>
+      {stdout ? (
+        <pre className="whitespace-pre-wrap break-words text-muted-foreground">{stdout}</pre>
+      ) : null}
+      {stderr ? (
+        <pre className="whitespace-pre-wrap break-words text-error">{stderr}</pre>
+      ) : null}
     </div>
   );
 }
@@ -313,17 +320,17 @@ function DiffEditorPane({
   after: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-muted/40">
-      <div className="border-b border-border/60 bg-muted/60 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="overflow-hidden rounded-xl border border-border bg-muted/40">
+      <div className="border-b border-border bg-muted/60 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
         Diff
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] border-collapse font-mono text-[12px] leading-6">
           <thead>
-            <tr className="border-b border-border/60 text-muted-foreground">
+            <tr className="border-b border-border text-muted-foreground">
               <th className="w-12 px-2 py-2 text-right font-medium">Old</th>
               <th className="w-6 px-1 py-2 text-center font-medium" />
-              <th className="border-r border-border/60 px-3 py-2 text-left font-medium">
+              <th className="border-r border-border px-3 py-2 text-left font-medium">
                 Overwritten
               </th>
               <th className="w-12 px-2 py-2 text-right font-medium">New</th>
@@ -335,30 +342,30 @@ function DiffEditorPane({
             {buildLineDiffRows(before, after).map((row, index) => {
               const leftCellTone =
                 row.kind === "delete"
-                  ? "border-l-2 border-rose-500/60 bg-rose-500/8 text-rose-700 dark:text-rose-300"
+                  ? "border-l-2 border-error/60 bg-error-soft text-error"
                   : "border-l-2 border-transparent text-foreground";
               const rightCellTone =
                 row.kind === "insert"
-                  ? "border-l-2 border-emerald-500/60 bg-emerald-500/8 text-emerald-700 dark:text-emerald-300"
+                  ? "border-l-2 border-success/60 bg-success-soft text-success"
                   : "border-l-2 border-transparent text-foreground";
               const leftMarker = row.kind === "delete" ? "-" : "";
               const rightMarker = row.kind === "insert" ? "+" : "";
 
               return (
-                <tr key={`diff-${index}`} className="border-b border-border/60 align-top">
+                <tr key={`diff-${index}`} className="border-b border-border align-top">
                   <td className="select-none px-2 py-1 text-right text-muted-foreground">
                     {row.leftLineNumber ?? ""}
                   </td>
-                  <td className={`select-none px-1 py-1 text-center ${row.kind === "delete" ? "text-rose-600 dark:text-rose-300" : "text-muted-foreground/70"}`}>
+                  <td className={`select-none px-1 py-1 text-center ${row.kind === "delete" ? "text-error" : "text-muted-foreground/70"}`}>
                     {leftMarker}
                   </td>
-                  <td className={`border-r border-border/60 px-3 py-1 whitespace-pre-wrap break-words ${leftCellTone}`}>
+                  <td className={`border-r border-border px-3 py-1 whitespace-pre-wrap break-words ${leftCellTone}`}>
                     {row.leftText || " "}
                   </td>
                   <td className="select-none px-2 py-1 text-right text-muted-foreground">
                     {row.rightLineNumber ?? ""}
                   </td>
-                  <td className={`select-none px-1 py-1 text-center ${row.kind === "insert" ? "text-emerald-600 dark:text-emerald-300" : "text-muted-foreground/70"}`}>
+                  <td className={`select-none px-1 py-1 text-center ${row.kind === "insert" ? "text-success" : "text-muted-foreground/70"}`}>
                     {rightMarker}
                   </td>
                   <td className={`px-3 py-1 whitespace-pre-wrap break-words ${rightCellTone}`}>
@@ -385,7 +392,7 @@ function SearchResultsList({ results }: { results: unknown[] }) {
       {normalized.slice(0, 6).map((item, index) => (
         <div
           key={`${asString(item.url) || asString(item.path) || "item"}-${index}`}
-          className="border-l-2 border-border/60 pl-3"
+          className="border-l-2 border-border pl-3"
         >
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <div className="text-sm font-medium text-foreground">
@@ -422,7 +429,7 @@ function ThreadList({ threads }: { threads: unknown[] }) {
       {normalized.slice(0, 6).map((thread, index) => (
         <div
           key={`${asString(thread.thread_id) || "thread"}-${index}`}
-          className="border-l-2 border-border/60 pl-3"
+          className="border-l-2 border-border pl-3"
         >
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-foreground">
@@ -457,6 +464,7 @@ function UnknownToolCard({ content }: { content: ToolResultContent }) {
       icon={<IconTool className="h-4 w-4" />}
       title={formatLabel(content.tool_name)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       <ErrorNotice content={content} />
       <CollapsibleJsonSection label="Input" data={content.input} />
@@ -471,12 +479,12 @@ function CollapsibleJsonSection({ label, data }: { label: string; data: unknown 
     return null;
   }
   return (
-    <details className="group rounded-md border border-border/60 bg-muted/20">
-      <summary className="flex cursor-pointer select-none items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+    <details className="group rounded-[6px] border border-border bg-card">
+      <summary className="flex cursor-pointer select-none items-center gap-1.5 px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground hover:text-foreground">
         <span className="inline-block transition-transform group-open:rotate-90">▸</span>
         <span>{label}</span>
       </summary>
-      <div className="border-t border-border/60 px-2.5 py-2">
+      <div className="border-t border-border px-[18px] py-3.5">
         <JsonViewer data={data} />
       </div>
     </details>
@@ -497,6 +505,7 @@ function ReadFileCard({ content }: { content: ToolResultContent }) {
       title="Read File"
       subtitle={asString(input?.path)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       {requestedRange ? (
         <div className="text-xs text-muted-foreground">Lines {requestedRange}</div>
@@ -520,6 +529,7 @@ function WriteFileCard({ content }: { content: ToolResultContent }) {
       title={isAppend ? "Append File" : "Write File"}
       subtitle={path}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       <LazyCodeFileViewer path={path} value={value} />
     </ToolInlineRow>
@@ -550,6 +560,7 @@ function EditFileCard({ content }: { content: ToolResultContent }) {
       title="Edit File"
       subtitle={path}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       {meta ? (
         <div className="text-xs text-muted-foreground">{meta}</div>
@@ -567,6 +578,7 @@ function ExecuteCommandCard({ content }: { content: ToolResultContent }) {
       icon={<IconTerminal2 className="h-4 w-4" />}
       title="Execute Command"
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       <CommandBlock
         command={asString(input?.command) || ""}
@@ -584,6 +596,8 @@ function ReadImageCard({ content }: { content: ToolResultContent }) {
     <InlineEventRow
       icon={<IconPhotoSearch className="h-3.5 w-3.5" />}
       title={asString(input?.path) || "Read image"}
+      kind={content.tool_name}
+      node={toolNode(content)}
       meta={<StatusBadge content={content} />}
     >
       <div className="text-sm leading-6 text-foreground">
@@ -602,6 +616,8 @@ function SleepCard({ content }: { content: ToolResultContent }) {
     <InlineEventRow
       icon={<IconMoon className="h-3.5 w-3.5" />}
       title="Sleep"
+      kind={content.tool_name}
+      node={toolNode(content)}
       meta={<StatusBadge content={content} />}
     >
       <div className="text-sm leading-6 text-foreground">
@@ -626,6 +642,8 @@ function SnapshotCard({ content }: { content: ToolResultContent }) {
     <InlineEventRow
       icon={<IconClock className="h-3.5 w-3.5" />}
       title="Snapshot Execution State"
+      kind={content.tool_name}
+      node={toolNode(content)}
       meta={<StatusBadge content={content} />}
     >
       <div className="text-sm leading-6 text-foreground">
@@ -647,6 +665,7 @@ function WebSearchCard({ content }: { content: ToolResultContent }) {
       title="Web Search"
       subtitle={asString(input?.objective)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       {queries.length > 0 ? (
         <div className="text-sm leading-6 text-foreground">
@@ -670,6 +689,7 @@ function UrlContentCard({ content }: { content: ToolResultContent }) {
       title="Fetch URL Content"
       subtitle={asString(input?.objective)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       {urls.length > 0 ? (
         <div className="space-y-1 text-sm leading-6 text-foreground">
@@ -694,9 +714,10 @@ function KnowledgeSearchCard({ content }: { content: ToolResultContent }) {
       title="Search Knowledge Base"
       subtitle={asString(input?.query)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       {asString(hints?.search_summary) ? (
-        <div className="border-l-2 border-border/60 pl-3 text-sm leading-6 text-foreground">
+        <div className="border-l-2 border-border pl-3 text-sm leading-6 text-foreground">
           {hints?.search_summary as string}
         </div>
       ) : null}
@@ -717,6 +738,7 @@ function ListThreadsCard({ content }: { content: ToolResultContent }) {
       icon={<IconListDetails className="h-4 w-4" />}
       title="List Threads"
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       <ThreadList threads={asArray(output?.threads)} />
     </ToolInlineRow>
@@ -744,6 +766,8 @@ function TaskGraphCard({ content }: { content: ToolResultContent }) {
     <InlineEventRow
       icon={<IconGitBranch className="h-3.5 w-3.5" />}
       title={titleMap[content.tool_name] || "Task graph"}
+      kind={content.tool_name}
+      node={toolNode(content)}
       meta={<StatusBadge content={content} />}
     >
       <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -805,6 +829,7 @@ function LoadMemoryCard({ content }: { content: ToolResultContent }) {
       title="Load Memory"
       subtitle={asString(input?.query)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       {results.length > 0 ? (
         <div className="space-y-2">
@@ -830,6 +855,7 @@ function SaveMemoryCard({ content }: { content: ToolResultContent }) {
       icon={<IconBrain className="h-4 w-4" />}
       title="Save Memory"
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       {asString(input?.content) ? (
         <div className="text-sm leading-6 text-foreground">{input?.content as string}</div>
@@ -847,6 +873,7 @@ function UpdateMemoryCard({ content }: { content: ToolResultContent }) {
       title="Update Memory"
       subtitle={asString(input?.memory_id)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       <ErrorNotice content={content} />
       {asString(input?.content) ? (
@@ -884,6 +911,7 @@ function ProjectTaskMutationCard({ content }: { content: ToolResultContent }) {
       title={asString(input?.title) || titleMap[content.tool_name] || "Project Task"}
       subtitle={taskKey || asString(input?.description)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       <ErrorNotice content={content} />
       <MetaList
@@ -918,6 +946,7 @@ function ThreadMutationCard({ content }: { content: ToolResultContent }) {
       title={asString(input?.title) || title}
       subtitle={asString(input?.thread_id) || asString(output?.thread_id)}
       badge={<StatusBadge content={content} />}
+      content={content}
     >
       <ErrorNotice content={content} />
       <MetaList
@@ -941,6 +970,8 @@ function AbortTaskCard({ content }: { content: ToolResultContent }) {
     <InlineEventRow
       icon={<IconShieldExclamation className="h-3.5 w-3.5" />}
       title="Abort Task"
+      kind={content.tool_name}
+      node={toolNode(content)}
       meta={<StatusBadge content={content} />}
       defaultOpen
     >
@@ -963,13 +994,15 @@ function DecisionReasonRow({
     <InlineEventRow
       icon={meta.icon}
       title={meta.label}
+      kind="decision"
+      primaryIcon
       meta={
-        <span className="rounded-full bg-accent/40 px-2 py-0.5 text-[11px] text-foreground">
+        <span className="inline-flex h-[22px] w-fit items-center rounded-[4px] border border-border bg-secondary px-2 font-mono text-[11px] font-medium tabular-nums text-foreground-secondary">
           {Math.round(content.confidence * 100)}%
         </span>
       }
     >
-      <div className="text-sm leading-6 text-foreground">
+      <div className="border-l-2 border-border-strong pl-3 text-[13px] leading-[1.55] text-foreground-secondary">
         {content.reasoning}
       </div>
     </InlineEventRow>

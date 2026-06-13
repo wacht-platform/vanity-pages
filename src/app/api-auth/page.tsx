@@ -167,8 +167,8 @@ export default function ApiAuthLandingPage() {
 				</div>
 
 				<div className="space-y-6">
-					<section className="border border-border/60 rounded-xl overflow-hidden">
-						<div className="px-4 py-3 border-b border-border/60">
+					<section className="border border-border rounded-xl overflow-hidden">
+						<div className="px-4 py-3 border-b border-border">
 							<Skeleton className="h-3 w-36" />
 						</div>
 						<div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
@@ -181,8 +181,8 @@ export default function ApiAuthLandingPage() {
 						</div>
 					</section>
 
-					<section className="border border-border/60 rounded-xl overflow-hidden">
-						<div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
+					<section className="border border-border rounded-xl overflow-hidden">
+						<div className="px-4 py-3 border-b border-border flex items-center justify-between">
 							<Skeleton className="h-4 w-24" />
 							<Skeleton className="h-3 w-10" />
 						</div>
@@ -213,7 +213,7 @@ export default function ApiAuthLandingPage() {
 							{Array.from({ length: 3 }).map((_, idx) => (
 								<div
 									key={idx}
-									className="flex items-center justify-between gap-3 rounded-xl border border-border/60 px-3 py-2"
+									className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2"
 								>
 									<div className="space-y-1">
 										<Skeleton className="h-4 w-44" />
@@ -268,7 +268,7 @@ export default function ApiAuthLandingPage() {
 					</div>
 					<div className="grid grid-cols-2 divide-x divide-y divide-border lg:grid-cols-4 lg:divide-y-0">
 						<Metric label="total requests" value={analyticsLoading ? "—" : formatNumber(analytics?.total_requests)} foot="all keys combined" />
-						<Metric label="allowed" value={analyticsLoading ? "—" : formatNumber(analytics?.allowed_requests)} foot="signed successfully" valueClass="text-emerald-600 dark:text-emerald-400" />
+						<Metric label="allowed" value={analyticsLoading ? "—" : formatNumber(analytics?.allowed_requests)} foot="signed successfully" valueClass="text-success" />
 						<Metric label="blocked" value={analyticsLoading ? "—" : formatNumber(analytics?.blocked_requests)} foot="scope or rate violations" />
 						<Metric label="keys used · 24h" value={analyticsLoading ? "—" : formatNumber(analytics?.keys_used_24h)} foot="active credentials" />
 					</div>
@@ -286,7 +286,7 @@ export default function ApiAuthLandingPage() {
 						</div>
 						<div className="flex items-center gap-3.5">
 							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-								<span className="size-2 rounded-full bg-emerald-500" />
+								<span className="size-2 rounded-full bg-success" />
 								Allowed
 							</span>
 							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -354,7 +354,7 @@ export default function ApiAuthLandingPage() {
 									/>
 									<Bar
 										dataKey="allowed"
-										fill="hsl(142, 76%, 36%)"
+										fill="var(--wa-success)"
 										fillOpacity={0.85}
 										radius={[3, 3, 0, 0]}
 										strokeWidth={0}
@@ -363,7 +363,7 @@ export default function ApiAuthLandingPage() {
 									/>
 									<Bar
 										dataKey="blocked"
-										fill="hsl(0, 84%, 60%)"
+										fill="var(--wa-error)"
 										fillOpacity={0.85}
 										radius={[3, 3, 0, 0]}
 										strokeWidth={0}
@@ -408,7 +408,7 @@ export default function ApiAuthLandingPage() {
 												"relative border transition-all duration-300 rounded-xl overflow-hidden",
 												isExpanded
 													? "border-primary/20 bg-primary/[0.01]"
-													: "border-border/60 bg-background hover:border-primary/10"
+													: "border-border bg-background hover:border-primary/10"
 											)}
 										>
 											<button
@@ -438,7 +438,7 @@ export default function ApiAuthLandingPage() {
 
 											{/* Expanded Content */}
 											{isExpanded && (
-												<div className="border-t border-border/10 py-4 px-4 bg-muted/5 grid grid-cols-2 gap-4 text-xs">
+												<div className="border-t border-border py-4 px-4 bg-muted/5 grid grid-cols-2 gap-4 text-xs">
 													<div>
 														<span className="text-muted-foreground block mb-1">Max Requests</span>
 														<span className="text-foreground font-medium">{limit.max_requests.toLocaleString()}</span>

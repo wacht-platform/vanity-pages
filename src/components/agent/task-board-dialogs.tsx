@@ -144,7 +144,7 @@ export function CreateTaskDialog({ onCreate, trigger }: CreateTaskDialogProps) {
                     <Button
                         variant="outline"
                         size="sm"
-                        className="h-7 rounded-md border-border/60 px-2.5 text-sm font-normal shadow-none"
+                        className="h-7 rounded-md border-border px-2.5 text-sm font-normal shadow-none"
                     >
                         New task
                     </Button>
@@ -431,7 +431,7 @@ function TaskForm({
                         {files.map((file, index) => (
                             <div
                                 key={`${file.name}-${index}`}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/20 px-2 py-1 text-xs text-foreground/80"
+                                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/20 px-2 py-1 text-xs text-foreground/80"
                             >
                                 <span className="max-w-[220px] truncate">
                                     {file.name}

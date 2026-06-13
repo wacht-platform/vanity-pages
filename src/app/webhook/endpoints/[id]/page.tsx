@@ -209,9 +209,9 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 	}
 
 	const getStatusColor = (statusCode: number) => {
-		if (statusCode >= 200 && statusCode < 300) return "bg-emerald-500"
-		if (statusCode >= 400 && statusCode < 500) return "bg-amber-500"
-		if (statusCode >= 500) return "bg-rose-500"
+		if (statusCode >= 200 && statusCode < 300) return "bg-success"
+		if (statusCode >= 400 && statusCode < 500) return "bg-warning"
+		if (statusCode >= 500) return "bg-error"
 		return "bg-muted-foreground"
 	}
 
@@ -481,11 +481,11 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 								className={cn(
 									"inline-flex h-[22px] items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
 									endpoint?.is_active
-										? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+										? "border-success/30 bg-success-soft text-success"
 										: "border-border bg-secondary text-muted-foreground",
 								)}
 							>
-								<span className={cn("size-1.5 rounded-full", endpoint?.is_active ? "bg-emerald-500" : "bg-muted-foreground/40")} />
+								<span className={cn("size-1.5 rounded-full", endpoint?.is_active ? "bg-success" : "bg-muted-foreground/40")} />
 								{endpoint?.is_active ? "active" : "inactive"}
 							</span>
 							<span className="font-mono text-[11px] text-muted-foreground">
@@ -580,7 +580,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 					<div className="grid grid-cols-3 divide-x divide-border">
 						<PctCell label="P50" value={analyticsLoading ? "—" : `${Math.round(analytics?.p50_response_time_ms || 0)}ms`} />
 						<PctCell label="P95" value={analyticsLoading ? "—" : `${Math.round(analytics?.p95_response_time_ms || 0)}ms`} />
-						<PctCell label="P99" value={analyticsLoading ? "—" : `${Math.round(analytics?.p99_response_time_ms || 0)}ms`} valueClass="text-amber-600 dark:text-amber-400" />
+						<PctCell label="P99" value={analyticsLoading ? "—" : `${Math.round(analytics?.p99_response_time_ms || 0)}ms`} valueClass="text-warning" />
 					</div>
 				</section>
 			</div>
@@ -737,7 +737,7 @@ export default function EndpointDetailPage({ params }: { params: Promise<{ id: s
 														) : detailsList && detailsList.length > 0 ? (
 															<div className="space-y-3">
 																{delivery.filtered_reason && (
-																	<div className="rounded-[6px] border border-amber-500/25 bg-amber-500/10 p-3 text-[12px] text-amber-600 dark:text-amber-400">
+																	<div className="rounded-[6px] border border-warning/30 bg-warning-soft p-3 text-[12px] text-warning">
 																		Filtered reason: {delivery.filtered_reason}
 																	</div>
 																)}

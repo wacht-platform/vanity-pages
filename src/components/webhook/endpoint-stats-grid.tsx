@@ -29,7 +29,7 @@ export function EndpointStatsGrid({
 				<Cell
 					label="Success rate"
 					value={analyticsLoading ? "—" : `${(successRate || 0).toFixed(1)}%`}
-					valueClass="text-emerald-600 dark:text-emerald-400"
+					valueClass="text-success"
 				/>
 				<Cell label="Avg response" value={analyticsLoading ? "—" : `${Math.round(avgResponseTimeMs || 0)}ms`} />
 				<Cell label="Failed" value={analyticsLoading ? "—" : formatNumber(failed)} />

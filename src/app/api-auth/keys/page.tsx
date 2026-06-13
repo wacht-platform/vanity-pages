@@ -220,7 +220,7 @@ export default function ApiAuthKeysPage() {
 										className={cn(
 											"size-1.5 rounded-full",
 											key.is_active
-												? "bg-emerald-500"
+												? "bg-success"
 												: "bg-muted-foreground/40",
 										)}
 									/>
@@ -242,7 +242,7 @@ export default function ApiAuthKeysPage() {
 										className={cn(
 											"inline-flex h-[22px] w-fit items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
 											key.is_active
-												? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+												? "border-success/30 bg-success-soft text-success"
 												: "border-border bg-muted text-muted-foreground",
 										)}
 									>
@@ -250,7 +250,7 @@ export default function ApiAuthKeysPage() {
 											className={cn(
 												"size-1.5 rounded-full",
 												key.is_active
-													? "bg-emerald-500"
+													? "bg-success"
 													: "bg-muted-foreground/40",
 											)}
 										/>
@@ -369,7 +369,7 @@ export default function ApiAuthKeysPage() {
 							aria-label="Copy secret"
 						>
 							{secretCopied ? (
-								<Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+								<Check className="h-3.5 w-3.5 text-success" />
 							) : (
 								<Copy className="h-3.5 w-3.5" />
 							)}

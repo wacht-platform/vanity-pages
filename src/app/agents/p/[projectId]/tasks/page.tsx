@@ -1,33 +1,23 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { useActorProjects, useProjectTasks } from "@wacht/nextjs";
-import type {
-    ActorProject,
-    ProjectTaskBoardItem,
-    ProjectTaskSchedule,
-} from "@wacht/types";
-import { IconPlus, IconChecklist } from "@tabler/icons-react";
+import type { ActorProject, ProjectTaskBoardItem } from "@wacht/types";
+import {
+    IconPlus,
+    IconChecklist,
+    IconChevronRight,
+    IconSearch,
+} from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { CreateTaskDialog } from "@/components/agent/task-board-dialogs";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-
-const TASK_CARD_MARKDOWN_CLASSNAME =
-    "line-clamp-3 max-w-none text-sm leading-5 text-muted-foreground " +
-    "[&_p]:m-0 [&_p]:text-sm [&_p]:leading-5 [&_p]:text-muted-foreground " +
-    "[&_ul]:my-0 [&_ul]:pl-4 [&_ol]:my-0 [&_ol]:pl-4 " +
-    "[&_li]:my-0.5 [&_li]:text-sm [&_li]:leading-5 " +
-    "[&_strong]:font-normal [&_strong]:text-foreground " +
-    "[&_em]:italic [&_em]:text-muted-foreground " +
-    "[&_code]:rounded-sm [&_code]:bg-accent/30 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.8125rem] [&_code]:text-foreground " +
-    "[&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:border [&_pre]:border-border/60 [&_pre]:bg-accent/20 [&_pre]:p-3 [&_pre]:text-[0.8125rem] [&_pre]:leading-5";
 
 function formatRelativeDate(value?: string) {
     if (!value) return "";
@@ -59,146 +49,104 @@ function formatRelativeDate(value?: string) {
     });
 }
 
-function formatInterval(seconds?: number) {
-    if (!seconds || seconds <= 0) return "";
-    const days = Math.floor(seconds / 86_400);
-    const hours = Math.floor((seconds % 86_400) / 3_600);
-    const minutes = Math.floor((seconds % 3_600) / 60);
-    const parts: string[] = [];
-    if (days > 0) parts.push(`${days}d`);
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0 && parts.length === 0) parts.push(`${minutes}m`);
-    return parts.join(" ");
+const STATUS_GROUPS = {
+    open: ["pending", "available"],
+    active: ["claimed", "in_progress"],
+    waiting: ["needs_clarification", "waiting_for_children"],
+    blocked: ["blocked"],
+    done: ["completed"],
+    closed: ["rejected", "cancelled", "failed"],
+} as const;
+
+type TaskFilter = "all" | "active" | "blocked" | "done";
+
+const TASK_FILTERS: { id: TaskFilter; label: string }[] = [
+    { id: "all", label: "All" },
+    { id: "active", label: "Active" },
+    { id: "blocked", label: "Blocked" },
+    { id: "done", label: "Done" },
+];
+
+function statusOf(task: ProjectTaskBoardItem) {
+    return task.status || "pending";
 }
 
-function formatScheduleBadge(schedule: ProjectTaskSchedule) {
-    if (schedule.schedule_kind === "interval") {
-        const interval = formatInterval(schedule.interval_seconds);
-        return interval ? `Recurring · every ${interval}` : "Recurring";
+function matchesFilter(task: ProjectTaskBoardItem, filter: TaskFilter) {
+    if (filter === "all") return true;
+    const status = statusOf(task);
+    if (filter === "active") {
+        return (
+            (STATUS_GROUPS.active as readonly string[]).includes(status) ||
+            (STATUS_GROUPS.open as readonly string[]).includes(status) ||
+            (STATUS_GROUPS.waiting as readonly string[]).includes(status)
+        );
     }
-    if (schedule.schedule_kind === "once") return "One-off · scheduled";
-    return "Scheduled";
+    if (filter === "blocked") {
+        return (
+            (STATUS_GROUPS.blocked as readonly string[]).includes(status) ||
+            (STATUS_GROUPS.waiting as readonly string[]).includes(status)
+        );
+    }
+    if (filter === "done") {
+        return (STATUS_GROUPS.done as readonly string[]).includes(status);
+    }
+    return true;
 }
 
-const TASK_COLUMNS = [
-    {
-        id: "intake",
-        title: "Intake",
-        statuses: ["pending", "available"],
-    },
-    {
-        id: "active",
-        title: "Active",
-        statuses: ["claimed", "in_progress"],
-    },
-    {
-        id: "waiting",
-        title: "Waiting",
-        statuses: ["needs_clarification", "waiting_for_children"],
-    },
-    {
-        id: "blocked",
-        title: "Blocked",
-        statuses: ["blocked"],
-    },
-    {
-        id: "done",
-        title: "Done",
-        statuses: ["completed"],
-    },
-    {
-        id: "closed",
-        title: "Closed",
-        statuses: ["rejected", "cancelled", "failed"],
-    },
-] as const;
+/** Map a task status to its pill variant + dot color used in the design. */
+function statusPresentation(status: string): {
+    pill: string;
+    dot: string;
+    dotc: string;
+} {
+    if ((STATUS_GROUPS.done as readonly string[]).includes(status)) {
+        return {
+            pill: "border-success/30 bg-success-soft text-success",
+            dot: "bg-success",
+            dotc: "bg-success",
+        };
+    }
+    if (
+        (STATUS_GROUPS.blocked as readonly string[]).includes(status) ||
+        (STATUS_GROUPS.waiting as readonly string[]).includes(status)
+    ) {
+        return {
+            pill: "border-warning/30 bg-warning-soft text-warning",
+            dot: "bg-warning",
+            dotc: "bg-warning",
+        };
+    }
+    if ((STATUS_GROUPS.active as readonly string[]).includes(status)) {
+        return { pill: "", dot: "bg-info", dotc: "bg-info" };
+    }
+    if ((STATUS_GROUPS.closed as readonly string[]).includes(status)) {
+        return { pill: "", dot: "bg-error", dotc: "bg-error" };
+    }
+    return { pill: "", dot: "bg-faint", dotc: "bg-faint" };
+}
 
-function TaskBoardLoading() {
-    const loadingColumns = [
-        { id: "archived", title: "Archived" },
-        ...TASK_COLUMNS.map((column) => ({
-            id: column.id,
-            title: column.title,
-        })),
-    ];
+function taskKey(task: ProjectTaskBoardItem) {
+    return task.task_key || `TSK-${task.id.slice(0, 4)}`;
+}
 
+function assigneeInitials(task: ProjectTaskBoardItem) {
+    const thread = task.assigned_thread_id;
+    if (!thread) return "—";
+    return thread.replace(/[^a-zA-Z0-9]/g, "").slice(0, 2).toUpperCase() || "—";
+}
+
+function assigneeName(task: ProjectTaskBoardItem) {
+    if (!task.assigned_thread_id) return "Unassigned";
+    return `Thread ${task.assigned_thread_id.slice(0, 8)}`;
+}
+
+function TasksLoading() {
     return (
-        <div className="flex flex-col">
-            <div className="border-b border-border/60">
-                <div className="flex w-full flex-col gap-3 px-4 py-4 md:px-5">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <Skeleton className="h-4 w-20" />
-                            <Skeleton className="h-4 w-24" />
-                        </div>
-                        <Skeleton className="h-8 w-24 rounded-md" />
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex w-full flex-col gap-6 px-4 py-4 md:px-5">
-                <section className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-foreground">
-                                Task Board
-                            </span>
-                            <Skeleton className="h-4 w-8" />
-                        </div>
-                    </div>
-
-                    <div className="overflow-x-auto pb-1">
-                        <div className="grid min-w-max gap-4 lg:grid-cols-7">
-                            {loadingColumns.map((column, index) => (
-                                <section
-                                    key={column.id}
-                                    className="flex h-[70vh] min-h-[560px] w-[280px] flex-col"
-                                >
-                                    <div className="flex items-center justify-between rounded-md border border-border/60 px-3 py-2">
-                                        <h2 className="text-sm font-normal text-foreground">
-                                            {column.title}
-                                        </h2>
-                                        <Skeleton className="h-5 w-7 rounded-md" />
-                                    </div>
-                                    <div className="flex flex-1 flex-col gap-3 overflow-y-auto py-3">
-                                        {Array.from({
-                                            length: index === 0 ? 2 : 3,
-                                        }).map((_, cardIndex) => (
-                                            <div
-                                                key={`${column.id}-${cardIndex}`}
-                                                className="rounded-lg border border-border/60 bg-background p-3 shadow-sm"
-                                            >
-                                                <div className="mb-3 flex items-start justify-between gap-3">
-                                                    <div className="min-w-0 flex-1 space-y-2">
-                                                        <Skeleton className="h-4 w-4/5" />
-                                                        <div className="flex items-center gap-2">
-                                                            <Skeleton className="h-3 w-14" />
-                                                            <Skeleton className="h-1 w-1 rounded-full" />
-                                                            <Skeleton className="h-3 w-12" />
-                                                        </div>
-                                                    </div>
-                                                    <Skeleton className="mt-0.5 h-3 w-3 rounded-sm" />
-                                                </div>
-                                                <div className="mb-3 space-y-2">
-                                                    <Skeleton className="h-3 w-full" />
-                                                    <Skeleton className="h-3 w-[88%]" />
-                                                    {cardIndex % 2 === 0 ? (
-                                                        <Skeleton className="h-3 w-[62%]" />
-                                                    ) : null}
-                                                </div>
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <Skeleton className="h-6 w-20 rounded-md" />
-                                                    <Skeleton className="h-3 w-12" />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            </div>
+        <div className="flex flex-col gap-4 p-6">
+            <Skeleton className="h-12 rounded" />
+            <Skeleton className="h-24 rounded" />
+            <Skeleton className="h-10 rounded" />
+            <Skeleton className="h-64 rounded" />
         </div>
     );
 }
@@ -220,35 +168,50 @@ export default function ProjectTasksPage() {
         loadingMore: activeLoadingMore,
         loadMore: loadMoreActiveTasks,
         createTask,
-        archiveTask,
     } = useProjectTasks(projectId, !!projectId, {
         limit: 72,
     });
-    const {
-        tasks: archivedTasks,
-        loading: archivedTasksLoading,
-        error: archivedTasksError,
-        hasMore: archivedHasMore,
-        loadingMore: archivedLoadingMore,
-        loadMore: loadMoreArchivedTasks,
-        unarchiveTask,
-    } = useProjectTasks(projectId, !!projectId, {
-        archivedOnly: true,
-        limit: 24,
-    });
 
-    const groupedOpenTasks = React.useMemo(
-        () =>
-            TASK_COLUMNS.map((column) => ({
-                ...column,
-                tasks: activeTasks.filter((task: ProjectTaskBoardItem) =>
-                    column.statuses.some(
-                        (status) => status === (task.status || "pending"),
-                    ),
-                ),
-            })),
-        [activeTasks],
-    );
+    const [filter, setFilter] = React.useState<TaskFilter>("all");
+    const [query, setQuery] = React.useState("");
+
+    const counts = React.useMemo(() => {
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        let open = 0;
+        let active = 0;
+        let blocked = 0;
+        let done = 0;
+        for (const task of activeTasks) {
+            const status = statusOf(task);
+            if ((STATUS_GROUPS.open as readonly string[]).includes(status)) open += 1;
+            if ((STATUS_GROUPS.active as readonly string[]).includes(status))
+                active += 1;
+            if (
+                (STATUS_GROUPS.blocked as readonly string[]).includes(status) ||
+                (STATUS_GROUPS.waiting as readonly string[]).includes(status)
+            )
+                blocked += 1;
+            if ((STATUS_GROUPS.done as readonly string[]).includes(status)) {
+                const completedAt = task.completed_at || task.updated_at;
+                if (completedAt && new Date(completedAt).getTime() >= sevenDaysAgo)
+                    done += 1;
+            }
+        }
+        return { open, active, blocked, done };
+    }, [activeTasks]);
+
+    const visibleTasks = React.useMemo(() => {
+        const needle = query.trim().toLowerCase();
+        return activeTasks.filter((task: ProjectTaskBoardItem) => {
+            if (!matchesFilter(task, filter)) return false;
+            if (!needle) return true;
+            return (
+                task.title.toLowerCase().includes(needle) ||
+                taskKey(task).toLowerCase().includes(needle) ||
+                (task.description || "").toLowerCase().includes(needle)
+            );
+        });
+    }, [activeTasks, filter, query]);
 
     if (!hasSession) {
         return (
@@ -275,7 +238,7 @@ export default function ProjectTasksPage() {
             />
         );
     }
-    if (activeTasksError || archivedTasksError) {
+    if (activeTasksError) {
         return (
             <PageState
                 title="Failed to load tasks"
@@ -301,172 +264,153 @@ export default function ProjectTasksPage() {
                 }
             />
 
-            {/* Main Content Area */}
             <div className="flex-1 overflow-y-auto">
-                {activeTasksLoading && archivedTasksLoading ? (
-                    <TaskBoardLoading />
+                {activeTasksLoading ? (
+                    <TasksLoading />
                 ) : (
-                    <div className="flex flex-col">
-                        <div className="border-b border-border/60">
-                            <div className="flex w-full flex-col gap-3 px-4 py-4 md:px-5">
-                                <div className="flex flex-wrap items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                        <span>{activeTasks.length} active</span>
-                                        <span>
-                                            {archivedTasks.length} archived
-                                        </span>
+                    <div className="mx-auto w-full max-w-5xl px-6 py-6">
+                        {/* ab-head */}
+                        <div className="mb-[18px] flex items-start justify-between gap-6">
+                            <div className="min-w-0">
+                                <div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+                                    Project · {project.name}
+                                </div>
+                                <h1 className="mb-1.5 text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+                                    Tasks
+                                </h1>
+                                <p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+                                    Work queued for this project&apos;s agents,
+                                    newest first.
+                                </p>
+                            </div>
+                            <CreateTaskDialog
+                                onCreate={async (request, files) => {
+                                    await createTask(request, files);
+                                }}
+                                trigger={
+                                    <Button size="sm">
+                                        <IconPlus size={14} stroke={2.5} />
+                                        New task
+                                    </Button>
+                                }
+                            />
+                        </div>
+
+                        {/* Queue snapshot */}
+                        <div className="overflow-hidden rounded-[10px] border border-border bg-card">
+                            <div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                Queue
+                            </div>
+                            <div className="grid grid-cols-2 divide-x divide-border sm:grid-cols-4">
+                                <SnapCell
+                                    k="open"
+                                    v={counts.open}
+                                    f="awaiting pickup"
+                                />
+                                <SnapCell
+                                    k="in progress"
+                                    v={counts.active}
+                                    vClass="text-info"
+                                    f={`${counts.active} agent${counts.active === 1 ? "" : "s"} active`}
+                                />
+                                <SnapCell
+                                    k="blocked"
+                                    v={counts.blocked}
+                                    vClass="text-warning"
+                                    f="waiting on review"
+                                />
+                                <SnapCell
+                                    k="done · 7d"
+                                    v={counts.done}
+                                    vClass="text-success"
+                                    f="completed recently"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Filter row */}
+                        <div className="my-5 mb-3 flex items-center gap-2">
+                            <div className="inline-flex gap-0.5 rounded-[8px] border border-border bg-secondary p-[3px]">
+                                {TASK_FILTERS.map((item) => (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        onClick={() => setFilter(item.id)}
+                                        className={cn(
+                                            "h-7 rounded-[6px] px-[13px] text-[12px] font-medium text-muted-foreground",
+                                            filter === item.id &&
+                                                "bg-card text-foreground shadow-[0_0_0_0.5px_var(--wa-border-strong)]",
+                                        )}
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex-1" />
+                            <div className="relative w-[220px]">
+                                <IconSearch
+                                    size={14}
+                                    className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint"
+                                />
+                                <Input
+                                    value={query}
+                                    onChange={(event) =>
+                                        setQuery(event.target.value)
+                                    }
+                                    placeholder="Search tasks…"
+                                    className="h-9 pl-[30px]"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Task list */}
+                        <div className="overflow-hidden rounded-[10px] border border-border bg-card">
+                            <div className="overflow-x-auto">
+                                <div className="min-w-[760px]">
+                                    <div className="grid grid-cols-[8px_92px_1fr_158px_104px_80px_20px] items-center gap-[14px] border-b border-border bg-secondary px-[18px] py-[10px] font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                        <span />
+                                        <span>Task</span>
+                                        <span>Title</span>
+                                        <span>Assignee</span>
+                                        <span>Status</span>
+                                        <span className="text-right">Updated</span>
+                                        <span />
                                     </div>
 
-                                    <CreateTaskDialog
-                                        onCreate={async (request, files) => {
-                                            await createTask(request, files);
-                                        }}
-                                        trigger={
-                                            <button
-                                                type="button"
-                                                className="flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-normal text-primary-foreground transition-colors"
-                                            >
-                                                <IconPlus size={13} stroke={2.5} />
-                                                <span>New Task</span>
-                                            </button>
-                                        }
-                                    />
+                                    {visibleTasks.length === 0 ? (
+                                        <div className="px-[18px] py-12 text-center text-[13px] text-muted-foreground">
+                                            No tasks match this view.
+                                        </div>
+                                    ) : (
+                                        visibleTasks.map(
+                                            (task: ProjectTaskBoardItem) => (
+                                                <TaskRow
+                                                    key={task.id}
+                                                    task={task}
+                                                    href={`/agents/p/${projectId}/tasks/${task.id}`}
+                                                />
+                                            ),
+                                        )
+                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex w-full flex-col gap-6 px-4 py-4 md:px-5">
-                            <section className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-foreground">
-                                            Task Board
-                                        </span>
-                                        <span className="text-sm text-muted-foreground">
-                                            {activeTasks.length +
-                                                archivedTasks.length}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="overflow-x-auto pb-1">
-                                    <div className="grid min-w-max gap-4 lg:grid-cols-7">
-                                        <section className="flex h-[70vh] min-h-[560px] w-[280px] flex-col">
-                                            <div className="flex items-center justify-between rounded-md border border-border/60 px-3 py-2">
-                                                <h2 className="text-sm font-normal text-foreground">
-                                                    Archived
-                                                </h2>
-                                                <span className="rounded-md bg-background px-1.5 py-0.5 text-xs text-muted-foreground">
-                                                    {archivedTasks.length}
-                                                </span>
-                                            </div>
-                                            <div className="flex flex-1 flex-col gap-3 overflow-y-auto py-3">
-                                                {archivedTasks.length === 0 ? (
-                                                    <div className="mx-3 flex flex-1 items-center justify-center rounded-lg border border-dashed border-border/60 px-4 text-center text-sm text-muted-foreground">
-                                                        No tasks
-                                                    </div>
-                                                ) : (
-                                                    archivedTasks.map(
-                                                        (
-                                                            task: ProjectTaskBoardItem,
-                                                        ) => (
-                                                            <ArchivedTaskCard
-                                                                key={task.id}
-                                                                task={task}
-                                                                href={`/agents/p/${projectId}/tasks/${task.id}`}
-                                                                onRestore={async () => {
-                                                                    await unarchiveTask(
-                                                                        task.id,
-                                                                    );
-                                                                }}
-                                                            />
-                                                        ),
-                                                    )
-                                                )}
-                                            </div>
-                                        </section>
-
-                                        {groupedOpenTasks.map((column) => (
-                                            <section
-                                                key={column.id}
-                                                className="flex h-[70vh] min-h-140 w-70 flex-col"
-                                            >
-                                                <div className="flex items-center justify-between rounded-md border border-border/60 px-3 py-2">
-                                                    <h2 className="text-sm font-normal text-foreground">
-                                                        {column.title}
-                                                    </h2>
-                                                    <span className="rounded-md bg-background px-1.5 py-0.5 text-xs text-muted-foreground">
-                                                        {column.tasks.length}
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-1 flex-col gap-3 overflow-y-auto py-3">
-                                                    {column.tasks.length ===
-                                                    0 ? (
-                                                        <div className="mx-3 flex flex-1 items-center justify-center rounded-lg border border-dashed border-border/60 px-4 text-center text-sm text-muted-foreground">
-                                                            No tasks
-                                                        </div>
-                                                    ) : (
-                                                        column.tasks.map(
-                                                            (
-                                                                task: ProjectTaskBoardItem,
-                                                            ) => (
-                                                                <TaskCard
-                                                                    key={
-                                                                        task.id
-                                                                    }
-                                                                    task={task}
-                                                                    href={`/agents/p/${projectId}/tasks/${task.id}`}
-                                                                    onArchive={async () => {
-                                                                        await archiveTask(
-                                                                            task.id,
-                                                                        );
-                                                                    }}
-                                                                />
-                                                            ),
-                                                        )
-                                                    )}
-                                                </div>
-                                            </section>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {archivedHasMore ||
-                                archivedLoadingMore ||
-                                activeHasMore ||
-                                activeLoadingMore ? (
-                                    <div className="flex flex-wrap justify-center gap-2">
-                                        {archivedHasMore ||
-                                        archivedLoadingMore ? (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    void loadMoreArchivedTasks()
-                                                }
-                                                disabled={archivedLoadingMore}
-                                                className="h-8 rounded-md border border-border/60 px-3 text-sm text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground disabled:opacity-50"
-                                            >
-                                                {archivedLoadingMore
-                                                    ? "Loading..."
-                                                    : "Load More Archived"}
-                                            </button>
-                                        ) : null}
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                void loadMoreActiveTasks()
-                                            }
-                                            disabled={activeLoadingMore}
-                                            className="h-8 rounded-md border border-border/60 px-3 text-sm text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground disabled:opacity-50"
-                                        >
-                                            {activeLoadingMore
-                                                ? "Loading..."
-                                                : "Load More Tasks"}
-                                        </button>
-                                    </div>
-                                ) : null}
-                            </section>
-                        </div>
+                        {activeHasMore || activeLoadingMore ? (
+                            <div className="mt-4 flex justify-center">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => void loadMoreActiveTasks()}
+                                    disabled={activeLoadingMore}
+                                >
+                                    {activeLoadingMore
+                                        ? "Loading…"
+                                        : "Load more tasks"}
+                                </Button>
+                            </div>
+                        ) : null}
                     </div>
                 )}
             </div>
@@ -474,174 +418,108 @@ export default function ProjectTasksPage() {
     );
 }
 
-function shouldIgnoreCardNavigation(target: EventTarget | null) {
-    if (!(target instanceof Element)) return false;
-    return !!target.closest("button, a");
-}
-
-function TaskCard({
-    task,
-    href,
-    onArchive,
+function SnapCell({
+    k,
+    v,
+    f,
+    vClass,
 }: {
-    task: ProjectTaskBoardItem;
-    href: string;
-    onArchive: () => Promise<void>;
+    k: string;
+    v: number;
+    f: string;
+    vClass?: string;
 }) {
-    const router = useRouter();
-
     return (
-        <div
-            role="link"
-            tabIndex={0}
-            onClick={(event) => {
-                if (shouldIgnoreCardNavigation(event.target)) return;
-                router.push(href);
-            }}
-            onKeyDown={(event) => {
-                if (event.key !== "Enter" && event.key !== " ") return;
-                if (shouldIgnoreCardNavigation(event.target)) return;
-                event.preventDefault();
-                router.push(href);
-            }}
-            className="cursor-pointer rounded-lg border border-border/60 bg-background p-3 shadow-sm transition-colors hover:bg-accent/20"
-        >
-            <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <Link
-                        href={href}
-                        className="block truncate text-sm text-foreground"
-                    >
-                        {task.title}
-                    </Link>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>
-                            {task.task_key?.substring(0, 8) ||
-                                `TSK-${task.id.slice(0, 4)}`}
-                        </span>
-                        <span className="h-1 w-1 rounded-full bg-border" />
-                        <span>{formatRelativeDate(task.created_at)}</span>
-                    </div>
-                </div>
-                <div className="w-4 flex justify-center">
-                </div>
+        <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
+            <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                {k}
             </div>
-
-            {task.description ? (
-                <div className="mb-3">
-                    <div className={TASK_CARD_MARKDOWN_CLASSNAME}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {task.description}
-                        </ReactMarkdown>
-                    </div>
-                </div>
-            ) : null}
-
-            {task.schedule ? (
-                <div className="mb-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className="rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
-                        {formatScheduleBadge(task.schedule)}
-                    </span>
-                    <span>
-                        next {formatRelativeDate(task.schedule.next_run_at)}
-                    </span>
-                </div>
-            ) : null}
-
-            <div className="flex items-center justify-between gap-3">
-                <span className="rounded-md bg-secondary/60 px-2 py-1 text-xs text-muted-foreground">
-                    {(task.status || "pending").replace(/_/g, " ")}
-                </span>
-                <button
-                    type="button"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        void onArchive();
-                    }}
-                    className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                    Archive
-                </button>
+            <div
+                className={cn(
+                    "text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground",
+                    vClass,
+                )}
+            >
+                {v}
+            </div>
+            <div className="font-mono text-[11px] leading-[1.4] text-faint">
+                {f}
             </div>
         </div>
     );
 }
 
-function ArchivedTaskCard({
+function shouldIgnoreRowNavigation(target: EventTarget | null) {
+    if (!(target instanceof Element)) return false;
+    return !!target.closest("button, a");
+}
+
+function TaskRow({
     task,
     href,
-    onRestore,
 }: {
     task: ProjectTaskBoardItem;
     href: string;
-    onRestore: () => Promise<void>;
 }) {
     const router = useRouter();
+    const status = statusOf(task);
+    const presentation = statusPresentation(status);
+    const initials = assigneeInitials(task);
 
     return (
         <div
             role="link"
             tabIndex={0}
             onClick={(event) => {
-                if (shouldIgnoreCardNavigation(event.target)) return;
+                if (shouldIgnoreRowNavigation(event.target)) return;
                 router.push(href);
             }}
             onKeyDown={(event) => {
                 if (event.key !== "Enter" && event.key !== " ") return;
-                if (shouldIgnoreCardNavigation(event.target)) return;
+                if (shouldIgnoreRowNavigation(event.target)) return;
                 event.preventDefault();
                 router.push(href);
             }}
-            className="cursor-pointer rounded-lg border border-border/60 bg-background p-3 shadow-sm transition-colors hover:bg-accent/20"
+            className="grid cursor-pointer grid-cols-[8px_92px_1fr_158px_104px_80px_20px] items-center gap-[14px] border-b border-border px-[18px] py-[13px] last:border-b-0 hover:bg-secondary"
         >
-            <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <Link
-                        href={href}
-                        className="block truncate text-sm text-foreground"
-                    >
-                        {task.title}
-                    </Link>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>
-                            {task.task_key?.substring(0, 8) ||
-                                `TSK-${task.id.slice(0, 4)}`}
-                        </span>
-                        <span className="h-1 w-1 rounded-full bg-border" />
-                        <span>{formatRelativeDate(task.created_at)}</span>
-                    </div>
-                </div>
-                <div className="w-4 flex justify-center">
-                </div>
-            </div>
-
-            {task.description ? (
-                <div className="mb-3">
-                    <div className={TASK_CARD_MARKDOWN_CLASSNAME}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {task.description}
-                        </ReactMarkdown>
-                    </div>
-                </div>
-            ) : null}
-
-            <div className="flex items-center justify-between gap-3">
-                <span className="rounded-md bg-secondary/60 px-2 py-1 text-xs text-muted-foreground">
-                    archived
+            <span
+                className={cn("size-[7px] rounded-full", presentation.dotc)}
+            />
+            <span className="truncate font-mono text-[11px] font-medium text-muted-foreground">
+                {taskKey(task)}
+            </span>
+            <span className="truncate text-[13px] font-medium leading-[1.3] text-foreground">
+                {task.title}
+            </span>
+            <span className="flex min-w-0 items-center gap-2">
+                <span className="grid size-[22px] flex-none place-items-center rounded-full bg-primary/10 font-medium text-[10px] text-primary">
+                    {initials}
                 </span>
-                <button
-                    type="button"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        void onRestore();
-                    }}
-                    className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                    Restore
-                </button>
-            </div>
+                <span className="truncate text-[12px] text-foreground-secondary">
+                    {assigneeName(task)}
+                </span>
+            </span>
+            <span
+                className={cn(
+                    "inline-flex h-[22px] w-fit items-center gap-1.5 rounded-[4px] border border-border bg-secondary px-2 font-mono text-[11px] font-medium lowercase text-foreground-secondary",
+                    presentation.pill,
+                )}
+            >
+                <span
+                    className={cn(
+                        "size-[6px] rounded-full",
+                        presentation.dot,
+                    )}
+                />
+                {status.replace(/_/g, " ")}
+            </span>
+            <span className="text-right font-mono text-[11px] text-muted-foreground">
+                {formatRelativeDate(task.updated_at)}
+            </span>
+            <IconChevronRight
+                size={14}
+                className="justify-self-end text-faint"
+            />
         </div>
     );
 }

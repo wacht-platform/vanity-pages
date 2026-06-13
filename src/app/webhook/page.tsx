@@ -221,15 +221,15 @@ export default function WebhookPage() {
 						</div>
 						<div className="flex flex-wrap items-center gap-3.5">
 							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-								<span className="size-2 rounded-full bg-emerald-500" />
+								<span className="size-2 rounded-full bg-success" />
 								Successful
 							</span>
 							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-								<span className="size-2 rounded-full bg-destructive" />
+								<span className="size-2 rounded-full bg-error" />
 								Failed
 							</span>
 							<span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-								<span className="size-2 rounded-full bg-amber-500" />
+								<span className="size-2 rounded-full bg-warning" />
 								Filtered
 							</span>
 							<span className="inline-flex h-6 items-center rounded-[4px] border border-border bg-secondary px-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
@@ -294,7 +294,7 @@ export default function WebhookPage() {
 										/>
 									<Bar
 										dataKey="successful"
-										fill="hsl(142, 76%, 36%)"
+										fill="var(--wa-success)"
 										fillOpacity={0.85}
 										radius={[3, 3, 0, 0]}
 										strokeWidth={0}
@@ -302,7 +302,7 @@ export default function WebhookPage() {
 									/>
 									<Bar
 										dataKey="failed"
-										fill="hsl(0, 84%, 60%)"
+										fill="var(--wa-error)"
 										fillOpacity={0.85}
 										radius={[3, 3, 0, 0]}
 										strokeWidth={0}
@@ -310,7 +310,7 @@ export default function WebhookPage() {
 									/>
 									<Bar
 										dataKey="filtered"
-										fill="hsl(38, 92%, 50%)"
+										fill="var(--wa-warning)"
 										fillOpacity={0.9}
 										radius={[3, 3, 0, 0]}
 										strokeWidth={0}
@@ -354,7 +354,7 @@ export default function WebhookPage() {
 								className="h-8 w-8 p-0 shrink-0"
 								onClick={() => webhookApp && copyToClipboard(webhookApp.signing_secret)}
 							>
-								{copiedSecret ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+								{copiedSecret ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
 							</Button>
 							<Button
 								variant="outline"
@@ -378,7 +378,7 @@ export default function WebhookPage() {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
-							<AlertTriangle className="w-5 h-5 text-yellow-500" />
+							<AlertTriangle className="w-5 h-5 text-warning" />
 							Rotate Signing Secret
 						</DialogTitle>
 						<DialogDescription className="text-xs pt-2">
