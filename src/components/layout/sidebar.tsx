@@ -148,7 +148,7 @@ export function AppSidebar({ className }: { className?: string }) {
                     isMobileOpen
                         ? "translate-x-0"
                         : "-translate-x-full md:translate-x-0",
-                    isSidebarCollapsed ? "w-16" : "w-66",
+                    isSidebarCollapsed ? "w-16" : "w-[248px]",
                     className,
                 )}
             >

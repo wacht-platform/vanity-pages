@@ -312,7 +312,7 @@ function DeliverablesPanel({
                 {entries.map((entry, idx) => (
                     <div
                         key={`${entry.assignment_id}-${idx}`}
-                        className="rounded-md border border-border bg-card/30 p-4"
+                        className="rounded-[10px] border border-border bg-card p-4"
                     >
                         <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                             <span className="text-sm font-normal text-foreground">

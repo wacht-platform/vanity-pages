@@ -117,7 +117,7 @@
     --ring: var(--wa-primary);
     --radius: var(--wa-radius-lg);
 
-    --sidebar: var(--wa-surface);
+    --sidebar: var(--wa-background);
     --sidebar-foreground: var(--wa-text);
     --sidebar-primary: var(--wa-primary);
     --sidebar-primary-foreground: var(--wa-primary-foreground);
