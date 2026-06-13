@@ -216,7 +216,7 @@ function ExpandedSidebar({
 }) {
     return (
         <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between px-1.5 pb-3 pt-0.5">
+            <div className="flex items-center justify-between px-5 pb-3 pt-3.5">
                 <div className="min-w-0">
                     <div className="text-[15px] font-medium tracking-[-0.01em] text-foreground">
                         Agents
@@ -236,13 +236,13 @@ function ExpandedSidebar({
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-2 py-2.5">
+            <div className="flex-1 overflow-y-auto px-3 py-1">
                 <div className="space-y-3">
                     <SidebarSection>
                         <button
                             type="button"
                             onClick={onOpenCommand}
-                            className="flex h-[34px] w-full items-center justify-between rounded-[8px] border border-border bg-card px-2.5 text-[13px] text-faint transition-colors hover:text-foreground"
+                            className="flex h-[34px] w-full items-center justify-between rounded-[8px] border border-border bg-card px-2 text-[13px] text-faint transition-colors hover:text-foreground"
                         >
                             <span className="flex items-center gap-2">
                                 <IconSearch size={14} stroke={1.9} />
@@ -272,7 +272,7 @@ function ExpandedSidebar({
                     </SidebarSection>
 
                     <SidebarSection>
-                        <div className="mb-1.5 flex items-center justify-between px-0.5">
+                        <div className="mb-1.5 flex items-center justify-between px-2">
                             <div className="text-sm text-muted-foreground">
                                 Projects
                             </div>
