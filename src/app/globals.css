@@ -82,19 +82,16 @@
 }
 
 /* ------------------------------------------------------------------
-   Theme tokens come from the Wacht SDK style provider.
+   shadcn's semantic tokens map onto the deployment's `--wa-*` tokens.
+   The `--wa-*` variables are emitted by <DeploymentTheme> (see
+   components/deployment-theme.tsx) from the loaded deployment's
+   `ui_settings.theme_tokens` — light on `.wacht-root`, dark on
+   `.dark .wacht-root` — so the whole UI is themed from the deployment
+   with nothing hardcoded/duplicated here, and light/dark flips at the
+   `--wa-*` layer (no separate `.dark` block needed below).
 
-   DefaultStylesProvider (mounted in ClientProviders) injects the 24
-   `--wa-*` surface tokens onto `.wacht-root` and applies the current
-   deployment's `theme_tokens` as inline `--wa-ov-*` overrides. We map
-   shadcn's semantic tokens straight onto those `--wa-*` names, so:
-     - light/dark flips at the `--wa-*` layer (`.dark .wacht-root`),
-       so no separate `.dark` block is needed here, and
-     - per-deployment branding configured in the console flows through
-       automatically — nothing is hardcoded/duplicated in this file.
-
-   `.wacht-root` is also placed on <body> (see layout.tsx) so these
-   resolve document-wide, including Radix portals mounted to body.
+   `.wacht-root` is placed on <body> (see layout.tsx) so these resolve
+   document-wide, including Radix portals mounted to body.
    ------------------------------------------------------------------ */
 .wacht-root {
     --background: var(--wa-background);
@@ -144,34 +141,6 @@
         sans-serif;
     --wa-font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
         monospace;
-}
-
-/* Hairline borders — the design language uses 0.5px lines throughout. These
-   rules are unlayered, so they override Tailwind's 1px `border*` utilities (which
-   live in @layer utilities). Intentional thicker borders (border-2, border-[Npx],
-   etc.) use different utility classes and are left untouched. */
-.wacht-root .border {
-    border-width: 0.5px;
-}
-.wacht-root .border-t {
-    border-top-width: 0.5px;
-}
-.wacht-root .border-b {
-    border-bottom-width: 0.5px;
-}
-.wacht-root .border-l {
-    border-left-width: 0.5px;
-}
-.wacht-root .border-r {
-    border-right-width: 0.5px;
-}
-.wacht-root .border-x {
-    border-left-width: 0.5px;
-    border-right-width: 0.5px;
-}
-.wacht-root .border-y {
-    border-top-width: 0.5px;
-    border-bottom-width: 0.5px;
 }
 
 * {
