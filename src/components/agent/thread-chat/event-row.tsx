@@ -201,7 +201,7 @@ export function InlineEventRow({
           </span>
         </summary>
         {hasBody ? (
-          <div className="flex flex-col gap-2.5 border-t border-border px-3.5 pb-3.5 pt-3">
+          <div className="flex max-h-[400px] flex-col gap-2.5 overflow-auto border-t border-border px-3.5 pb-3.5 pt-3">
             {children}
           </div>
         ) : null}
