@@ -31,8 +31,6 @@ import {
     getDisplayContent,
     getMessageFiles,
     getResponseAttachments,
-    isEventStyleMessage,
-    isNoteMessage,
     messageDisplayKind,
     type ApprovalChoice,
 } from "./shared";
@@ -108,6 +106,29 @@ export function ThreadMessageList({
         [messages],
     );
 
+    // Group consecutive non-user messages into a single agent "turn" so the
+    // tool-call cards render as one connected timeline (frame 12), instead of
+    // loose disconnected cards. User messages break the run.
+    type MessageGroup =
+        | { kind: "user"; message: ConversationMessage }
+        | { kind: "agent"; messages: ConversationMessage[] };
+    const groups = React.useMemo<MessageGroup[]>(() => {
+        const out: MessageGroup[] = [];
+        for (const message of visibleMessages) {
+            if (messageDisplayKind(message.content) === "user") {
+                out.push({ kind: "user", message });
+                continue;
+            }
+            const last = out[out.length - 1];
+            if (last && last.kind === "agent") {
+                last.messages.push(message);
+            } else {
+                out.push({ kind: "agent", messages: [message] });
+            }
+        }
+        return out;
+    }, [visibleMessages]);
+
     return (
         <div
             ref={scrollContainerRef}
@@ -156,69 +177,12 @@ export function ThreadMessageList({
                 ) : null}
 
                 <div className="space-y-2">
-                    {visibleMessages.map((message) => {
-                        const messageFiles = getMessageFiles(message.content);
-                        const responseAttachments = getResponseAttachments(
-                            message.content,
-                        );
-                        const displayKind = messageDisplayKind(message.content);
-                        const eventStyleMessage = isEventStyleMessage(
-                            message.content,
-                        );
-                        const noteMessage = isNoteMessage(message.content);
-                        const clarificationResponse =
-                            message.content.type === "clarification_request"
-                                ? clarificationResponseByRequestId.get(
-                                      String(message.id),
-                                  )
-                                : undefined;
-                        const clarificationExpired =
-                            message.content.type === "clarification_request" &&
-                            !clarificationResponse &&
-                            expiredClarificationRequestIds.has(
-                                String(message.id),
+                    {groups.map((group) => {
+                        if (group.kind === "user") {
+                            const message = group.message;
+                            const messageFiles = getMessageFiles(
+                                message.content,
                             );
-
-                        if (eventStyleMessage && !noteMessage) {
-                            return (
-                                <div key={message.id} className="flex flex-col">
-                                    <StructuredConversationContent
-                                        content={message.content}
-                                        messageId={String(message.id)}
-                                        activeApprovalRequestId={
-                                            activeApprovalRequestId
-                                        }
-                                        approvalSelections={approvalSelections}
-                                        submittingApprovalRequestId={
-                                            submittingApprovalRequestId
-                                        }
-                                        onSetApprovalChoice={
-                                            onSetApprovalChoice
-                                        }
-                                        onSubmitApprovalRequest={
-                                            onSubmitApprovalRequest
-                                        }
-                                        activeClarificationRequestId={
-                                            activeClarificationRequestId
-                                        }
-                                        submittingClarificationRequestId={
-                                            submittingClarificationRequestId
-                                        }
-                                        onSubmitClarificationAnswer={
-                                            onSubmitClarificationAnswer
-                                        }
-                                        clarificationResponse={
-                                            clarificationResponse
-                                        }
-                                        clarificationExpired={
-                                            clarificationExpired
-                                        }
-                                    />
-                                </div>
-                            );
-                        }
-
-                        if (displayKind === "user") {
                             return (
                                 <div
                                     key={message.id}
@@ -292,59 +256,106 @@ export function ThreadMessageList({
                             );
                         }
 
+                        const first = group.messages[0];
                         return (
                             <div
-                                key={message.id}
+                                key={`agent-${first.id}`}
                                 className="mt-5 flex items-start gap-[11px]"
                             >
                                 <span className="mt-0.5 grid size-[26px] flex-none place-items-center rounded-[7px] bg-secondary text-foreground-secondary">
                                     <IconSparkles size={14} stroke={1.8} />
                                 </span>
                                 <div className="min-w-0 flex-1">
-                                    <div className="mb-3 flex items-center gap-2">
+                                    <div className="mb-2 flex items-center gap-2">
                                         <span className="text-[13px] font-medium text-foreground">
                                             Agent
                                         </span>
                                         <span className="font-mono text-[11px] text-faint">
-                                            {formatTime(message.timestamp)}
+                                            {formatTime(first.timestamp)}
                                         </span>
                                     </div>
-                                    <StructuredConversationContent
-                                        content={message.content}
-                                        messageId={String(message.id)}
-                                        activeApprovalRequestId={
-                                            activeApprovalRequestId
-                                        }
-                                        approvalSelections={approvalSelections}
-                                        submittingApprovalRequestId={
-                                            submittingApprovalRequestId
-                                        }
-                                        onSetApprovalChoice={
-                                            onSetApprovalChoice
-                                        }
-                                        onSubmitApprovalRequest={
-                                            onSubmitApprovalRequest
-                                        }
-                                        activeClarificationRequestId={
-                                            activeClarificationRequestId
-                                        }
-                                        submittingClarificationRequestId={
-                                            submittingClarificationRequestId
-                                        }
-                                        onSubmitClarificationAnswer={
-                                            onSubmitClarificationAnswer
-                                        }
-                                    />
-                                    <AgentMessageAttachments
-                                        attachments={responseAttachments}
-                                        onOpenAttachment={(attachment) =>
-                                            onOpenAttachmentPath(
-                                                attachment.type === "folder"
-                                                    ? `${attachment.path}/`
-                                                    : attachment.path,
-                                            )
-                                        }
-                                    />
+                                    {/* connected execution timeline (frame 12 .trace) */}
+                                    <div className="flex flex-col pt-0.5">
+                                        {group.messages.map((message) => {
+                                            const responseAttachments =
+                                                getResponseAttachments(
+                                                    message.content,
+                                                );
+                                            const clarificationResponse =
+                                                message.content.type ===
+                                                "clarification_request"
+                                                    ? clarificationResponseByRequestId.get(
+                                                          String(message.id),
+                                                      )
+                                                    : undefined;
+                                            const clarificationExpired =
+                                                message.content.type ===
+                                                    "clarification_request" &&
+                                                !clarificationResponse &&
+                                                expiredClarificationRequestIds.has(
+                                                    String(message.id),
+                                                );
+                                            return (
+                                                <React.Fragment
+                                                    key={message.id}
+                                                >
+                                                    <StructuredConversationContent
+                                                        content={
+                                                            message.content
+                                                        }
+                                                        messageId={String(
+                                                            message.id,
+                                                        )}
+                                                        activeApprovalRequestId={
+                                                            activeApprovalRequestId
+                                                        }
+                                                        approvalSelections={
+                                                            approvalSelections
+                                                        }
+                                                        submittingApprovalRequestId={
+                                                            submittingApprovalRequestId
+                                                        }
+                                                        onSetApprovalChoice={
+                                                            onSetApprovalChoice
+                                                        }
+                                                        onSubmitApprovalRequest={
+                                                            onSubmitApprovalRequest
+                                                        }
+                                                        activeClarificationRequestId={
+                                                            activeClarificationRequestId
+                                                        }
+                                                        submittingClarificationRequestId={
+                                                            submittingClarificationRequestId
+                                                        }
+                                                        onSubmitClarificationAnswer={
+                                                            onSubmitClarificationAnswer
+                                                        }
+                                                        clarificationResponse={
+                                                            clarificationResponse
+                                                        }
+                                                        clarificationExpired={
+                                                            clarificationExpired
+                                                        }
+                                                    />
+                                                    <AgentMessageAttachments
+                                                        attachments={
+                                                            responseAttachments
+                                                        }
+                                                        onOpenAttachment={(
+                                                            attachment,
+                                                        ) =>
+                                                            onOpenAttachmentPath(
+                                                                attachment.type ===
+                                                                    "folder"
+                                                                    ? `${attachment.path}/`
+                                                                    : attachment.path,
+                                                            )
+                                                        }
+                                                    />
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         );

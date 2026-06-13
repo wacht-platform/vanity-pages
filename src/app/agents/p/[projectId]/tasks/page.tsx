@@ -268,7 +268,7 @@ export default function ProjectTasksPage() {
                 {activeTasksLoading ? (
                     <TasksLoading />
                 ) : (
-                    <div className="mx-auto w-full max-w-5xl px-6 py-6">
+                    <div className="w-full px-5 py-5 md:px-[30px] md:py-[26px]">
                         {/* ab-head */}
                         <div className="mb-[18px] flex items-start justify-between gap-6">
                             <div className="min-w-0">

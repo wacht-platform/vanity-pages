@@ -216,9 +216,11 @@ function ExpandedSidebar({
 }) {
     return (
         <div className="flex h-full flex-col">
-            <div className="flex h-12 items-center justify-between border-b border-sidebar-border px-2.5">
+            <div className="flex items-center justify-between px-1.5 pb-3 pt-0.5">
                 <div className="min-w-0">
-                    <div className="text-sm text-foreground">Agents</div>
+                    <div className="text-[15px] font-medium tracking-[-0.01em] text-foreground">
+                        Agents
+                    </div>
                 </div>
                 <div className="flex items-center gap-0.5">
                     <VanityThemeToggle />
@@ -574,7 +576,7 @@ function ProjectSection({
             </div>
 
             {isOpen ? (
-                <div className="ml-2.5 space-y-1 border-l border-border pl-2">
+                <div className="space-y-0.5">
                     <NestedLink
                         href={`/agents/p/${project.id}/tasks`}
                         active={pathname.startsWith(
@@ -628,7 +630,7 @@ function ProjectSection({
                         </button>
 
                         {showArchived ? (
-                            <div className="mt-1 ml-2.5 space-y-0.5 border-l border-border pl-2">
+                            <div className="mt-1 ml-2.5 space-y-0.5 pl-2">
                                 {archivedThreads.length > 0 ? (
                                     archivedThreads.map(
                                         (thread: AgentThread) => (

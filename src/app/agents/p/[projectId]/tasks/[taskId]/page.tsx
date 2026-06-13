@@ -694,8 +694,8 @@ export default function ProjectTaskDetailPage() {
             <div className="flex-1 overflow-y-auto">
                 <div className="flex h-full w-full flex-col">
                     {/* Task Title Section */}
-                    <div className="border-b border-border px-4 py-4 md:px-5">
-                        <div className="max-w-4xl space-y-3">
+                    <div className="border-b border-border px-5 py-5 md:px-[30px]">
+                        <div className="w-full space-y-3">
                             <div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
                                 {project?.name || "Tasks"} ·{" "}
                                 {item.task_key ||
