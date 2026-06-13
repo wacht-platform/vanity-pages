@@ -90,10 +90,12 @@
    with nothing hardcoded/duplicated here, and light/dark flips at the
    `--wa-*` layer (no separate `.dark` block needed below).
 
-   `.wacht-root` is placed on <body> (see layout.tsx) so these resolve
-   document-wide, including Radix portals mounted to body.
+   Defined on :root (not .wacht-root) because Tailwind's `@theme` emits
+   `--color-*: var(--<token>)` at :root — if `--background` lived only on
+   .wacht-root, `--color-background` would resolve to empty at :root and
+   every `bg-*`/`text-*`/`border-*` utility would break.
    ------------------------------------------------------------------ */
-.wacht-root {
+:root {
     --background: var(--wa-background);
     --foreground: var(--wa-text);
     --card: var(--wa-surface);

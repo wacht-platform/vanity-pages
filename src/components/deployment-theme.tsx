@@ -8,9 +8,11 @@ import { useDeployment } from "@wacht/nextjs";
  * The SDK's own token stylesheet is injected via styled-components, which
  * renders nothing during SSR — so instead of depending on it, we read the
  * deployment's `ui_settings.theme_tokens` (fully populated for every
- * deployment) and write the `--wa-*` variables ourselves. globals.css maps
- * shadcn's semantic tokens onto these, so the whole UI is themed from the
- * deployment with no hardcoded defaults here.
+ * deployment) and write the `--wa-*` variables ourselves, on :root (light)
+ * and .dark (dark). globals.css maps shadcn's semantic tokens onto these at
+ * :root, so the whole UI is themed from the deployment with no hardcoded
+ * defaults here. (They must be on :root, not .wacht-root, so Tailwind's
+ * `@theme` `--color-*: var(--<token>)` indirection resolves.)
  *
  * Rendered inside <DeploymentInitialized>, so the deployment is loaded before
  * any content paints — the variables are present on first render.
@@ -45,8 +47,8 @@ export function DeploymentTheme() {
     if (!light && !dark) return null;
 
     const css =
-        (light ? `.wacht-root{${light}}` : "") +
-        (dark ? `.dark .wacht-root,.dark.wacht-root{${dark}}` : "");
+        (light ? `:root{${light}}` : "") +
+        (dark ? `.dark{${dark}}` : "");
 
     return <style dangerouslySetInnerHTML={{ __html: css }} />;
 }
