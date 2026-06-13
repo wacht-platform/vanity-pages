@@ -62,8 +62,12 @@ function formatLabel(value: string) {
 }
 
 function toolStatus(content: ToolResultContent) {
-  if (content.status === "success" || content.status === "completed") return "completed";
+  // An explicit error status, OR an error in the result/output envelope (e.g. a
+  // tool that "completed" the call but returned an error like HTTP 403), counts
+  // as a failure — otherwise an errored tool would show as success.
   if (content.status === "error" || content.status === "failed") return "failed";
+  if (toolOutputError(content)) return "failed";
+  if (content.status === "success" || content.status === "completed") return "completed";
   return "pending";
 }
 
@@ -99,10 +103,11 @@ function toolOutputError(content: ToolResultContent) {
 }
 
 function StatusBadge({ content }: { content: ToolResultContent }) {
+  const status = toolStatus(content);
   return (
     <InlineStatusBadge
-      status={toolStatus(content)}
-      label={formatLabel(content.status)}
+      status={status}
+      label={status === "failed" ? "error" : formatLabel(content.status)}
     />
   );
 }
@@ -123,17 +128,6 @@ function MetaList({
           {item.value}
         </span>
       ))}
-    </div>
-  );
-}
-
-function ErrorNotice({ content }: { content: ToolResultContent }) {
-  const message = toolOutputError(content);
-  if (!message) return null;
-
-  return (
-    <div className="rounded-lg border border-error/30 bg-error-soft px-3 py-2 text-sm leading-6 text-error">
-      {message}
     </div>
   );
 }
@@ -466,7 +460,6 @@ function UnknownToolCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
       content={content}
     >
-      <ErrorNotice content={content} />
       <CollapsibleJsonSection label="Input" data={content.input} />
       <CollapsibleJsonSection label="Output" data={output} />
     </ToolInlineRow>
@@ -794,7 +787,6 @@ function TaskGraphCard({ content }: { content: ToolResultContent }) {
           {asString(input?.description) || asString(input?.reason)}
         </div>
       ) : null}
-      <ErrorNotice content={content} />
     </InlineEventRow>
   );
 }
@@ -875,7 +867,6 @@ function UpdateMemoryCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
       content={content}
     >
-      <ErrorNotice content={content} />
       {asString(input?.content) ? (
         <div className="text-sm leading-6 text-foreground">{input?.content as string}</div>
       ) : null}
@@ -913,7 +904,6 @@ function ProjectTaskMutationCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
       content={content}
     >
-      <ErrorNotice content={content} />
       <MetaList
         items={[
           { label: "Status", value: asString(input?.status) || asString(output?.status) },
@@ -948,7 +938,6 @@ function ThreadMutationCard({ content }: { content: ToolResultContent }) {
       badge={<StatusBadge content={content} />}
       content={content}
     >
-      <ErrorNotice content={content} />
       <MetaList
         items={[
           { label: "Responsibility", value: asString(input?.responsibility) },
@@ -975,7 +964,6 @@ function AbortTaskCard({ content }: { content: ToolResultContent }) {
       meta={<StatusBadge content={content} />}
       defaultOpen
     >
-      <ErrorNotice content={content} />
       <div className="text-sm leading-6 text-foreground">
         {asString(input?.reason) || asString(input?.reasoning) || "Task aborted."}
       </div>

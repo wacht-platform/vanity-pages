@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
-import { IconSparkles, IconUser } from "@tabler/icons-react";
+import { IconRobot, IconUser } from "@tabler/icons-react";
 
 import type {
     AnswerSubmission,
@@ -263,7 +263,7 @@ export function ThreadMessageList({
                                 className="mt-5 flex items-start gap-[11px]"
                             >
                                 <span className="mt-0.5 grid size-[26px] flex-none place-items-center rounded-[7px] bg-secondary text-foreground-secondary">
-                                    <IconSparkles size={14} stroke={1.8} />
+                                    <IconRobot size={14} stroke={1.8} />
                                 </span>
                                 <div className="min-w-0 flex-1">
                                     <div className="mb-2 flex items-center gap-2">

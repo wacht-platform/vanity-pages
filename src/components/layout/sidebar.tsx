@@ -13,14 +13,14 @@ import {
     Zap,
 } from "lucide-react";
 import {
-    IconChecklist,
+    IconLayoutKanban,
     IconCompass,
     IconLayoutSidebarLeftCollapse,
     IconLayoutSidebarLeftExpand,
     IconMenu2,
     IconPlus,
     IconSearch,
-    IconConnection,
+    IconPlug,
 } from "@tabler/icons-react";
 
 import type { ActorProject, Agent, AgentThread } from "@wacht/types";
@@ -264,7 +264,7 @@ function ExpandedSidebar({
                             />
                             <TopLevelLink
                                 href="/agents/integrations"
-                                icon={<IconConnection size={15} stroke={1.9} />}
+                                icon={<IconPlug size={15} stroke={1.9} />}
                                 label="Integrations"
                                 active={pathname === "/agents/integrations"}
                             />
@@ -391,7 +391,7 @@ function CollapsedSidebar({
                 )}
                 title="Integrations"
             >
-                <IconConnection size={16} stroke={1.9} />
+                <IconPlug size={16} stroke={1.9} />
             </Link>
 
             <button
@@ -582,7 +582,7 @@ function ProjectSection({
                         active={pathname.startsWith(
                             `/agents/p/${project.id}/tasks`,
                         )}
-                        icon={<IconChecklist size={13} stroke={1.8} />}
+                        icon={<IconLayoutKanban size={13} stroke={1.8} />}
                         label="Task Board"
                     />
                     {threads.length > 0 ? (
