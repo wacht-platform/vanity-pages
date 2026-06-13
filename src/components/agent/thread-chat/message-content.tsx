@@ -173,7 +173,7 @@ export function StructuredConversationContent({
             return null;
         default:
             return (
-                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 prose-p:text-sm prose-p:leading-relaxed prose-headings:font-semibold prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border">
+                <div className="prose prose-sm dark:prose-invert my-3 max-w-none text-foreground/90 first:mt-0 last:mb-0 prose-p:text-sm prose-p:leading-relaxed prose-headings:font-semibold prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-border">
                     <ReactMarkdown
                         remarkPlugins={threadChatRemarkPlugins}
                         rehypePlugins={threadChatRehypePlugins}
