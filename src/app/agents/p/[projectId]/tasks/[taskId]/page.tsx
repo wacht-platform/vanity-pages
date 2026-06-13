@@ -912,124 +912,139 @@ export default function ProjectTaskDetailPage() {
                                 }}
                             />
                         ) : (
-                            <div className="flex min-h-0 flex-1">
-                                <div className="flex w-75 flex-col border-r border-border">
-                                    <div className="flex-1 overflow-y-auto py-3 scrollbar-hide">
-                                        <div className="px-4 pb-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                                            Agent assignments
+                            <div className="flex min-h-0 flex-1 flex-col">
+                                <div className="max-h-[46%] shrink-0 overflow-y-auto border-b border-border px-5 py-5 scrollbar-hide md:px-[30px]">
+                                    <div className="mb-3 flex items-end justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <h3 className="text-[14px] font-medium leading-[1.2] text-foreground">
+                                                Agent assignments
+                                            </h3>
+                                            <p className="mt-1 text-[12px] text-muted-foreground">
+                                                Agents working this task and
+                                                their latest activity.
+                                            </p>
                                         </div>
-                                        <div>
-                                            {orderedAssignments.map(
-                                                (assignment) => {
-                                                    const isActive =
-                                                        selection?.kind ===
-                                                            "assignment" &&
-                                                        selection.assignmentId ===
-                                                            assignment.id;
-                                                    const latestActivity =
-                                                        assignment.result_summary ||
-                                                        formatAssignmentStatus(
-                                                            assignment,
-                                                        );
-                                                    const startedAt =
-                                                        assignment.started_at ||
-                                                        assignment.claimed_at ||
-                                                        assignment.created_at;
-                                                    const duration =
-                                                        formatDuration(
-                                                            assignment.started_at ||
-                                                                assignment.claimed_at,
-                                                            assignment.completed_at ||
-                                                                assignment.rejected_at,
-                                                        );
-                                                    return (
-                                                        <button
-                                                            key={assignment.id}
-                                                            onClick={() =>
-                                                                setSelection({
-                                                                    kind: "assignment",
-                                                                    assignmentId:
-                                                                        assignment.id,
-                                                                })
-                                                            }
-                                                            className={cn(
-                                                                "grid w-full grid-cols-[7px_1fr_20px] items-center gap-[14px] border-b border-border px-4 py-[13px] text-left last:border-b-0 hover:bg-secondary",
-                                                                isActive &&
-                                                                    "bg-secondary",
-                                                            )}
-                                                        >
-                                                            <span
-                                                                className={cn(
-                                                                    "size-[7px] rounded-full",
-                                                                    dotColorClass(
-                                                                        assignment.status,
-                                                                    ),
-                                                                )}
-                                                            />
-                                                            <div className="min-w-0">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="truncate text-[13px] font-medium leading-[1.2] text-foreground">
-                                                                        {formatLabel(
-                                                                            assignment.assignment_role,
-                                                                        )}
-                                                                    </span>
-                                                                    <span className="inline-flex w-fit flex-none items-center rounded-[3px] border border-border bg-secondary px-1.5 py-px font-mono text-[11px] font-medium text-foreground-secondary">
-                                                                        {formatLabel(
-                                                                            assignment.status,
-                                                                        )}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="mt-1 truncate text-[12px] text-muted-foreground">
-                                                                    {latestActivity}
-                                                                </div>
-                                                                <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-faint">
-                                                                    <span>
-                                                                        {formatTime(
-                                                                            startedAt,
-                                                                        ) ||
-                                                                            "—"}
-                                                                    </span>
-                                                                    <span>
-                                                                        ·
-                                                                    </span>
-                                                                    <span className="tabular-nums">
-                                                                        {
-                                                                            duration
-                                                                        }
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                            <IconChevronRight
-                                                                size={14}
-                                                                className="justify-self-end text-faint"
-                                                            />
-                                                        </button>
-                                                    );
-                                                },
-                                            )}
-                                        </div>
-                                        {assignmentsHasMore ? (
-                                            <div className="px-4 pt-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        void loadMoreAssignments()
-                                                    }
-                                                    disabled={
-                                                        assignmentsLoadingMore
-                                                    }
-                                                    className="w-full rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/20 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-                                                >
-                                                    {assignmentsLoadingMore
-                                                        ? "Loading..."
-                                                        : "Load more assignments"}
-                                                </button>
-                                            </div>
-                                        ) : null}
                                     </div>
+                                    <div className="overflow-hidden rounded-[10px] border border-border bg-card">
+                                        <div className="overflow-x-auto">
+                                            <div className="min-w-[680px]">
+                                                <div className="grid grid-cols-[8px_140px_120px_minmax(0,1fr)_84px_56px_20px] items-center gap-[14px] border-b border-border bg-secondary px-[18px] py-[10px] font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                                    <span />
+                                                    <span>Agent</span>
+                                                    <span>Status</span>
+                                                    <span>Latest activity</span>
+                                                    <span className="text-right">
+                                                        Started
+                                                    </span>
+                                                    <span className="text-right">
+                                                        Dur
+                                                    </span>
+                                                    <span />
+                                                </div>
+                                                {orderedAssignments.map(
+                                                    (assignment) => {
+                                                        const isActive =
+                                                            selection?.kind ===
+                                                                "assignment" &&
+                                                            selection.assignmentId ===
+                                                                assignment.id;
+                                                        const latestActivity =
+                                                            assignment.result_summary ||
+                                                            formatAssignmentStatus(
+                                                                assignment,
+                                                            );
+                                                        const startedAt =
+                                                            assignment.started_at ||
+                                                            assignment.claimed_at ||
+                                                            assignment.created_at;
+                                                        const duration =
+                                                            formatDuration(
+                                                                assignment.started_at ||
+                                                                    assignment.claimed_at,
+                                                                assignment.completed_at ||
+                                                                    assignment.rejected_at,
+                                                            );
+                                                        return (
+                                                            <button
+                                                                key={
+                                                                    assignment.id
+                                                                }
+                                                                onClick={() =>
+                                                                    setSelection(
+                                                                        {
+                                                                            kind: "assignment",
+                                                                            assignmentId:
+                                                                                assignment.id,
+                                                                        },
+                                                                    )
+                                                                }
+                                                                className={cn(
+                                                                    "grid w-full grid-cols-[8px_140px_120px_minmax(0,1fr)_84px_56px_20px] items-center gap-[14px] border-b border-border px-[18px] py-[13px] text-left last:border-b-0 hover:bg-secondary",
+                                                                    isActive &&
+                                                                        "bg-secondary",
+                                                                )}
+                                                            >
+                                                                <span
+                                                                    className={cn(
+                                                                        "size-[7px] rounded-full",
+                                                                        dotColorClass(
+                                                                            assignment.status,
+                                                                        ),
+                                                                    )}
+                                                                />
+                                                                <span className="truncate text-[13px] font-medium text-foreground">
+                                                                    {formatLabel(
+                                                                        assignment.assignment_role,
+                                                                    )}
+                                                                </span>
+                                                                <span className="inline-flex w-fit items-center rounded-[3px] border border-border bg-secondary px-1.5 py-px font-mono text-[11px] font-medium text-foreground-secondary">
+                                                                    {formatLabel(
+                                                                        assignment.status,
+                                                                    )}
+                                                                </span>
+                                                                <span className="truncate text-[12px] text-muted-foreground">
+                                                                    {
+                                                                        latestActivity
+                                                                    }
+                                                                </span>
+                                                                <span className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+                                                                    {formatTime(
+                                                                        startedAt,
+                                                                    ) || "—"}
+                                                                </span>
+                                                                <span className="text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+                                                                    {duration}
+                                                                </span>
+                                                                <IconChevronRight
+                                                                    size={14}
+                                                                    className="justify-self-end text-faint"
+                                                                />
+                                                            </button>
+                                                        );
+                                                    },
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {assignmentsHasMore ? (
+                                        <div className="pt-3">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    void loadMoreAssignments()
+                                                }
+                                                disabled={assignmentsLoadingMore}
+                                                className="w-full rounded-[6px] border border-border px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                {assignmentsLoadingMore
+                                                    ? "Loading..."
+                                                    : "Load more assignments"}
+                                            </button>
+                                        </div>
+                                    ) : null}
                                 </div>
 
-                                <div className="flex min-w-0 flex-1 flex-col bg-background">
+                                <div className="flex min-w-0 flex-1 flex-col">
                                     <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 md:px-5">
                                         <div className="max-w-md truncate text-sm font-normal text-muted-foreground">
                                             {selection?.kind === "assignment"
