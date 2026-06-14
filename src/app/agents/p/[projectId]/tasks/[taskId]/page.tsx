@@ -2,13 +2,16 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { useActorProjects, useProjectTaskBoardItem } from "@wacht/nextjs";
+import {
+    useActorProjects,
+    useProjectTaskBoardItem,
+    useProjectTaskBoardItemComments,
+} from "@wacht/nextjs";
 import type {
     ActorProject,
     ProjectTaskBoardItemAssignment,
     ProjectTaskBoardItem,
     ProjectTaskDeliverable,
-    ProjectTaskSchedule,
     ProjectTaskWorkspaceFileEntry,
 } from "@wacht/types";
 import ReactMarkdown from "react-markdown";
@@ -19,6 +22,8 @@ import {
     IconChevronDown,
     IconChevronUp,
     IconChevronRight,
+    IconRepeat,
+    IconMessage2,
 } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
@@ -27,6 +32,7 @@ import { TaskApprovalCard } from "@/components/agent/task-approval-card";
 import { TaskWorkspaceExplorer } from "@/components/agent/task-workspace-explorer";
 import { TaskCommentsPanel } from "@/components/agent/task-comments-panel";
 import { ThreadConversation } from "@/components/agent/thread-chat/thread-conversation";
+import { TaskFeedbackComposer } from "@/components/agent/task-feedback-composer";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
@@ -152,6 +158,37 @@ function formatDuration(startValue?: string, endValue?: string) {
     const minutes = seconds / 60;
     if (minutes < 60) return `${Math.round(minutes)}m`;
     return `${(minutes / 60).toFixed(1)}h`;
+}
+
+function formatInterval(seconds?: number) {
+    if (!seconds || seconds <= 0) return "";
+    const units: [number, string][] = [
+        [86400, "d"],
+        [3600, "h"],
+        [60, "m"],
+        [1, "s"],
+    ];
+    for (const [size, label] of units) {
+        if (seconds % size === 0 || seconds >= size) {
+            const value = Math.round(seconds / size);
+            return `${value}${label}`;
+        }
+    }
+    return `${seconds}s`;
+}
+
+function isRecurring(item?: ProjectTaskBoardItem | null) {
+    return item?.schedule?.schedule_kind === "interval";
+}
+
+function scheduleLabel(item?: ProjectTaskBoardItem | null) {
+    if (isRecurring(item)) {
+        const every = formatInterval(item?.schedule?.interval_seconds);
+        return every ? `every ${every}` : "recurring";
+    }
+    if (item?.completed_at) return "completed";
+    if (item?.scheduled_for) return "scheduled";
+    return "active";
 }
 
 function normalizeWorkspacePath(value: unknown) {
@@ -424,6 +461,12 @@ export default function ProjectTaskDetailPage() {
     } = useProjectTaskBoardItem(projectId, taskId, !!taskId, {
         includeArchived: true,
     });
+
+    const { createComment } = useProjectTaskBoardItemComments(
+        projectId,
+        taskId,
+        !!taskId,
+    );
 
     const workspaceEntries = React.useMemo<ProjectTaskWorkspaceFileEntry[]>(
         () => taskWorkspace?.files || [],
@@ -702,9 +745,17 @@ export default function ProjectTaskDetailPage() {
                                 {item.task_key ||
                                     `TSK-${item.id.substring(0, 4)}`}
                             </div>
-                            <h1 className="text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
-                                {item.title}
-                            </h1>
+                            <div className="flex flex-wrap items-center gap-2.5">
+                                <h1 className="text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+                                    {item.title}
+                                </h1>
+                                {isRecurring(item) ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-info/30 bg-info-soft px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-info">
+                                        <IconRepeat className="h-3 w-3" />
+                                        {scheduleLabel(item)}
+                                    </span>
+                                ) : null}
+                            </div>
                             {/* Task snapshot */}
                             <div className="overflow-hidden rounded-[10px] border border-border bg-card">
                                 <div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
@@ -725,11 +776,7 @@ export default function ProjectTaskDetailPage() {
                                                 "—"}
                                         </div>
                                         <div className="font-mono text-[11px] leading-[1.4] text-faint">
-                                            {item.completed_at
-                                                ? "completed"
-                                                : item.scheduled_for
-                                                  ? "scheduled"
-                                                  : "active"}
+                                            {scheduleLabel(item)}
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
@@ -1058,17 +1105,32 @@ export default function ProjectTaskDetailPage() {
 
                                     {selection?.kind === "assignment" &&
                                     selectedAssignment?.thread_id ? (
-                                        <ThreadConversation
-                                            threadId={
-                                                selectedAssignment.thread_id
-                                            }
-                                            boardItemId={
-                                                selectedAssignment.board_item_id
-                                            }
-                                            onOpenAttachmentPath={
-                                                openWorkspacePath
-                                            }
-                                        />
+                                        <>
+                                            <ThreadConversation
+                                                threadId={
+                                                    selectedAssignment.thread_id
+                                                }
+                                                boardItemId={
+                                                    selectedAssignment.board_item_id
+                                                }
+                                                onOpenAttachmentPath={
+                                                    openWorkspacePath
+                                                }
+                                                readOnly
+                                            />
+                                            <div className="border-t border-border bg-background px-4 py-3 md:px-5">
+                                                <div className="mx-auto w-full max-w-3xl space-y-1.5">
+                                                    <div className="flex items-center gap-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                                        <IconMessage2 className="h-3 w-3" />
+                                                        Feedback to coordinator
+                                                    </div>
+                                                    <TaskFeedbackComposer
+                                                        onSubmit={createComment}
+                                                        placeholder="Send feedback. It preempts the running executor and re-routes the task to the coordinator."
+                                                    />
+                                                </div>
+                                            </div>
+                                        </>
                                     ) : (
                                     <div
                                         className="flex-1 overflow-y-auto px-4 py-4 md:px-5"

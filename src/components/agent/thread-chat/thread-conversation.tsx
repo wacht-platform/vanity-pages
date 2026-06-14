@@ -22,11 +22,19 @@ export function ThreadConversation({
     boardItemId,
     onOpenAttachmentPath,
     placeholder = "Send feedback…",
+    readOnly = false,
 }: {
     threadId: string;
     boardItemId?: string;
     onOpenAttachmentPath?: (path: string) => void;
     placeholder?: string;
+    /**
+     * Trace-only: render the execution timeline without the composer or any
+     * inline approval/clarification interactivity. Used for task assignment
+     * traces, where feedback goes to the coordinator via a separate composer
+     * (the board-item comment mechanism), not the thread-run path.
+     */
+    readOnly?: boolean;
 }) {
     const {
         messages,
@@ -94,12 +102,16 @@ export function ThreadConversation({
                 isLoadingMore={isLoadingMore}
                 scrollContainerRef={scrollContainerRef}
                 onScroll={handleScroll}
-                activeApprovalRequestId={activeApprovalRequestId}
+                activeApprovalRequestId={
+                    readOnly ? null : activeApprovalRequestId
+                }
                 approvalSelections={approvalSelections}
                 submittingApprovalRequestId={submittingApprovalRequestId}
                 onSetApprovalChoice={setApprovalChoice}
                 onSubmitApprovalRequest={submitApprovalRequest}
-                activeClarificationRequestId={activeClarificationRequestId}
+                activeClarificationRequestId={
+                    readOnly ? null : activeClarificationRequestId
+                }
                 submittingClarificationRequestId={submittingClarificationRequestId}
                 onSubmitClarificationAnswer={submitClarificationAnswer}
                 clarificationResponseByRequestId={clarificationResponseByRequestId}
@@ -111,6 +123,7 @@ export function ThreadConversation({
                 isRunning={isRunning}
             />
 
+            {readOnly ? null : (
             <div className="bg-background px-3 pb-3 pt-2">
                 <div className="mx-auto w-full max-w-3xl">
                     {isRunning ? (
@@ -140,6 +153,7 @@ export function ThreadConversation({
                     />
                 </div>
             </div>
+            )}
         </div>
     );
 }

@@ -9,6 +9,7 @@ import {
     IconChecklist,
     IconChevronRight,
     IconSearch,
+    IconRepeat,
 } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { CreateTaskDialog } from "@/components/agent/task-board-dialogs";
@@ -127,6 +128,18 @@ function statusPresentation(status: string): {
 
 function taskKey(task: ProjectTaskBoardItem) {
     return task.task_key || `TSK-${task.id.slice(0, 4)}`;
+}
+
+function isRecurring(task: ProjectTaskBoardItem) {
+    return task.schedule?.schedule_kind === "interval";
+}
+
+function formatInterval(seconds?: number) {
+    if (!seconds || seconds <= 0) return "";
+    if (seconds % 86400 === 0) return `${seconds / 86400}d`;
+    if (seconds % 3600 === 0) return `${seconds / 3600}h`;
+    if (seconds % 60 === 0) return `${seconds / 60}m`;
+    return `${seconds}s`;
 }
 
 function assigneeInitials(task: ProjectTaskBoardItem) {
@@ -488,8 +501,24 @@ function TaskRow({
             <span className="truncate font-mono text-[11px] font-medium text-muted-foreground">
                 {taskKey(task)}
             </span>
-            <span className="truncate text-[13px] font-medium leading-[1.3] text-foreground">
-                {task.title}
+            <span className="flex min-w-0 items-center gap-2">
+                <span className="truncate text-[13px] font-medium leading-[1.3] text-foreground">
+                    {task.title}
+                </span>
+                {isRecurring(task) ? (
+                    <span
+                        className="inline-flex flex-none items-center gap-1 rounded-full border border-info/30 bg-info-soft px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-[0.06em] text-info"
+                        title={`Recurring${
+                            formatInterval(task.schedule?.interval_seconds)
+                                ? ` · every ${formatInterval(task.schedule?.interval_seconds)}`
+                                : ""
+                        }`}
+                    >
+                        <IconRepeat className="h-2.5 w-2.5" />
+                        {formatInterval(task.schedule?.interval_seconds) ||
+                            "recurring"}
+                    </span>
+                ) : null}
             </span>
             <span className="flex min-w-0 items-center gap-2">
                 <span className="grid size-[22px] flex-none place-items-center rounded-full bg-primary/10 font-medium text-[10px] text-primary">
