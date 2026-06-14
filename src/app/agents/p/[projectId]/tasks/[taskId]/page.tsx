@@ -26,6 +26,7 @@ import { PendingQuestionCard } from "@/components/agent/pending-question-card";
 import { TaskApprovalCard } from "@/components/agent/task-approval-card";
 import { TaskWorkspaceExplorer } from "@/components/agent/task-workspace-explorer";
 import { TaskCommentsPanel } from "@/components/agent/task-comments-panel";
+import { ThreadConversation } from "@/components/agent/thread-chat/thread-conversation";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
@@ -1055,6 +1056,20 @@ export default function ProjectTaskDetailPage() {
                                         </div>
                                     </div>
 
+                                    {selection?.kind === "assignment" &&
+                                    selectedAssignment?.thread_id ? (
+                                        <ThreadConversation
+                                            threadId={
+                                                selectedAssignment.thread_id
+                                            }
+                                            boardItemId={
+                                                selectedAssignment.board_item_id
+                                            }
+                                            onOpenAttachmentPath={
+                                                openWorkspacePath
+                                            }
+                                        />
+                                    ) : (
                                     <div
                                         className="flex-1 overflow-y-auto px-4 py-4 md:px-5"
                                         onClickCapture={
@@ -1174,6 +1189,7 @@ export default function ProjectTaskDetailPage() {
                                             </div>
                                         ) : null}
                                     </div>
+                                    )}
                                 </div>
                             </div>
                         )}
