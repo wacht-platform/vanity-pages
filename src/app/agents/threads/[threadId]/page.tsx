@@ -14,6 +14,7 @@ import {
     IconMessageCircle,
     IconClock,
     IconRoute,
+    IconChevronRight,
 } from "@tabler/icons-react";
 import {
     useActorProjects,
@@ -47,7 +48,7 @@ const DOCUMENT_PROSE_CLASSNAME =
     "prose prose-sm prose-invert max-w-none text-sm leading-6 text-muted-foreground font-normal " +
     "prose-p:text-muted-foreground prose-li:text-muted-foreground prose-ul:my-1 prose-li:my-0 " +
     "prose-strong:text-foreground prose-a:text-foreground prose-code:text-foreground prose-code:bg-accent/30 prose-code:px-1 prose-code:py-0.5 prose-code:rounded-sm prose-code:font-normal " +
-    "prose-pre:bg-accent/20 prose-pre:border prose-pre:border-divider/50 prose-pre:rounded-md " +
+    "prose-pre:bg-accent/20 prose-pre:border prose-pre:border-border prose-pre:rounded-md " +
     "[&_h1]:text-base [&_h1]:font-medium [&_h1]:text-foreground [&_h1]:mt-6 [&_h1]:mb-3 " +
     "[&_h2]:text-sm [&_h2]:font-medium [&_h2]:text-foreground [&_h2]:mt-5 [&_h2]:mb-2 " +
     "[&_h3]:text-sm [&_h3]:font-medium [&_h3]:text-muted-foreground [&_h3]:mt-4 [&_h3]:mb-1";
@@ -114,6 +115,64 @@ function getStatusIndicator(status?: string) {
                 colors[status || ""] || "bg-muted-foreground/40",
             )}
         />
+    );
+}
+
+function statusHueClass(status?: string) {
+    const s = status || "";
+    if (["completed"].includes(s)) return "text-success";
+    if (["failed", "blocked", "rejected"].includes(s)) return "text-error";
+    if (["running", "in_progress", "available", "waiting_for_input"].includes(s))
+        return "text-warning";
+    return "text-foreground";
+}
+
+function StatusPill({ status }: { status?: string }) {
+    const s = status || "active";
+    const tone =
+        s === "completed"
+            ? "border-success/30 bg-success-soft text-success"
+            : ["failed", "blocked", "rejected"].includes(s)
+              ? "border-error/30 bg-error-soft text-error"
+              : ["running", "in_progress", "available", "waiting_for_input", "interrupted"].includes(s)
+                ? "border-warning/30 bg-warning-soft text-warning"
+                : "border-border bg-secondary text-foreground-secondary";
+    return (
+        <span
+            className={cn(
+                "inline-flex h-[22px] w-fit items-center gap-1.5 rounded-[4px] border px-2 font-mono text-[11px] font-medium lowercase",
+                tone,
+            )}
+        >
+            {getStatusIndicator(status)}
+            {s.replace(/_/g, " ")}
+        </span>
+    );
+}
+
+function ThreadSnapCell({
+    k,
+    v,
+    vClass,
+}: {
+    k: string;
+    v: React.ReactNode;
+    vClass?: string;
+}) {
+    return (
+        <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
+            <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                {k}
+            </div>
+            <div
+                className={cn(
+                    "truncate text-[20px] font-medium capitalize leading-[1.1] tracking-[-0.012em] text-foreground",
+                    vClass,
+                )}
+            >
+                {v}
+            </div>
+        </div>
     );
 }
 
@@ -272,12 +331,7 @@ export default function ThreadDetailPage() {
                 }
                 right={
                     <>
-                        <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1 text-sm text-muted-foreground">
-                            {getStatusIndicator(thread.status)}
-                            <span>
-                                {thread.status?.replace(/_/g, " ") || "Active"}
-                            </span>
-                        </div>
+                        <StatusPill status={thread.status} />
                         {thread.thread_purpose === "conversation" && (
                             <Link
                                 href={`/agents/c/${thread.id}`}
@@ -318,43 +372,60 @@ export default function ThreadDetailPage() {
             />
 
             <div className="flex-1 overflow-y-auto">
-                <main className="flex h-full w-full flex-col gap-6 px-4 py-4 md:px-5">
-                    <section className="border-b border-border pb-4">
-                        <div className="min-w-0 space-y-2">
-                            <h1 className="truncate text-base font-normal text-foreground">
-                                {threadTitle}
-                            </h1>
-                            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                                <span>
-                                    {thread.thread_purpose?.replace(
-                                        /_/g,
-                                        " ",
-                                    ) || "conversation"}
-                                </span>
-                                <span className="h-1 w-1 rounded-full bg-border" />
-                                <span>
-                                    {thread.reusable ? "Reusable" : "One-off"}
-                                </span>
-                                <span className="h-1 w-1 rounded-full bg-border" />
-                                <span>
-                                    {thread.accepts_assignments
-                                        ? "Assignable"
-                                        : "Internal"}
-                                </span>
-                                {assignedAgentName ? (
-                                    <>
-                                        <span className="h-1 w-1 rounded-full bg-border" />
-                                        <span>{assignedAgentName}</span>
-                                    </>
-                                ) : null}
-                            </div>
+                <main className="flex h-full w-full flex-col gap-6 px-5 py-5 md:px-[30px] md:py-[26px]">
+                    {/* ab-head */}
+                    <div className="min-w-0">
+                        <div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+                            {project?.name || "Threads"} · thr-
+                            {thread.id.slice(-6)}
                         </div>
-                    </section>
+                        <h1 className="mb-1.5 truncate text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+                            {threadTitle}
+                        </h1>
+                        <p className="max-w-xl text-[13px] leading-[1.5] text-muted-foreground">
+                            {thread.responsibility ||
+                                `${formatLabel(thread.thread_purpose || "conversation")} thread${
+                                    assignedAgentName
+                                        ? ` · ${assignedAgentName}`
+                                        : ""
+                                }.`}
+                        </p>
+                    </div>
+
+                    {/* thread snapshot */}
+                    <div className="overflow-hidden rounded-[10px] border border-border bg-card">
+                        <div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                            Thread snapshot
+                        </div>
+                        <div className="grid grid-cols-2 divide-x divide-y divide-border sm:grid-cols-4 sm:divide-y-0">
+                            <ThreadSnapCell
+                                k="status"
+                                v={(thread.status || "active").replace(/_/g, " ")}
+                                vClass={statusHueClass(thread.status)}
+                            />
+                            <ThreadSnapCell
+                                k="purpose"
+                                v={(thread.thread_purpose || "conversation").replace(/_/g, " ")}
+                            />
+                            <ThreadSnapCell
+                                k="assignments"
+                                v={showAssignments ? orderedAssignments.length : "—"}
+                            />
+                            <ThreadSnapCell
+                                k="progress"
+                                v={
+                                    latestGraph?.summary
+                                        ? `${latestGraph.summary.progress_percent}%`
+                                        : "—"
+                                }
+                            />
+                        </div>
+                    </div>
 
                     <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-                        <section className="min-w-0 overflow-hidden rounded-lg border border-border">
-                            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                                <h2 className="text-sm font-normal">
+                        <section className="min-w-0 overflow-hidden rounded-[10px] border border-border bg-card">
+                            <div className="flex items-center justify-between border-b border-border px-[18px] py-3">
+                                <h2 className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                     Assignments
                                 </h2>
                                 <button
@@ -363,59 +434,70 @@ export default function ThreadDetailPage() {
                                         if (showAssignments)
                                             void refetchAssignments();
                                     }}
-                                    className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                                    className="rounded-[6px] p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                                 >
                                     <IconRefresh size={13} />
                                 </button>
                             </div>
                             <div className="max-h-[70vh] overflow-y-auto">
                                 {!showAssignments ? (
-                                    <p className="px-4 py-10 text-sm text-muted-foreground">
-                                        Coordinator threads do not receive assignments.
+                                    <p className="px-[18px] py-10 text-center text-[13px] text-muted-foreground">
+                                        Coordinator threads do not receive
+                                        assignments.
                                     </p>
                                 ) : assignmentsLoading ? (
                                     [...Array(4)].map((_, index) => (
-                                        <div key={index} className="p-2.5">
-                                            <Skeleton className="h-10 rounded" />
+                                        <div key={index} className="px-[18px] py-3">
+                                            <Skeleton className="h-9 rounded-[8px]" />
                                         </div>
                                     ))
                                 ) : orderedAssignments.length === 0 ? (
-                                    <p className="px-4 py-10 text-sm text-muted-foreground">
+                                    <p className="px-[18px] py-10 text-center text-[13px] text-muted-foreground">
                                         No assignments yet.
                                     </p>
                                 ) : (
-                                    orderedAssignments.map((assignment) => (
-                                        <button
-                                            key={assignment.id}
-                                            onClick={() => {
-                                                setSelectedAssignmentId(
-                                                    assignment.id,
-                                                );
-                                            }}
-                                            className="flex w-full items-start gap-3 border-b border-border px-4 py-2.5 text-left transition-colors hover:bg-accent/20"
-                                        >
-                                            <div className="mt-1">
-                                                {getStatusIndicator(
-                                                    assignment.result_status ||
-                                                        assignment.status,
-                                                )}
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <div className="truncate text-sm text-foreground">
-                                                    {formatLabel(assignment.assignment_role)}
+                                    orderedAssignments.map((assignment) => {
+                                        const status =
+                                            assignment.result_status ||
+                                            assignment.status ||
+                                            "";
+                                        return (
+                                            <button
+                                                key={assignment.id}
+                                                onClick={() => {
+                                                    setSelectedAssignmentId(
+                                                        assignment.id,
+                                                    );
+                                                }}
+                                                className="grid w-full grid-cols-[8px_minmax(0,1fr)_auto_16px] items-center gap-[14px] border-b border-border px-[18px] py-[13px] text-left last:border-b-0 hover:bg-secondary"
+                                            >
+                                                {getStatusIndicator(status)}
+                                                <div className="min-w-0">
+                                                    <div className="truncate text-[13px] font-medium leading-[1.2] text-foreground">
+                                                        {formatLabel(
+                                                            assignment.assignment_role,
+                                                        )}
+                                                    </div>
+                                                    <div className="mt-[3px] font-mono text-[11px] leading-none text-faint">
+                                                        {formatRelativeDate(
+                                                            assignment.created_at,
+                                                        )}{" "}
+                                                        ·{" "}
+                                                        {formatTime(
+                                                            assignment.created_at,
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className="mt-1 text-sm text-muted-foreground">
-                                                    {formatRelativeDate(
-                                                        assignment.created_at,
-                                                    )}{" "}
-                                                    ·{" "}
-                                                    {formatTime(
-                                                        assignment.created_at,
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ))
+                                                <span className="font-mono text-[11px] lowercase text-muted-foreground">
+                                                    {status.replace(/_/g, " ")}
+                                                </span>
+                                                <IconChevronRight
+                                                    size={14}
+                                                    className="justify-self-end text-faint"
+                                                />
+                                            </button>
+                                        );
+                                    })
                                 )}
                             </div>
                             {showAssignments &&
@@ -427,11 +509,11 @@ export default function ThreadDetailPage() {
                                             void loadMoreAssignments();
                                         }}
                                         disabled={assignmentsLoadingMore}
-                                        className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground disabled:opacity-50"
+                                        className="h-8 rounded-[6px] border border-border px-3 text-[12px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                                     >
                                         {assignmentsLoadingMore
                                             ? "Loading..."
-                                            : "Load More Assignments"}
+                                            : "Load more assignments"}
                                     </button>
                                 </div>
                             ) : null}
@@ -440,8 +522,8 @@ export default function ThreadDetailPage() {
                         <aside className="space-y-4">
                             {thread.status === "waiting_for_input" ||
                             thread.status === "interrupted" ? (
-                                <section className="rounded-lg border border-warning/30 bg-warning-soft p-4">
-                                    <h3 className="mb-3 flex items-center gap-2 text-sm font-normal text-warning">
+                                <section className="rounded-[10px] border border-warning/30 bg-warning-soft p-[18px]">
+                                    <h3 className="mb-3 flex items-center gap-2 text-[13px] font-medium text-warning">
                                         <IconClock size={16} />
                                         Attention Required
                                     </h3>
@@ -452,79 +534,95 @@ export default function ThreadDetailPage() {
                                 </section>
                             ) : null}
 
-                            <section className="rounded-lg border border-border p-4">
-                                <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="text-sm font-normal">
-                                        Task Graph
+                            <section className="overflow-hidden rounded-[10px] border border-border bg-card">
+                                <div className="flex items-center justify-between border-b border-border px-[18px] py-3">
+                                    <h3 className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                        Task graph
                                     </h3>
                                     <button
                                         onClick={() => setShowTaskGraph(true)}
-                                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                                        className="font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
                                     >
                                         Open
                                     </button>
                                 </div>
-                                {latestGraph?.summary ? (
-                                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                                        <div className="rounded-md border border-border px-3 py-3">
-                                            <div className="text-sm text-muted-foreground">
-                                                Progress
+                                <div className="space-y-3 p-[18px]">
+                                    {latestGraph?.summary ? (
+                                        <div className="grid grid-cols-2 gap-3 xl:grid-cols-1">
+                                            <div className="rounded-[8px] border border-border bg-secondary px-3 py-2.5">
+                                                <div className="font-mono text-[10px] uppercase tracking-[0.06em] text-muted-foreground">
+                                                    Progress
+                                                </div>
+                                                <div className="mt-1 text-[15px] font-medium tabular-nums text-foreground">
+                                                    {
+                                                        latestGraph.summary
+                                                            .progress_percent
+                                                    }
+                                                    %
+                                                </div>
                                             </div>
-                                            <div className="mt-1 text-sm text-foreground">
-                                                {
-                                                    latestGraph.summary
-                                                        .progress_percent
-                                                }
-                                                %
+                                            <div className="rounded-[8px] border border-border bg-secondary px-3 py-2.5">
+                                                <div className="font-mono text-[10px] uppercase tracking-[0.06em] text-muted-foreground">
+                                                    Failed nodes
+                                                </div>
+                                                <div
+                                                    className={cn(
+                                                        "mt-1 text-[15px] font-medium tabular-nums",
+                                                        latestGraph.summary
+                                                            .failed_nodes > 0
+                                                            ? "text-error"
+                                                            : "text-foreground",
+                                                    )}
+                                                >
+                                                    {
+                                                        latestGraph.summary
+                                                            .failed_nodes
+                                                    }
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="rounded-md border border-border px-3 py-3">
-                                            <div className="text-sm text-muted-foreground">
-                                                Failed nodes
-                                            </div>
-                                            <div className="mt-1 text-sm text-foreground">
-                                                {
-                                                    latestGraph.summary
-                                                        .failed_nodes
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        No graph data available.
-                                    </p>
-                                )}
-                                <button
-                                    onClick={() => setShowTaskGraph(true)}
-                                    className="mt-3 flex h-8 w-full items-center justify-center gap-2 rounded-md border border-border text-sm text-foreground transition-colors hover:bg-accent/40"
-                                >
-                                    <IconBinaryTree size={14} />
-                                    <span>Open Graph Visualizer</span>
-                                </button>
+                                    ) : (
+                                        <p className="text-[13px] text-muted-foreground">
+                                            No graph data available.
+                                        </p>
+                                    )}
+                                    <button
+                                        onClick={() => setShowTaskGraph(true)}
+                                        className="flex h-8 w-full items-center justify-center gap-2 rounded-[6px] border border-border text-[12px] text-foreground transition-colors hover:bg-secondary"
+                                    >
+                                        <IconBinaryTree size={14} />
+                                        <span>Open graph visualizer</span>
+                                    </button>
+                                </div>
                             </section>
 
-                            <section className="rounded-lg border border-border p-4">
-                                <h3 className="mb-3 text-sm font-normal">
-                                    System Instructions
-                                </h3>
-                                {thread.system_instructions ? (
-                                    <div className="max-h-90 overflow-y-auto">
-                                        <div
-                                            className={DOCUMENT_PROSE_CLASSNAME}
-                                        >
-                                            <ReactMarkdown
-                                                remarkPlugins={[remarkGfm]}
+                            <section className="overflow-hidden rounded-[10px] border border-border bg-card">
+                                <div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                    System instructions
+                                </div>
+                                <div className="p-[18px]">
+                                    {thread.system_instructions ? (
+                                        <div className="max-h-90 overflow-y-auto">
+                                            <div
+                                                className={
+                                                    DOCUMENT_PROSE_CLASSNAME
+                                                }
                                             >
-                                                {thread.system_instructions}
-                                            </ReactMarkdown>
+                                                <ReactMarkdown
+                                                    remarkPlugins={[remarkGfm]}
+                                                >
+                                                    {
+                                                        thread.system_instructions
+                                                    }
+                                                </ReactMarkdown>
+                                            </div>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        No instructions defined.
-                                    </p>
-                                )}
+                                    ) : (
+                                        <p className="text-[13px] text-muted-foreground">
+                                            No instructions defined.
+                                        </p>
+                                    )}
+                                </div>
                             </section>
                         </aside>
                     </div>
@@ -554,10 +652,10 @@ export default function ThreadDetailPage() {
                     }
                 }}
             >
-                <SheetContent className="w-full sm:max-w-[600px] bg-background border-l border-divider p-0 flex flex-col">
+                <SheetContent className="w-full sm:max-w-[600px] bg-background border-l border-border p-0 flex flex-col">
                     {selectedAssignment && (
                         <>
-                            <SheetHeader className="border-b border-divider p-6">
+                            <SheetHeader className="border-b border-border p-6">
                                 <SheetTitle className="text-base font-normal">
                                     {`${selectedAssignment.id.slice(-6).toUpperCase()} · ${formatLabel(selectedAssignment.assignment_role)}`}
                                 </SheetTitle>
@@ -565,7 +663,7 @@ export default function ThreadDetailPage() {
                                     <span>
                                         {formatAssignmentStatus(selectedAssignment)}
                                     </span>
-                                    <div className="size-1 rounded-full bg-divider" />
+                                    <div className="size-1 rounded-full bg-border" />
                                     <span>
                                         {formatFullTimestamp(selectedAssignment.created_at)}
                                     </span>
@@ -581,7 +679,7 @@ export default function ThreadDetailPage() {
                                             <div
                                                 className={cn(
                                                     DOCUMENT_PROSE_CLASSNAME,
-                                                    "rounded border border-border bg-secondary/20 p-4",
+                                                    "rounded border border-border bg-secondary p-4",
                                                 )}
                                             >
                                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -598,7 +696,7 @@ export default function ThreadDetailPage() {
                                             <div
                                                 className={cn(
                                                     DOCUMENT_PROSE_CLASSNAME,
-                                                    "rounded border border-border bg-secondary/20 p-4",
+                                                    "rounded border border-border bg-secondary p-4",
                                                 )}
                                             >
                                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -612,7 +710,7 @@ export default function ThreadDetailPage() {
                                             <h4 className="text-sm font-medium text-foreground">
                                                 Payload
                                             </h4>
-                                            <div className="overflow-x-auto rounded border border-border bg-secondary/20 p-4 text-sm">
+                                            <div className="overflow-x-auto rounded border border-border bg-secondary p-4 text-sm">
                                                 <JsonViewer data={selectedAssignment.result_payload} />
                                             </div>
                                         </div>
