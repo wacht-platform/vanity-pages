@@ -51,7 +51,7 @@ export function ClarificationRequestCard({
 
     if (!response && expired) {
         return (
-            <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted/15">
+            <div className="my-3 overflow-hidden rounded-xl border border-border bg-muted/15">
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
@@ -89,7 +89,7 @@ export function ClarificationRequestCard({
     if (response) {
         if (response.freeform_text) {
             return (
-                <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card">
+                <div className="my-3 overflow-hidden rounded-xl border border-border bg-card">
                     <div className="flex items-center gap-2 border-b border-border bg-secondary/40 px-3.5 py-2.5">
                         <IconCircleCheck className="size-4 text-success" />
                         <span className="text-[13px] font-medium text-foreground">
@@ -109,7 +109,7 @@ export function ClarificationRequestCard({
             (response.answers ?? []).map((a) => [a.question_id, a.value]),
         );
         return (
-            <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card">
+            <div className="my-3 overflow-hidden rounded-xl border border-border bg-card">
                 <div className="flex items-center gap-2 border-b border-border bg-secondary/40 px-3.5 py-2.5">
                     <IconCircleCheck className="size-4 text-success" />
                     <span className="text-[13px] font-medium text-foreground">
