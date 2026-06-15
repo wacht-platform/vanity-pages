@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import {
     useActorProjects,
     useProjectTaskBoardItem,
-    useProjectTaskBoardItemComments,
 } from "@wacht/nextjs";
 import type {
     ActorProject,
@@ -20,19 +19,23 @@ import {
     IconArchive,
     IconChecklist,
     IconChevronDown,
-    IconChevronUp,
     IconChevronRight,
     IconRepeat,
-    IconMessage2,
+    IconAlertTriangle,
 } from "@tabler/icons-react";
 import { useActiveAgent } from "@/components/agent-provider";
 import { EditTaskDialog } from "@/components/agent/task-board-dialogs";
 import { PendingQuestionCard } from "@/components/agent/pending-question-card";
 import { TaskApprovalCard } from "@/components/agent/task-approval-card";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { TaskWorkspaceExplorer } from "@/components/agent/task-workspace-explorer";
 import { TaskCommentsPanel } from "@/components/agent/task-comments-panel";
 import { ThreadConversation } from "@/components/agent/thread-chat/thread-conversation";
-import { TaskFeedbackComposer } from "@/components/agent/task-feedback-composer";
 import { AgentNavbar } from "@/components/layout/agent-navbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
@@ -462,12 +465,6 @@ export default function ProjectTaskDetailPage() {
         includeArchived: true,
     });
 
-    const { createComment } = useProjectTaskBoardItemComments(
-        projectId,
-        taskId,
-        !!taskId,
-    );
-
     const workspaceEntries = React.useMemo<ProjectTaskWorkspaceFileEntry[]>(
         () => taskWorkspace?.files || [],
         [taskWorkspace],
@@ -502,28 +499,37 @@ export default function ProjectTaskDetailPage() {
     const [requestedWorkspacePath, setRequestedWorkspacePath] = React.useState<
         string | null
     >(null);
-    const descriptionRef = React.useRef<HTMLDivElement>(null);
     const [isDescriptionExpanded, setIsDescriptionExpanded] =
         React.useState(false);
-    const [isDescriptionOverflowing, setIsDescriptionOverflowing] =
-        React.useState(false);
 
-    React.useLayoutEffect(() => {
-        const el = descriptionRef.current;
-        if (!el) {
-            setIsDescriptionOverflowing(false);
-            return;
-        }
-        setIsDescriptionOverflowing(el.scrollHeight > 240);
-    }, [item?.description]);
+    const pendingQuestion = item?.pending_question ?? null;
+    const pendingApproval = item?.pending_approval ?? null;
+    // Open is derived: a pending item shows unless the user dismissed that exact
+    // item (keyed by identity). A new pending item auto-opens; clearing it (after
+    // submit) drops the key and closes. The banner reopens by clearing dismissal.
+    const questionKey = pendingQuestion?.asked_at ?? null;
+    const approvalKey = pendingApproval?.request_message_id ?? null;
+    const [dismissedQuestionKey, setDismissedQuestionKey] = React.useState<
+        string | null
+    >(null);
+    const [dismissedApprovalKey, setDismissedApprovalKey] = React.useState<
+        string | null
+    >(null);
+    const questionOpen = !!questionKey && dismissedQuestionKey !== questionKey;
+    const approvalOpen = !!approvalKey && dismissedApprovalKey !== approvalKey;
 
-    const selectedAssignment =
+    // Effective selection: the user's pick, else the first assignment by default
+    // (derived — no effect needed to auto-select).
+    const effectiveAssignmentId =
         selection?.kind === "assignment"
-            ? assignments.find(
-                  (assignment: ProjectTaskBoardItemAssignment) =>
-                      assignment.id === selection.assignmentId,
-              ) || null
-            : null;
+            ? selection.assignmentId
+            : (orderedAssignments[0]?.id ?? null);
+    const selectedAssignment = effectiveAssignmentId
+        ? assignments.find(
+              (assignment: ProjectTaskBoardItemAssignment) =>
+                  assignment.id === effectiveAssignmentId,
+          ) || null
+        : null;
 
     const snapshot = React.useMemo(() => {
         const runCount = assignments.length;
@@ -612,19 +618,6 @@ export default function ProjectTaskDetailPage() {
         }),
         [openWorkspacePath],
     );
-
-    React.useEffect(() => {
-        if (
-            activeTab === "assignments" &&
-            selection?.kind !== "assignment" &&
-            orderedAssignments.length > 0
-        ) {
-            setSelection({
-                kind: "assignment",
-                assignmentId: orderedAssignments[0].id,
-            });
-        }
-    }, [activeTab, selection, orderedAssignments]);
 
     if (!hasSession)
         return (
@@ -735,173 +728,133 @@ export default function ProjectTaskDetailPage() {
                 }
             />
 
-            <div className="flex-1 overflow-y-auto">
-                <div className="flex h-full w-full flex-col">
-                    {/* Task Title Section */}
-                    <div className="border-b border-border px-5 py-5 md:px-[30px]">
-                        <div className="w-full space-y-3">
-                            <div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
-                                {project?.name || "Tasks"} ·{" "}
-                                {item.task_key ||
-                                    `TSK-${item.id.substring(0, 4)}`}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2.5">
-                                <h1 className="text-[22px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
-                                    {item.title}
-                                </h1>
-                                {isRecurring(item) ? (
-                                    <span className="inline-flex items-center gap-1 rounded-full border border-info/30 bg-info-soft px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-info">
-                                        <IconRepeat className="h-3 w-3" />
-                                        {scheduleLabel(item)}
-                                    </span>
-                                ) : null}
-                            </div>
-                            {/* Task snapshot */}
-                            <div className="overflow-hidden rounded-[10px] border border-border bg-card">
-                                <div className="border-b border-border px-[18px] py-3 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                                    Task snapshot
-                                </div>
-                                <div className="grid grid-cols-2 divide-x divide-border sm:grid-cols-4">
-                                    <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
-                                        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                                            status
-                                        </div>
-                                        <div
-                                            className={cn(
-                                                "text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground",
-                                                statusHueClass(item.status),
-                                            )}
-                                        >
-                                            {item.status?.replace(/_/g, " ") ||
-                                                "—"}
-                                        </div>
-                                        <div className="font-mono text-[11px] leading-[1.4] text-faint">
-                                            {scheduleLabel(item)}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
-                                        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                                            agent runs
-                                        </div>
-                                        <div className="text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground">
-                                            {snapshot.runCount}
-                                        </div>
-                                        <div className="font-mono text-[11px] leading-[1.4] text-faint">
-                                            {snapshot.runningCount > 0
-                                                ? `${snapshot.runningCount} running`
-                                                : "—"}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
-                                        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                                            deliverables
-                                        </div>
-                                        <div className="text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground">
-                                            {snapshot.deliverableCount}
-                                        </div>
-                                        <div className="truncate font-mono text-[11px] leading-[1.4] text-faint">
-                                            {snapshot.latestDeliverableSummary ||
-                                                "—"}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-1.5 px-[22px] py-[18px]">
-                                        <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                                            last activity
-                                        </div>
-                                        <div className="text-[24px] font-medium leading-[1.1] tracking-[-0.012em] tabular-nums text-foreground">
-                                            {formatTime(snapshot.lastActivity) ||
-                                                "—"}
-                                        </div>
-                                        <div className="font-mono text-[11px] leading-[1.4] text-faint">
-                                            {snapshot.lastActivity
-                                                ? new Date(
-                                                      snapshot.lastActivity,
-                                                  ).toLocaleDateString()
-                                                : "—"}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {item.description ? (
-                                <div className="relative">
-                                    <div
-                                        ref={descriptionRef}
-                                        className={cn(
-                                            DOCUMENT_PROSE_CLASSNAME,
-                                            isDescriptionExpanded
-                                                ? "max-h-[420px] overflow-y-auto pr-2"
-                                                : "max-h-[240px] overflow-hidden",
-                                        )}
-                                        onClickCapture={
-                                            handleWorkspaceLinkClickCapture
-                                        }
-                                    >
-                                        <ReactMarkdown
-                                            remarkPlugins={[
-                                                remarkGfm,
-                                                remarkWorkspaceLinks,
-                                            ]}
-                                            components={markdownComponents}
-                                        >
-                                            {item.description}
-                                        </ReactMarkdown>
-                                    </div>
-                                    {isDescriptionOverflowing &&
-                                    !isDescriptionExpanded ? (
-                                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent" />
-                                    ) : null}
-                                    {isDescriptionOverflowing ? (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setIsDescriptionExpanded(
-                                                    (v) => !v,
-                                                )
-                                            }
-                                            className="mt-2 flex items-center gap-1.5 text-xs font-normal text-muted-foreground transition-colors hover:text-foreground"
-                                        >
-                                            {isDescriptionExpanded ? (
-                                                <IconChevronUp
-                                                    size={13}
-                                                    stroke={1.5}
-                                                />
-                                            ) : (
-                                                <IconChevronDown
-                                                    size={13}
-                                                    stroke={1.5}
-                                                />
-                                            )}
-                                            <span>
-                                                {isDescriptionExpanded
-                                                    ? "Show less"
-                                                    : "Show more"}
-                                            </span>
-                                        </button>
-                                    ) : null}
-                                </div>
-                            ) : (
-                                <p className="text-sm italic text-muted-foreground">
-                                    No description provided.
-                                </p>
+            <div className="flex min-h-0 flex-1 flex-col">
+                {/* Compact summary header */}
+                <div className="shrink-0 border-b border-border px-5 py-4 md:px-[30px]">
+                    <div className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+                        {project?.name || "Tasks"} ·{" "}
+                        {item.task_key || `TSK-${item.id.substring(0, 4)}`}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                        <h1 className="text-[18px] font-medium leading-[1.2] tracking-[-0.012em] text-foreground">
+                            {item.title}
+                        </h1>
+                        {isRecurring(item) ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-info/30 bg-info-soft px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-info">
+                                <IconRepeat className="h-3 w-3" />
+                                {scheduleLabel(item)}
+                            </span>
+                        ) : null}
+                    </div>
+                    {/* Meta strip */}
+                    <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px] text-muted-foreground">
+                        <span
+                            className={cn(
+                                "inline-flex items-center gap-1.5 font-medium",
+                                statusHueClass(item.status),
                             )}
-                            {item.pending_question ? (
-                                <PendingQuestionCard
-                                    pending={item.pending_question}
-                                    onSubmit={async (submission) => {
-                                        await submitAnswer(submission);
-                                    }}
-                                />
-                            ) : null}
-                            {item.pending_approval ? (
-                                <TaskApprovalCard
-                                    pending={item.pending_approval}
-                                    onSubmit={async (approvals) =>
-                                        submitApproval(approvals)
+                        >
+                            <span
+                                className={cn(
+                                    "size-[6px] rounded-full",
+                                    dotColorClass(item.status),
+                                )}
+                            />
+                            {item.status?.replace(/_/g, " ") || "—"}
+                        </span>
+                        <span className="text-faint">·</span>
+                        <span>
+                            {snapshot.runCount}{" "}
+                            {snapshot.runCount === 1 ? "run" : "runs"}
+                            {snapshot.runningCount > 0
+                                ? ` (${snapshot.runningCount} running)`
+                                : ""}
+                        </span>
+                        <span className="text-faint">·</span>
+                        <span>
+                            {snapshot.deliverableCount}{" "}
+                            {snapshot.deliverableCount === 1
+                                ? "deliverable"
+                                : "deliverables"}
+                        </span>
+                        {snapshot.lastActivity ? (
+                            <>
+                                <span className="text-faint">·</span>
+                                <span
+                                    title={new Date(
+                                        snapshot.lastActivity,
+                                    ).toLocaleString()}
+                                >
+                                    updated {formatTime(snapshot.lastActivity)}
+                                </span>
+                            </>
+                        ) : null}
+                    </div>
+                    {/* Description (collapsible) */}
+                    {item.description ? (
+                        <div className="mt-2.5">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setIsDescriptionExpanded((v) => !v)
+                                }
+                                className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                                {isDescriptionExpanded ? (
+                                    <IconChevronDown size={13} stroke={1.5} />
+                                ) : (
+                                    <IconChevronRight size={13} stroke={1.5} />
+                                )}
+                                <span>Description</span>
+                            </button>
+                            {isDescriptionExpanded ? (
+                                <div
+                                    className={cn(
+                                        DOCUMENT_PROSE_CLASSNAME,
+                                        "mt-2 max-h-56 overflow-y-auto pr-2",
+                                    )}
+                                    onClickCapture={
+                                        handleWorkspaceLinkClickCapture
                                     }
-                                />
+                                >
+                                    <ReactMarkdown
+                                        remarkPlugins={[
+                                            remarkGfm,
+                                            remarkWorkspaceLinks,
+                                        ]}
+                                        components={markdownComponents}
+                                    >
+                                        {item.description}
+                                    </ReactMarkdown>
+                                </div>
                             ) : null}
                         </div>
-                    </div>
+                    ) : null}
+                    {pendingQuestion || pendingApproval ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {pendingQuestion ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setDismissedQuestionKey(null)}
+                                    className="inline-flex items-center gap-2 rounded-md border border-warning/40 bg-warning-soft px-3 py-1.5 text-[12px] font-medium text-warning transition-colors hover:bg-warning/15"
+                                >
+                                    <IconAlertTriangle size={14} stroke={1.8} />
+                                    Agent needs your input · Answer
+                                </button>
+                            ) : null}
+                            {pendingApproval ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setDismissedApprovalKey(null)}
+                                    className="inline-flex items-center gap-2 rounded-md border border-warning/40 bg-warning-soft px-3 py-1.5 text-[12px] font-medium text-warning transition-colors hover:bg-warning/15"
+                                >
+                                    <IconAlertTriangle size={14} stroke={1.8} />
+                                    Approval required · Review
+                                </button>
+                            ) : null}
+                        </div>
+                    ) : null}
+                </div>
 
                     {/* Agentic Workspace */}
                     <div className="flex min-h-0 flex-1 flex-col">
@@ -992,10 +945,8 @@ export default function ProjectTaskDetailPage() {
                                                 {orderedAssignments.map(
                                                     (assignment) => {
                                                         const isActive =
-                                                            selection?.kind ===
-                                                                "assignment" &&
-                                                            selection.assignmentId ===
-                                                                assignment.id;
+                                                            effectiveAssignmentId ===
+                                                            assignment.id;
                                                         const latestActivity =
                                                             assignment.result_summary ||
                                                             formatAssignmentStatus(
@@ -1095,42 +1046,27 @@ export default function ProjectTaskDetailPage() {
                                 <div className="flex min-w-0 flex-1 flex-col">
                                     <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 md:px-5">
                                         <div className="max-w-md truncate text-sm font-normal text-muted-foreground">
-                                            {selection?.kind === "assignment"
+                                            {selectedAssignment
                                                 ? formatLabel(
-                                                      selectedAssignment?.assignment_role,
+                                                      selectedAssignment.assignment_role,
                                                   )
                                                 : ""}
                                         </div>
                                     </div>
 
-                                    {selection?.kind === "assignment" &&
-                                    selectedAssignment?.thread_id ? (
-                                        <>
-                                            <ThreadConversation
-                                                threadId={
-                                                    selectedAssignment.thread_id
-                                                }
-                                                boardItemId={
-                                                    selectedAssignment.board_item_id
-                                                }
-                                                onOpenAttachmentPath={
-                                                    openWorkspacePath
-                                                }
-                                                readOnly
-                                            />
-                                            <div className="border-t border-border bg-background px-4 py-3 md:px-5">
-                                                <div className="mx-auto w-full max-w-3xl space-y-1.5">
-                                                    <div className="flex items-center gap-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                                                        <IconMessage2 className="h-3 w-3" />
-                                                        Feedback to coordinator
-                                                    </div>
-                                                    <TaskFeedbackComposer
-                                                        onSubmit={createComment}
-                                                        placeholder="Send feedback. It preempts the running executor and re-routes the task to the coordinator."
-                                                    />
-                                                </div>
-                                            </div>
-                                        </>
+                                    {selectedAssignment?.thread_id ? (
+                                        <ThreadConversation
+                                            threadId={
+                                                selectedAssignment.thread_id
+                                            }
+                                            boardItemId={
+                                                selectedAssignment.board_item_id
+                                            }
+                                            onOpenAttachmentPath={
+                                                openWorkspacePath
+                                            }
+                                            readOnly
+                                        />
                                     ) : (
                                     <div
                                         className="flex-1 overflow-y-auto px-4 py-4 md:px-5"
@@ -1138,8 +1074,7 @@ export default function ProjectTaskDetailPage() {
                                             handleWorkspaceLinkClickCapture
                                         }
                                     >
-                                        {selection?.kind === "assignment" &&
-                                        selectedAssignment ? (
+                                        {selectedAssignment ? (
                                             <div className="max-w-2xl space-y-6">
                                                 <div className="space-y-2">
                                                     <h2 className="text-base font-normal">
@@ -1256,8 +1191,52 @@ export default function ProjectTaskDetailPage() {
                             </div>
                         )}
                     </div>
-                </div>
             </div>
+
+            <Dialog
+                open={questionOpen}
+                onOpenChange={(open) => {
+                    if (!open) setDismissedQuestionKey(questionKey);
+                }}
+            >
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Agent needs your input</DialogTitle>
+                    </DialogHeader>
+                    {pendingQuestion ? (
+                        <PendingQuestionCard
+                            pending={pendingQuestion}
+                            onSubmit={async (submission) => {
+                                await submitAnswer(submission);
+                                setDismissedQuestionKey(questionKey);
+                            }}
+                        />
+                    ) : null}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={approvalOpen}
+                onOpenChange={(open) => {
+                    if (!open) setDismissedApprovalKey(approvalKey);
+                }}
+            >
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Approval required</DialogTitle>
+                    </DialogHeader>
+                    {pendingApproval ? (
+                        <TaskApprovalCard
+                            pending={pendingApproval}
+                            onSubmit={async (approvals) => {
+                                const ok = await submitApproval(approvals);
+                                if (ok) setDismissedApprovalKey(approvalKey);
+                                return ok;
+                            }}
+                        />
+                    ) : null}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
