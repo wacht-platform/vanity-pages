@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import type {
-    AnswerKind,
     AnswerSubmission,
     AnswerValue,
     PendingQuestion,
@@ -10,8 +9,10 @@ import type {
     QuestionAnswer,
 } from "@wacht/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+    FieldLabel,
+    QuestionAnswerInput,
+} from "@/components/agent/thread-chat/question-fields";
 
 type Props = {
     pending: PendingQuestion;
@@ -20,7 +21,9 @@ type Props = {
 };
 
 export function PendingQuestionCard({ pending, onSubmit, busy }: Props) {
-    const [draft, setDraft] = React.useState<Record<string, AnswerValue | undefined>>({});
+    const [draft, setDraft] = React.useState<
+        Record<string, AnswerValue | undefined>
+    >({});
     const [error, setError] = React.useState<string | null>(null);
     const [submitting, setSubmitting] = React.useState(false);
     const [freeformDraft, setFreeformDraft] = React.useState("");
@@ -67,19 +70,21 @@ export function PendingQuestionCard({ pending, onSubmit, busy }: Props) {
         await submitWith({ freeform_text: text });
     };
 
+    const busyState = busy || submitting;
+
     return (
-        <div className="space-y-4 rounded-lg border border-border bg-accent/10 p-4">
-            <div className="space-y-1">
-                <div className="text-sm font-medium">The agent is asking for your input</div>
-                {pending.context ? (
-                    <div className="text-sm text-muted-foreground">{pending.context}</div>
-                ) : null}
-            </div>
+        <div className="flex flex-col gap-5">
+            {pending.context ? (
+                <p className="text-[13px] leading-relaxed text-muted-foreground">
+                    {pending.context}
+                </p>
+            ) : null}
+
             {freeformMode ? (
-                <div className="space-y-2">
-                    <Label className="text-sm font-medium">Reply in your own words</Label>
+                <div className="flex flex-col gap-1.5">
+                    <FieldLabel>Reply in your own words</FieldLabel>
                     <textarea
-                        className="min-h-[96px] w-full rounded-md border border-border bg-background p-2 text-sm"
+                        className="min-h-[120px] w-full rounded-lg border border-border bg-background p-3 text-[13px] leading-relaxed outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary"
                         placeholder="Type whatever you want the agent to know — it'll skip the form."
                         maxLength={4000}
                         value={freeformDraft}
@@ -87,220 +92,45 @@ export function PendingQuestionCard({ pending, onSubmit, busy }: Props) {
                     />
                 </div>
             ) : (
-                <div className="space-y-4">
-                    {pending.questions.map((q) => (
-                        <QuestionField
-                            key={q.id}
-                            question={q}
-                            value={draft[q.id]}
-                            onChange={(v) => setAnswer(q.id, v)}
-                        />
+                <div className="flex flex-col gap-5">
+                    {pending.questions.map((q: Question) => (
+                        <div key={q.id} className="flex flex-col gap-2">
+                            <FieldLabel>{q.text}</FieldLabel>
+                            <QuestionAnswerInput
+                                kind={q.answer_kind}
+                                value={draft[q.id]}
+                                onChange={(v) => setAnswer(q.id, v)}
+                            />
+                        </div>
                     ))}
                 </div>
             )}
-            {error ? <div className="text-sm text-destructive">{error}</div> : null}
-            <div className="flex items-center justify-between gap-2">
-                <Button
+
+            {error ? (
+                <div className="rounded-md border border-error/30 bg-error/5 px-3 py-2 text-[12px] text-error">
+                    {error}
+                </div>
+            ) : null}
+
+            <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
+                <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={busy || submitting}
+                    disabled={busyState}
                     onClick={() => {
                         setError(null);
                         setFreeformMode((v) => !v);
                     }}
+                    className="text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                 >
-                    {freeformMode ? "Use the form instead" : "Reply freely"}
-                </Button>
+                    {freeformMode ? "← Back to the form" : "Reply freely instead"}
+                </button>
                 <Button
                     onClick={freeformMode ? handleFreeformSubmit : handleSubmit}
-                    disabled={busy || submitting}
+                    disabled={busyState}
                 >
-                    {submitting ? "Submitting…" : "Submit"}
+                    {submitting ? "Submitting…" : "Submit answer"}
                 </Button>
             </div>
         </div>
     );
-}
-
-function QuestionField({
-    question,
-    value,
-    onChange,
-}: {
-    question: Question;
-    value: AnswerValue | undefined;
-    onChange: (v: AnswerValue) => void;
-}) {
-    return (
-        <div className="space-y-2">
-            <Label className="text-sm font-medium">{question.text}</Label>
-            <AnswerInput kind={question.answer_kind} value={value} onChange={onChange} />
-        </div>
-    );
-}
-
-function AnswerInput({
-    kind,
-    value,
-    onChange,
-}: {
-    kind: AnswerKind;
-    value: AnswerValue | undefined;
-    onChange: (v: AnswerValue) => void;
-}) {
-    switch (kind.kind) {
-        case "free_text": {
-            const current = value?.kind === "free_text" ? value.value : "";
-            return (
-                <Input
-                    placeholder={kind.placeholder}
-                    maxLength={kind.max_length}
-                    value={current}
-                    onChange={(e) =>
-                        onChange({ kind: "free_text", value: e.target.value })
-                    }
-                />
-            );
-        }
-        case "single_choice": {
-            const current = value?.kind === "single_choice" ? value.value : "";
-            return (
-                <div className="space-y-1.5">
-                    {kind.choices.map((c) => (
-                        <label key={c.value} className="flex items-start gap-2 text-sm">
-                            <input
-                                type="radio"
-                                className="mt-0.5"
-                                name={`q-${c.value}`}
-                                checked={current === c.value}
-                                onChange={() =>
-                                    onChange({ kind: "single_choice", value: c.value })
-                                }
-                            />
-                            <span>
-                                <span className="font-medium">{c.label}</span>
-                                {c.description ? (
-                                    <span className="block text-xs text-muted-foreground">
-                                        {c.description}
-                                    </span>
-                                ) : null}
-                            </span>
-                        </label>
-                    ))}
-                </div>
-            );
-        }
-        case "multi_choice": {
-            const current = value?.kind === "multi_choice" ? value.values : [];
-            const toggle = (v: string) => {
-                const next = current.includes(v)
-                    ? current.filter((x) => x !== v)
-                    : [...current, v];
-                onChange({ kind: "multi_choice", values: next });
-            };
-            return (
-                <div className="space-y-1.5">
-                    {kind.choices.map((c) => (
-                        <label key={c.value} className="flex items-start gap-2 text-sm">
-                            <input
-                                type="checkbox"
-                                className="mt-0.5"
-                                checked={current.includes(c.value)}
-                                onChange={() => toggle(c.value)}
-                            />
-                            <span>
-                                <span className="font-medium">{c.label}</span>
-                                {c.description ? (
-                                    <span className="block text-xs text-muted-foreground">
-                                        {c.description}
-                                    </span>
-                                ) : null}
-                            </span>
-                        </label>
-                    ))}
-                </div>
-            );
-        }
-        case "yes_no": {
-            const current = value?.kind === "yes_no" ? value.value : undefined;
-            return (
-                <div className="flex gap-2">
-                    <Button
-                        type="button"
-                        variant={current === true ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => onChange({ kind: "yes_no", value: true })}
-                    >
-                        Yes
-                    </Button>
-                    <Button
-                        type="button"
-                        variant={current === false ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => onChange({ kind: "yes_no", value: false })}
-                    >
-                        No
-                    </Button>
-                </div>
-            );
-        }
-        case "number": {
-            const current = value?.kind === "number" ? String(value.value) : "";
-            return (
-                <div className="flex items-center gap-2">
-                    <Input
-                        type="number"
-                        min={kind.min}
-                        max={kind.max}
-                        value={current}
-                        onChange={(e) => {
-                            const v = parseFloat(e.target.value);
-                            if (Number.isFinite(v)) {
-                                onChange({ kind: "number", value: v });
-                            }
-                        }}
-                    />
-                    {kind.unit ? (
-                        <span className="text-sm text-muted-foreground">{kind.unit}</span>
-                    ) : null}
-                </div>
-            );
-        }
-        case "date": {
-            const current = value?.kind === "date" ? value.value : "";
-            return (
-                <Input
-                    type="date"
-                    min={kind.min_date}
-                    max={kind.max_date}
-                    value={current}
-                    onChange={(e) => onChange({ kind: "date", value: e.target.value })}
-                />
-            );
-        }
-        case "confirm": {
-            const current = value?.kind === "confirm" ? value.accepted : undefined;
-            return (
-                <div className="flex gap-2">
-                    <Button
-                        type="button"
-                        variant={current === true ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => onChange({ kind: "confirm", accepted: true })}
-                    >
-                        {kind.confirm_label}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant={current === false ? "destructive" : "outline"}
-                        size="sm"
-                        onClick={() => onChange({ kind: "confirm", accepted: false })}
-                    >
-                        {kind.cancel_label}
-                    </Button>
-                </div>
-            );
-        }
-    }
 }
