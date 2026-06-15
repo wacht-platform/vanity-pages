@@ -4,6 +4,8 @@ import * as React from "react";
 import {
     IconChevronDown,
     IconChevronRight,
+    IconCircleCheck,
+    IconClockX,
     IconHelpCircle,
 } from "@tabler/icons-react";
 import type {
@@ -43,31 +45,40 @@ export function ClarificationRequestCard({
     const [freeformDraft, setFreeformDraft] = React.useState("");
     const [freeformMode, setFreeformMode] = React.useState(false);
 
+    const questionCountLabel = `${content.questions.length} ${
+        content.questions.length === 1 ? "question" : "questions"
+    }`;
+
     if (!response && expired) {
         return (
-            <div className="rounded-lg border border-border bg-muted/20 p-3">
+            <div className="overflow-hidden rounded-xl border border-border bg-muted/15">
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
-                    className="flex w-full items-center gap-1.5 text-left text-xs text-muted-foreground hover:text-foreground"
+                    className="flex w-full items-center gap-2 px-3.5 py-2.5 text-left"
                 >
-                    {expanded ? (
-                        <IconChevronDown size={12} />
-                    ) : (
-                        <IconChevronRight size={12} />
-                    )}
-                    <span>
-                        Question expired ({content.questions.length}{" "}
-                        {content.questions.length === 1
-                            ? "question"
-                            : "questions"}
-                        ) — superseded by a follow-up message
+                    <IconClockX className="size-4 text-muted-foreground" />
+                    <span className="text-[13px] font-medium text-muted-foreground">
+                        Question expired
+                    </span>
+                    <span className="ml-auto flex items-center gap-1 text-[11px] text-muted-foreground/70">
+                        superseded
+                        {expanded ? (
+                            <IconChevronDown size={13} />
+                        ) : (
+                            <IconChevronRight size={13} />
+                        )}
                     </span>
                 </button>
                 {expanded ? (
-                    <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                    <ul className="divide-y divide-border border-t border-border">
                         {content.questions.map((q) => (
-                            <li key={q.id}>{q.text}</li>
+                            <li
+                                key={q.id}
+                                className="px-3.5 py-2 text-[13px] text-muted-foreground"
+                            >
+                                {q.text}
+                            </li>
                         ))}
                     </ul>
                 ) : null}
@@ -78,13 +89,19 @@ export function ClarificationRequestCard({
     if (response) {
         if (response.freeform_text) {
             return (
-                <div className="rounded-lg border border-border bg-muted/20 p-3">
-                    <div className="text-xs text-muted-foreground">
-                        Replied freely (skipped the form)
+                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="flex items-center gap-2 border-b border-border bg-secondary/40 px-3.5 py-2.5">
+                        <IconCircleCheck className="size-4 text-success" />
+                        <span className="text-[13px] font-medium text-foreground">
+                            Replied
+                        </span>
+                        <span className="ml-auto text-[11px] text-muted-foreground">
+                            free-form
+                        </span>
                     </div>
-                    <div className="mt-1 whitespace-pre-wrap text-sm">
+                    <p className="whitespace-pre-wrap px-3.5 py-3 text-[13px] leading-relaxed text-foreground/90">
                         {response.freeform_text}
-                    </div>
+                    </p>
                 </div>
             );
         }
@@ -92,35 +109,27 @@ export function ClarificationRequestCard({
             (response.answers ?? []).map((a) => [a.question_id, a.value]),
         );
         return (
-            <div className="rounded-lg border border-border bg-muted/20 p-3">
-                <button
-                    type="button"
-                    onClick={() => setExpanded((v) => !v)}
-                    className="flex w-full items-center gap-1.5 text-left text-xs text-muted-foreground hover:text-foreground"
-                >
-                    {expanded ? (
-                        <IconChevronDown size={12} />
-                    ) : (
-                        <IconChevronRight size={12} />
-                    )}
-                    <span>
-                        Answered {content.questions.length}{" "}
-                        {content.questions.length === 1
-                            ? "question"
-                            : "questions"}
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="flex items-center gap-2 border-b border-border bg-secondary/40 px-3.5 py-2.5">
+                    <IconCircleCheck className="size-4 text-success" />
+                    <span className="text-[13px] font-medium text-foreground">
+                        Answered
                     </span>
-                </button>
-                <ul className="mt-2 space-y-2 text-sm">
+                    <span className="ml-auto text-[11px] text-muted-foreground">
+                        {questionCountLabel}
+                    </span>
+                </div>
+                <ul className="divide-y divide-border">
                     {content.questions.map((q) => {
                         const a = answersById.get(q.id);
                         return (
-                            <li key={q.id} className="space-y-0.5">
-                                {expanded ? (
-                                    <div className="text-xs text-muted-foreground">
-                                        {q.text}
-                                    </div>
-                                ) : null}
-                                <div>{a ? formatAnswerValue(a) : "—"}</div>
+                            <li key={q.id} className="px-3.5 py-2.5">
+                                <div className="text-xs text-muted-foreground">
+                                    {q.text}
+                                </div>
+                                <div className="mt-0.5 text-[13px] font-medium text-foreground">
+                                    {a ? formatAnswerValue(a) : "—"}
+                                </div>
                             </li>
                         );
                     })}
