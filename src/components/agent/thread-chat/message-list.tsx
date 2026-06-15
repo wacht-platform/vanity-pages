@@ -336,6 +336,9 @@ export function ThreadMessageList({
                                                         clarificationExpired={
                                                             clarificationExpired
                                                         }
+                                                        onOpenAttachmentPath={
+                                                            onOpenAttachmentPath
+                                                        }
                                                     />
                                                     <AgentMessageAttachments
                                                         attachments={

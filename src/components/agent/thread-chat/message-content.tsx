@@ -2,7 +2,17 @@
 
 import * as React from "react";
 import ReactMarkdown from "react-markdown";
-import { IconFileText, IconFolderOpen } from "@tabler/icons-react";
+import {
+    IconArrowsExchange,
+    IconBell,
+    IconFile,
+    IconFileText,
+    IconFolderOpen,
+    IconInbox,
+    IconPlayerPlay,
+    IconRoute,
+} from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
 
 import type {
     AnswerSubmission,
@@ -10,6 +20,8 @@ import type {
     ConversationAttachment as ResponseAttachment,
     ConversationContent,
     ExecutionSummaryContent,
+    TaskHandoffArtifact,
+    TaskHandoffReceivedContent,
 } from "@wacht/types";
 
 import { ApprovalRequestCard, ApprovalResponseCard } from "./approval-cards";
@@ -22,8 +34,8 @@ import {
 } from "./markdown";
 import {
     formatAttachmentLabel,
+    formatTime,
     getDisplayContent,
-    isNoteMessage,
     type ApprovalChoice,
 } from "./shared";
 import { ToolDetailSection } from "./structured-value";
@@ -76,6 +88,157 @@ export function AgentMessageAttachments({
     );
 }
 
+function formatLabel(value?: string) {
+    if (!value) return "";
+    return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function coerceList(value: unknown): unknown[] {
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string" && value.trim()) {
+        try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [parsed];
+        } catch {
+            return [value];
+        }
+    }
+    return [];
+}
+
+function asText(value: unknown): string {
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object") {
+        const o = value as Record<string, unknown>;
+        return String(
+            o.text ?? o.message ?? o.note ?? o.action ?? JSON.stringify(value),
+        );
+    }
+    return String(value);
+}
+
+function TaskHandoffEvent({
+    content,
+    onOpenAttachmentPath,
+}: {
+    content: TaskHandoffReceivedContent;
+    onOpenAttachmentPath?: (path: string) => void;
+}) {
+    const artifacts = coerceList(content.artifacts) as TaskHandoffArtifact[];
+    const blockers = coerceList(content.blockers);
+    const nextActions = coerceList(content.next_actions);
+    const node =
+        content.outcome === "completed"
+            ? "ok"
+            : content.outcome === "failed"
+              ? "err"
+              : "idle";
+    return (
+        <InlineEventRow
+            icon={<IconArrowsExchange className="h-3.5 w-3.5" />}
+            title={`Handoff from ${formatLabel(content.source_role)}`}
+            node={node}
+            defaultOpen
+            meta={
+                <span className="flex items-center gap-1.5">
+                    <span
+                        className={cn(
+                            "font-medium",
+                            node === "ok"
+                                ? "text-success"
+                                : node === "err"
+                                  ? "text-error"
+                                  : "text-muted-foreground",
+                        )}
+                    >
+                        {content.outcome}
+                    </span>
+                    {content.completed_at ? (
+                        <span className="text-faint">
+                            · {formatTime(content.completed_at)}
+                        </span>
+                    ) : null}
+                </span>
+            }
+        >
+            <div className="space-y-3 pt-1">
+                {content.summary ? (
+                    <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-foreground/90">
+                        {content.summary}
+                    </p>
+                ) : null}
+                {artifacts.length > 0 ? (
+                    <div>
+                        <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.06em] text-muted-foreground/70">
+                            Artifacts
+                        </div>
+                        <ul className="space-y-1">
+                            {artifacts.map((a, i) => (
+                                <li key={a.path ?? i} className="text-[12px]">
+                                    <button
+                                        type="button"
+                                        disabled={!a.path}
+                                        onClick={() =>
+                                            a.path &&
+                                            onOpenAttachmentPath?.(a.path)
+                                        }
+                                        className="inline-flex items-center gap-1.5 text-foreground/90 underline-offset-2 hover:underline disabled:no-underline"
+                                    >
+                                        <IconFile className="h-3.5 w-3.5 text-muted-foreground" />
+                                        <span className="font-mono">
+                                            {a.path ?? "artifact"}
+                                        </span>
+                                    </button>
+                                    {a.note ? (
+                                        <span className="ml-1 text-muted-foreground">
+                                            — {a.note}
+                                        </span>
+                                    ) : null}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+                {nextActions.length > 0 ? (
+                    <div>
+                        <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.06em] text-muted-foreground/70">
+                            Next actions
+                        </div>
+                        <ul className="space-y-1">
+                            {nextActions.map((n, i) => (
+                                <li
+                                    key={i}
+                                    className="flex gap-1.5 text-[12px] text-foreground/80"
+                                >
+                                    <span className="text-faint">→</span>
+                                    <span>{asText(n)}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+                {blockers.length > 0 ? (
+                    <div>
+                        <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.06em] text-error/80">
+                            Blockers
+                        </div>
+                        <ul className="space-y-1">
+                            {blockers.map((b, i) => (
+                                <li
+                                    key={i}
+                                    className="text-[12px] text-error"
+                                >
+                                    {asText(b)}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+            </div>
+        </InlineEventRow>
+    );
+}
+
 function ExecutionSummaryCard({
     content,
 }: {
@@ -113,6 +276,7 @@ export function StructuredConversationContent({
     onSubmitClarificationAnswer,
     clarificationResponse,
     clarificationExpired,
+    onOpenAttachmentPath,
 }: {
     content: ConversationContent;
     messageId: string;
@@ -134,8 +298,51 @@ export function StructuredConversationContent({
     ) => Promise<void>;
     clarificationResponse?: ClarificationResponseContent;
     clarificationExpired?: boolean;
+    onOpenAttachmentPath?: (path: string) => void;
 }) {
     switch (content.type) {
+        case "task_handoff_received":
+            return (
+                <TaskHandoffEvent
+                    content={content}
+                    onOpenAttachmentPath={onOpenAttachmentPath}
+                />
+            );
+        case "task_subscription_notification":
+            return (
+                <InlineEventRow
+                    icon={<IconBell className="h-3.5 w-3.5" />}
+                    title={`Task ${content.task_key}: ${formatLabel(content.from_status)} → ${formatLabel(content.to_status)}`}
+                    meta={
+                        content.transitioned_at
+                            ? formatTime(content.transitioned_at)
+                            : undefined
+                    }
+                />
+            );
+        case "task_subscription_delivery":
+            return (
+                <InlineEventRow
+                    icon={<IconInbox className="h-3.5 w-3.5" />}
+                    title={content.summary || "Subscription update"}
+                />
+            );
+        case "assignment_execution_trigger":
+            return (
+                <InlineEventRow
+                    icon={<IconPlayerPlay className="h-3.5 w-3.5" />}
+                    title={`Started executing ${content.task_key}`}
+                    meta={content.routing_reason}
+                />
+            );
+        case "task_routing_trigger":
+            return (
+                <InlineEventRow
+                    icon={<IconRoute className="h-3.5 w-3.5" />}
+                    title={`Routed for decision · ${content.task_key}`}
+                    meta={content.routing_reason}
+                />
+            );
         case "approval_request":
             return (
                 <ApprovalRequestCard
