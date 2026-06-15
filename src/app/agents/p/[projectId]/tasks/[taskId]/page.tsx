@@ -33,6 +33,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet";
 import { TaskWorkspaceExplorer } from "@/components/agent/task-workspace-explorer";
 import { TaskCommentsPanel } from "@/components/agent/task-comments-panel";
 import { ThreadConversation } from "@/components/agent/thread-chat/thread-conversation";
@@ -518,18 +525,13 @@ export default function ProjectTaskDetailPage() {
     const questionOpen = !!questionKey && dismissedQuestionKey !== questionKey;
     const approvalOpen = !!approvalKey && dismissedApprovalKey !== approvalKey;
 
-    // Effective selection: the user's pick, else the first assignment by default
-    // (derived — no effect needed to auto-select).
-    const effectiveAssignmentId =
+    const selectedAssignment =
         selection?.kind === "assignment"
-            ? selection.assignmentId
-            : (orderedAssignments[0]?.id ?? null);
-    const selectedAssignment = effectiveAssignmentId
-        ? assignments.find(
-              (assignment: ProjectTaskBoardItemAssignment) =>
-                  assignment.id === effectiveAssignmentId,
-          ) || null
-        : null;
+            ? assignments.find(
+                  (assignment: ProjectTaskBoardItemAssignment) =>
+                      assignment.id === selection.assignmentId,
+              ) || null
+            : null;
 
     const snapshot = React.useMemo(() => {
         const runCount = assignments.length;
@@ -913,9 +915,8 @@ export default function ProjectTaskDetailPage() {
                                 }}
                             />
                         ) : (
-                            <div className="flex min-h-0 flex-1 flex-col">
-                                <div className="max-h-[46%] shrink-0 overflow-y-auto border-b border-border px-5 py-5 scrollbar-hide md:px-[30px]">
-                                    <div className="mb-3 flex items-end justify-between gap-4">
+                            <div className="flex-1 overflow-y-auto px-5 py-5 scrollbar-hide md:px-[30px]">
+                                <div className="mb-3 flex items-end justify-between gap-4">
                                         <div className="min-w-0">
                                             <h3 className="text-[14px] font-medium leading-[1.2] text-foreground">
                                                 Agent assignments
@@ -945,8 +946,10 @@ export default function ProjectTaskDetailPage() {
                                                 {orderedAssignments.map(
                                                     (assignment) => {
                                                         const isActive =
-                                                            effectiveAssignmentId ===
-                                                            assignment.id;
+                                                            selection?.kind ===
+                                                                "assignment" &&
+                                                            selection.assignmentId ===
+                                                                assignment.id;
                                                         const latestActivity =
                                                             assignment.result_summary ||
                                                             formatAssignmentStatus(
@@ -1042,153 +1045,6 @@ export default function ProjectTaskDetailPage() {
                                         </div>
                                     ) : null}
                                 </div>
-
-                                <div className="flex min-w-0 flex-1 flex-col">
-                                    <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 md:px-5">
-                                        <div className="max-w-md truncate text-sm font-normal text-muted-foreground">
-                                            {selectedAssignment
-                                                ? formatLabel(
-                                                      selectedAssignment.assignment_role,
-                                                  )
-                                                : ""}
-                                        </div>
-                                    </div>
-
-                                    {selectedAssignment?.thread_id ? (
-                                        <ThreadConversation
-                                            threadId={
-                                                selectedAssignment.thread_id
-                                            }
-                                            boardItemId={
-                                                selectedAssignment.board_item_id
-                                            }
-                                            onOpenAttachmentPath={
-                                                openWorkspacePath
-                                            }
-                                            readOnly
-                                        />
-                                    ) : (
-                                    <div
-                                        className="flex-1 overflow-y-auto px-4 py-4 md:px-5"
-                                        onClickCapture={
-                                            handleWorkspaceLinkClickCapture
-                                        }
-                                    >
-                                        {selectedAssignment ? (
-                                            <div className="max-w-2xl space-y-6">
-                                                <div className="space-y-2">
-                                                    <h2 className="text-base font-normal">
-                                                        {formatLabel(
-                                                            selectedAssignment.assignment_role,
-                                                        )}
-                                                    </h2>
-                                                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                                        <span>
-                                                            {formatAssignmentStatus(
-                                                                selectedAssignment,
-                                                            )}
-                                                        </span>
-                                                        <span>·</span>
-                                                        <span>
-                                                            {new Date(
-                                                                selectedAssignment.updated_at,
-                                                            ).toLocaleString()}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {selectedAssignment.instructions ? (
-                                                    <div
-                                                        className={
-                                                            DOCUMENT_PROSE_CLASSNAME
-                                                        }
-                                                    >
-                                                        <ReactMarkdown
-                                                            remarkPlugins={[
-                                                                remarkGfm,
-                                                                remarkWorkspaceLinks,
-                                                            ]}
-                                                            components={
-                                                                markdownComponents
-                                                            }
-                                                        >
-                                                            {
-                                                                selectedAssignment.instructions
-                                                            }
-                                                        </ReactMarkdown>
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-sm italic text-muted-foreground">
-                                                        No instructions
-                                                        recorded.
-                                                    </p>
-                                                )}
-
-                                                <div className="grid gap-3 text-sm text-muted-foreground">
-                                                    {selectedAssignment.result_summary ? (
-                                                        <div>
-                                                            <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
-                                                                Result
-                                                            </div>
-                                                            <div
-                                                                className={
-                                                                    DOCUMENT_PROSE_CLASSNAME
-                                                                }
-                                                            >
-                                                                <ReactMarkdown
-                                                                    remarkPlugins={[
-                                                                        remarkGfm,
-                                                                        remarkWorkspaceLinks,
-                                                                    ]}
-                                                                    components={
-                                                                        markdownComponents
-                                                                    }
-                                                                >
-                                                                    {
-                                                                        selectedAssignment.result_summary
-                                                                    }
-                                                                </ReactMarkdown>
-                                                            </div>
-                                                        </div>
-                                                    ) : null}
-                                                    {selectedAssignment.handoff_file_path ? (
-                                                        <div>
-                                                            <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
-                                                                Handoff File
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    openWorkspacePath(
-                                                                        selectedAssignment.handoff_file_path ??
-                                                                            null,
-                                                                    )
-                                                                }
-                                                                className="text-foreground underline decoration-divider underline-offset-4 hover:decoration-foreground/40"
-                                                            >
-                                                                {
-                                                                    selectedAssignment.handoff_file_path
-                                                                }
-                                                            </button>
-                                                        </div>
-                                                    ) : null}
-                                                    <div>
-                                                        <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
-                                                            Thread
-                                                        </div>
-                                                        <div>
-                                                            {
-                                                                selectedAssignment.thread_id
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                    )}
-                                </div>
-                            </div>
                         )}
                     </div>
             </div>
@@ -1237,6 +1093,110 @@ export default function ProjectTaskDetailPage() {
                     ) : null}
                 </DialogContent>
             </Dialog>
+
+            <Sheet
+                open={selection?.kind === "assignment"}
+                onOpenChange={(open) => {
+                    if (!open) setSelection(null);
+                }}
+            >
+                <SheetContent
+                    side="right"
+                    className="flex w-full flex-col gap-0 p-0 sm:max-w-2xl"
+                >
+                    <SheetHeader className="shrink-0 gap-1 border-b border-border px-5 py-3 pr-12">
+                        <SheetTitle className="text-sm font-medium">
+                            {selectedAssignment
+                                ? formatLabel(
+                                      selectedAssignment.assignment_role,
+                                  )
+                                : "Conversation"}
+                        </SheetTitle>
+                        {selectedAssignment ? (
+                            <SheetDescription className="font-mono text-[11px]">
+                                {formatAssignmentStatus(selectedAssignment)} ·
+                                updated{" "}
+                                {new Date(
+                                    selectedAssignment.updated_at,
+                                ).toLocaleString()}
+                            </SheetDescription>
+                        ) : null}
+                    </SheetHeader>
+
+                    {selectedAssignment?.thread_id ? (
+                        <ThreadConversation
+                            threadId={selectedAssignment.thread_id}
+                            boardItemId={selectedAssignment.board_item_id}
+                            onOpenAttachmentPath={openWorkspacePath}
+                            readOnly
+                        />
+                    ) : selectedAssignment ? (
+                        <div
+                            className="flex-1 space-y-6 overflow-y-auto px-5 py-4"
+                            onClickCapture={handleWorkspaceLinkClickCapture}
+                        >
+                            {selectedAssignment.instructions ? (
+                                <div className={DOCUMENT_PROSE_CLASSNAME}>
+                                    <ReactMarkdown
+                                        remarkPlugins={[
+                                            remarkGfm,
+                                            remarkWorkspaceLinks,
+                                        ]}
+                                        components={markdownComponents}
+                                    >
+                                        {selectedAssignment.instructions}
+                                    </ReactMarkdown>
+                                </div>
+                            ) : (
+                                <p className="text-sm italic text-muted-foreground">
+                                    No instructions recorded.
+                                </p>
+                            )}
+                            <div className="grid gap-3 text-sm text-muted-foreground">
+                                {selectedAssignment.result_summary ? (
+                                    <div>
+                                        <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
+                                            Result
+                                        </div>
+                                        <div className={DOCUMENT_PROSE_CLASSNAME}>
+                                            <ReactMarkdown
+                                                remarkPlugins={[
+                                                    remarkGfm,
+                                                    remarkWorkspaceLinks,
+                                                ]}
+                                                components={markdownComponents}
+                                            >
+                                                {
+                                                    selectedAssignment.result_summary
+                                                }
+                                            </ReactMarkdown>
+                                        </div>
+                                    </div>
+                                ) : null}
+                                {selectedAssignment.handoff_file_path ? (
+                                    <div>
+                                        <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
+                                            Handoff File
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                openWorkspacePath(
+                                                    selectedAssignment.handoff_file_path ??
+                                                        null,
+                                                )
+                                            }
+                                            className="text-foreground underline decoration-divider underline-offset-4 hover:decoration-foreground/40"
+                                        >
+                                            {selectedAssignment.handoff_file_path}
+                                        </button>
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
+                    ) : null}
+                </SheetContent>
+            </Sheet>
         </div>
     );
 }
