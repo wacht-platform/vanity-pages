@@ -180,7 +180,7 @@ export function ClarificationRequestCard({
     const disabled = !isActive || submitting;
 
     return (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden rounded-xl border border-border bg-card mb-3">
             <div className="flex items-center gap-2 border-b border-border bg-secondary/40 px-3.5 py-2.5">
                 <IconHelpCircle className="size-4 text-primary" />
                 <span className="text-[13px] font-medium text-foreground">
@@ -256,8 +256,8 @@ export function ClarificationRequestCard({
                     </div>
                 ) : (
                     <div className="border-t border-border pt-3 text-xs text-muted-foreground">
-                        A newer message has been sent; this question is no longer
-                        active.
+                        A newer message has been sent; this question is no
+                        longer active.
                     </div>
                 )}
             </div>
