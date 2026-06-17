@@ -384,17 +384,28 @@ function DeliverablesPanel({
                                     Artifacts
                                 </div>
                                 <ul className="space-y-1">
-                                    {entry.artifacts.map((path) => (
-                                        <li key={path}>
+                                    {entry.artifacts.map((artifact, i) => (
+                                        <li key={artifact.path ?? i}>
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    onArtifactClick(path)
+                                                    artifact.path &&
+                                                    onArtifactClick(artifact.path)
                                                 }
                                                 className="text-left text-sm text-foreground/90 underline-offset-2 hover:underline"
                                             >
-                                                {path}
+                                                {artifact.kind ? (
+                                                    <span className="mr-2 text-xs uppercase tracking-wide text-muted-foreground/70">
+                                                        {artifact.kind}
+                                                    </span>
+                                                ) : null}
+                                                {artifact.path}
                                             </button>
+                                            {artifact.note ? (
+                                                <span className="ml-2 text-xs text-muted-foreground/70">
+                                                    {artifact.note}
+                                                </span>
+                                            ) : null}
                                         </li>
                                     ))}
                                 </ul>
