@@ -20,6 +20,7 @@ import {
     IconChecklist,
     IconChevronDown,
     IconChevronRight,
+    IconFileText,
     IconRepeat,
     IconAlertTriangle,
 } from "@tabler/icons-react";
@@ -355,90 +356,116 @@ function DeliverablesPanel({
     }
 
     return (
-        <div className="flex-1 overflow-y-auto px-4 py-4 md:px-5">
-            <div className="mx-auto max-w-3xl space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-5 md:px-[30px]">
+            <div className="mx-auto max-w-3xl space-y-3">
                 {entries.map((entry, idx) => (
                     <div
                         key={`${entry.assignment_id}-${idx}`}
-                        className="rounded-[10px] border border-border bg-card p-4"
+                        className="rounded-xl border border-border bg-card p-4 md:p-5"
                     >
-                        <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                            <span className="text-sm font-normal text-foreground">
-                                {entry.by_agent_name || "agent"}
-                            </span>
-                            <span className="text-xs text-muted-foreground/70">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                            <div className="flex min-w-0 items-center gap-2">
+                                <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-medium text-muted-foreground">
+                                    {(entry.by_agent_name || "A")
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                </div>
+                                <span className="truncate text-[13px] font-medium text-foreground">
+                                    {entry.by_agent_name || "Agent"}
+                                </span>
+                            </div>
+                            <span
+                                className="shrink-0 text-[11px] text-muted-foreground/70"
+                                title={entry.at}
+                            >
                                 {formatTime(entry.at)}
                             </span>
-                            <span className="text-xs text-muted-foreground/50">
-                                · assignment #{entry.assignment_id}
-                            </span>
                         </div>
+
                         {entry.result_summary ? (
-                            <p className="mb-3 text-sm leading-relaxed text-foreground/90">
+                            <p className="mb-3.5 text-[13px] leading-relaxed text-foreground/90">
                                 {entry.result_summary}
                             </p>
                         ) : null}
+
                         {entry.artifacts && entry.artifacts.length > 0 ? (
-                            <div className="mb-3">
-                                <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground/70">
+                            <div className="mb-3.5 space-y-1.5">
+                                <div className="font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-faint">
                                     Artifacts
                                 </div>
-                                <ul className="space-y-1">
-                                    {entry.artifacts.map((artifact, i) => (
-                                        <li key={artifact.path ?? i}>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    artifact.path &&
-                                                    onArtifactClick(artifact.path)
-                                                }
-                                                className="text-left text-sm text-foreground/90 underline-offset-2 hover:underline"
-                                            >
+                                {entry.artifacts.map((artifact, i) => (
+                                    <button
+                                        key={artifact.path ?? i}
+                                        type="button"
+                                        onClick={() =>
+                                            artifact.path &&
+                                            onArtifactClick(artifact.path)
+                                        }
+                                        className="group flex w-full items-start gap-2.5 rounded-lg border border-border/60 bg-secondary/40 px-3 py-2 text-left transition-colors hover:border-border hover:bg-secondary"
+                                    >
+                                        <IconFileText
+                                            size={15}
+                                            stroke={1.5}
+                                            className="mt-px shrink-0 text-muted-foreground transition-colors group-hover:text-foreground"
+                                        />
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="truncate font-mono text-[12px] text-foreground/90 transition-colors group-hover:text-foreground">
+                                                    {artifact.path}
+                                                </span>
                                                 {artifact.kind ? (
-                                                    <span className="mr-2 text-xs uppercase tracking-wide text-muted-foreground/70">
+                                                    <span className="shrink-0 rounded-[3px] border border-border bg-card px-1.5 py-px font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
                                                         {artifact.kind}
                                                     </span>
                                                 ) : null}
-                                                {artifact.path}
-                                            </button>
+                                            </div>
                                             {artifact.note ? (
-                                                <span className="ml-2 text-xs text-muted-foreground/70">
+                                                <p className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
                                                     {artifact.note}
-                                                </span>
+                                                </p>
                                             ) : null}
-                                        </li>
-                                    ))}
-                                </ul>
+                                        </div>
+                                        <IconChevronRight
+                                            size={14}
+                                            className="mt-0.5 shrink-0 text-faint transition-colors group-hover:text-muted-foreground"
+                                        />
+                                    </button>
+                                ))}
                             </div>
                         ) : null}
-                        {entry.findings ? (
-                            <div className="mb-2 text-sm">
-                                <span className="text-xs uppercase tracking-wide text-muted-foreground/70">
-                                    Findings:
-                                </span>{" "}
-                                <span className="text-foreground/90">
-                                    {entry.findings}
-                                </span>
-                            </div>
-                        ) : null}
-                        {entry.cautions ? (
-                            <div className="mb-2 text-sm">
-                                <span className="text-xs uppercase tracking-wide text-muted-foreground/70">
-                                    Cautions:
-                                </span>{" "}
-                                <span className="text-foreground/90">
-                                    {entry.cautions}
-                                </span>
-                            </div>
-                        ) : null}
-                        {entry.next ? (
-                            <div className="text-sm">
-                                <span className="text-xs uppercase tracking-wide text-muted-foreground/70">
-                                    Next:
-                                </span>{" "}
-                                <span className="text-foreground/90">
-                                    {entry.next}
-                                </span>
+
+                        {entry.findings || entry.cautions || entry.next ? (
+                            <div className="space-y-2 border-t border-divider/60 pt-3">
+                                {entry.findings ? (
+                                    <div className="flex gap-2.5">
+                                        <span className="mt-[3px] w-14 shrink-0 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-faint">
+                                            Findings
+                                        </span>
+                                        <p className="flex-1 text-[12.5px] leading-relaxed text-foreground/85">
+                                            {entry.findings}
+                                        </p>
+                                    </div>
+                                ) : null}
+                                {entry.cautions ? (
+                                    <div className="flex gap-2.5">
+                                        <span className="mt-[3px] w-14 shrink-0 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-warning/80">
+                                            Cautions
+                                        </span>
+                                        <p className="flex-1 text-[12.5px] leading-relaxed text-warning">
+                                            {entry.cautions}
+                                        </p>
+                                    </div>
+                                ) : null}
+                                {entry.next ? (
+                                    <div className="flex gap-2.5">
+                                        <span className="mt-[3px] w-14 shrink-0 font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-faint">
+                                            Next
+                                        </span>
+                                        <p className="flex-1 text-[12.5px] leading-relaxed text-foreground/85">
+                                            {entry.next}
+                                        </p>
+                                    </div>
+                                ) : null}
                             </div>
                         ) : null}
                     </div>
@@ -871,30 +898,31 @@ export default function ProjectTaskDetailPage() {
 
                     {/* Agentic Workspace */}
                     <div className="flex min-h-0 flex-1 flex-col">
-                        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
-                            <div className="inline-flex gap-0.5 rounded-[8px] border border-border bg-secondary p-[3px]">
-                                {(
-                                    [
-                                        "assignments",
-                                        "deliverables",
-                                        "files",
-                                        "comments",
-                                    ] as const
-                                ).map((tab) => (
-                                    <button
-                                        key={tab}
-                                        onClick={() => setActiveTab(tab)}
-                                        className={cn(
-                                            "h-7 rounded-[6px] px-[13px] text-[12px] font-medium capitalize text-muted-foreground transition-all",
-                                            activeTab === tab
-                                                ? "bg-card text-foreground shadow-[0_0_0_0.5px_var(--wa-border-strong)]"
-                                                : "hover:text-foreground",
-                                        )}
-                                    >
-                                        {tab}
-                                    </button>
-                                ))}
-                            </div>
+                        <div className="flex h-11 shrink-0 items-center gap-1 border-b border-border px-4 md:px-[30px]">
+                            {(
+                                [
+                                    "assignments",
+                                    "deliverables",
+                                    "files",
+                                    "comments",
+                                ] as const
+                            ).map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={cn(
+                                        "relative flex h-11 items-center px-2.5 text-[12px] font-medium capitalize transition-colors",
+                                        activeTab === tab
+                                            ? "text-foreground"
+                                            : "text-muted-foreground hover:text-foreground",
+                                    )}
+                                >
+                                    {tab}
+                                    {activeTab === tab ? (
+                                        <span className="absolute inset-x-2.5 -bottom-px h-[2px] rounded-full bg-foreground" />
+                                    ) : null}
+                                </button>
+                            ))}
                         </div>
 
                         {activeTab === "files" ? (
